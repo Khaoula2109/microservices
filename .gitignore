@@ -45,3 +45,17 @@ rabbitmq_data/
 # yarn.lock
 infrastructure/kubernetes/secrets/db-secrets.yml
 infrastructure/kubernetes/secrets/create-secrets.sh
+
+# Terraform
+**/.terraform/*
+**/.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
