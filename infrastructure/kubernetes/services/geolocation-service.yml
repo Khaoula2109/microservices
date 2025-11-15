@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: geolocation-service
+  namespace: transport-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: geolocation-service
+  template:
+    metadata:
+      labels:
+        app: geolocation-service
+    spec:
+      containers:
+      - name: geolocation-service
+        image: ghcr.io/khaoula2109/geolocation-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+        env:
+        - name: FLASK_APP
+          value: "app.py"
+        - name: FLASK_ENV
+          value: "production"
+        - name: FLASK_RUN_HOST
+          value: "0.0.0.0"
+        - name: FLASK_RUN_PORT
+          value: "5000"
+        - name: REDIS_HOST
+          value: "redis-cache"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: REDIS_DB
+          value: "0"
+        - name: DEBUG
+          value: "False"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: SIMULATOR_INTERVAL
+          value: "600"
+        - name: SIMULATOR_ENABLED
+          value: "true"
+        - name: RABBITMQ_URI
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: rabbitmq-uri
+        - name: RABBITMQ_EXCHANGE
+          value: "transport_events"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "300m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: geolocation-service
+  namespace: transport-prod
+spec:
+  selector:
+    app: geolocation-service
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000
+  type: ClusterIP

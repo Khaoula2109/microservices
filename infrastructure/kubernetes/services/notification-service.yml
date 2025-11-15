@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: transport-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+      - name: notification-service
+        image: ghcr.io/khaoula2109/notification-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        env:
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: mongo-uri
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: mongo-username
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: mongo-password
+        - name: RABBITMQ_URI
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: rabbitmq-uri
+        - name: RABBITMQ_NOTIFICATION_EXCHANGE
+          value: "transport_events"
+        - name: EMAIL_HOST
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: email-host
+        - name: EMAIL_PORT
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: email-port
+        - name: EMAIL_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: email-user
+        - name: EMAIL_PASS
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: email-pass
+        - name: EMAIL_FROM
+          value: '"Transport Urbain" <no-reply@kowihan.ma>'
+        - name: TWILIO_ACCOUNT_SID
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: twilio-account-sid
+        - name: TWILIO_AUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: twilio-auth-token
+        - name: TWILIO_PHONE_NUMBER
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: twilio-phone
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: transport-prod
+spec:
+  selector:
+    app: notification-service
+  ports:
+  - protocol: TCP
+    port: 3000
+    targetPort: 3000
+  type: ClusterIP

@@ -43,3 +43,5 @@ rabbitmq_data/
 # Package locks (optionnel, selon votre préférence)
 # package-lock.json
 # yarn.lock
+infrastructure/kubernetes/secrets/db-secrets.yml
+infrastructure/kubernetes/secrets/create-secrets.sh

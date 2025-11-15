@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subscription-service
+  namespace: transport-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: subscription-service
+  template:
+    metadata:
+      labels:
+        app: subscription-service
+    spec:
+      containers:
+      - name: subscription-service
+        image: ghcr.io/khaoula2109/subscription-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        env:
+        - name: ACCEPT_EULA
+          value: "Y"
+        - name: PORT
+          value: "3000"
+        - name: DB_HOST
+          value: "mssql-db"
+        - name: DB_USER
+          value: "sa"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: mssql-password
+        - name: DB_DATABASE
+          value: "subscriptions_db"
+        - name: STRIPE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: stripe-api-key
+        - name: STRIPE_WEBHOOK_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: stripe-webhook-secret
+        - name: RABBITMQ_URI
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: rabbitmq-uri
+        - name: FRONTEND_URL
+          value: "http://frontend:5173"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: subscription-service
+  namespace: transport-prod
+spec:
+  selector:
+    app: subscription-service
+  ports:
+  - protocol: TCP
+    port: 3000
+    targetPort: 3000
+  type: ClusterIP

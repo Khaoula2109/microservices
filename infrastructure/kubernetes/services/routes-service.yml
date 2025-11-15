@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: routes-service
+  namespace: transport-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: routes-service
+  template:
+    metadata:
+      labels:
+        app: routes-service
+    spec:
+      containers:
+      - name: routes-service
+        image: ghcr.io/khaoula2109/routes-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8083
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "8083"
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: postgres-gis-host
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: postgres-gis-db
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: postgres-gis-user
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: postgres-gis-password
+        - name: DB_DIALECT
+          value: "postgres"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: CORS_ORIGIN
+          value: "*"
+        - name: DEFAULT_TIMEZONE
+          value: "Europe/Paris"
+        - name: MAX_ROUTES_PER_REQUEST
+          value: "50"
+        - name: RABBITMQ_URI
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: rabbitmq-uri
+        - name: RABBITMQ_EXCHANGE
+          value: "transport_events"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: routes-service
+  namespace: transport-prod
+spec:
+  selector:
+    app: routes-service
+  ports:
+  - protocol: TCP
+    port: 8083
+    targetPort: 8083
+  type: ClusterIP
