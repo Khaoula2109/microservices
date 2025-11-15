@@ -11,13 +11,13 @@ variable "cluster_name" {
 }
 
 variable "environment" {
-  description = "Environment (dev/staging/prod)"
+  description = "Environment"
   type        = string
   default     = "prod"
 }
 
 variable "vpc_cidr" {
-  description = "VPC CIDR block"
+  description = "VPC CIDR"
   type        = string
   default     = "10.0.0.0/16"
 }
