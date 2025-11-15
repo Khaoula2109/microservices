@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@Profile("!test")
 public class RabbitMQConfig {
 
     public static final String EXCHANGE_NAME = "transport_events";
