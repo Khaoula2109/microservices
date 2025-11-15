@@ -1,0 +1,24 @@
+{
+  "name": "subscription-service",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "amqplib": "^0.10.9",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "mssql": "^12.0.0",
+    "stripe": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.8",
+    "db-migrate": "^0.11.14",
+    "db-migrate-mssql": "^2.1.0"
+  }
+}

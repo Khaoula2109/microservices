@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "@nestjs/microservices": "^11.1.6",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "winston": "^3.18.3"
+  },
+  "devDependencies": {
+    "@types/winston": "^2.4.4"
+  }
+}

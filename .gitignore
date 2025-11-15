@@ -1,0 +1,45 @@
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Dependencies
+node_modules/
+target/
+build/
+dist/
+
+# Environment files
+.env
+*.env.local
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.tar
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+env/
+
+# Database data (ne pas commiter les données)
+postgres_data/
+mssql_data/
+mongodb_data/
+mysql_data/
+redis_data/
+rabbitmq_data/
+
+# Package locks (optionnel, selon votre préférence)
+# package-lock.json
+# yarn.lock

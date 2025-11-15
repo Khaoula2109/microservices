@@ -1,0 +1,23 @@
+# Fichiers et dossiers Git
+.git
+.gitignore
+
+# Fichiers de configuration de l'IDE
+.idea/
+.vscode/
+*.iml
+
+# Fichiers générés par Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+
+# Fichiers de logs
+*.log
+
+# Variables d'environnement locales (TRÈS IMPORTANT)
+.env
+
+# Fichiers spécifiques au système d'exploitation
+.DS_Store

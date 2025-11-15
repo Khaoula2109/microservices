@@ -1,0 +1,14 @@
+{
+  "defaultEnv": "dev",
+  "dev": {
+    "driver": "mssql",
+    "user": { "ENV": "DB_USER" },
+    "password": { "ENV": "DB_PASSWORD" },
+    "host": { "ENV": "DB_HOST" },
+    "database": { "ENV": "DB_DATABASE" },
+    "options": {
+      "encrypt": false,
+      "trustServerCertificate": true
+    }
+  }
+}

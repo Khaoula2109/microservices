@@ -1,0 +1,299 @@
+version: '3.8'
+
+services:
+
+  # --- BASES DE DONNÉES ---
+
+  # Base de données pour le user-service
+  postgres-db:
+    image: postgres:17
+    container_name: postgres-db
+    hostname: postgres-db
+    env_file: ./user-service/.env
+    ports: ["5432:5432"]
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    networks: [transport-net]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  # Base de données pour le service d'abonnements
+  mssql-db:
+    build: ./mssql
+    container_name: mssql-db
+    hostname: mssql-db
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "${MSSQL_SA_PASSWORD}"
+      MSSQL_DB: subscriptions_db
+    ports: ["1433:1433"]
+    volumes: [mssql_data:/var/opt/mssql]
+    networks: [transport-net]
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P '${MSSQL_SA_PASSWORD}' -d 'subscriptions_db' -Q 'SELECT 1'"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
+
+    # Base de données pour le service de notifications
+  mongodb-db:
+    image: mongo:latest
+    container_name: mongodb-db
+    hostname: mongodb-db
+    ports: ["27017:27017"]
+    volumes: [mongodb_data:/data/db]
+    networks: [transport-net]
+    env_file: ./notification-service/.env
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --host mongodb-db --username $$MONGO_INITDB_ROOT_USERNAME --password $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval \"db.adminCommand('ping')\""]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+
+
+    # Base de données pour le service des trajets (PostGIS)
+  postgres-gis-db:
+    image: postgis/postgis:15-3.3
+    container_name: postgres-gis-db
+    hostname: postgres-gis-db
+    environment:
+      POSTGRES_DB: transport_db
+      POSTGRES_USER: transport_user
+      POSTGRES_PASSWORD: transport_password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports: ["5433:5432"]
+    networks: [transport-net]
+    volumes: [postgis_data:/var/lib/postgresql/data]
+    restart: unless-stopped
+
+    # Base de données pour le service de tickets
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    hostname: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: tickets_db
+      MYSQL_USER: tickets_user
+      MYSQL_PASSWORD: tickets_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "tickets_user", "-ptickets_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports: ["3306:3306"]
+    networks: [transport-net]
+    volumes: [mysql_data:/var/lib/mysql]
+    restart: unless-stopped
+
+    # Base de données Redis pour le service de géolocalisation
+  redis-cache:
+    image: redis:7-alpine
+    container_name: redis-cache
+    hostname: redis-cache
+    ports: ["6379:6379"]
+    networks: [transport-net]
+    volumes: [redis_data:/data]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+    # --- INFRASTRUCTURE ---
+    # Broker de messages RabbitMQ
+  rabbitmq-service:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq-service
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes: [rabbitmq_data:/var/lib/rabbitmq]
+    networks: [transport-net]
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+
+
+    # --- SERVICES APPLICATIFS ---
+
+    # Service utilisateur
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports: ["8080:8080"]
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    env_file: ./user-service/.env
+    networks: [transport-net]
+
+    # Service d'abonnements
+  subscription-service:
+    build: ./subscription-service
+    container_name: subscription-service
+    ports: ["3000:3000"]
+    depends_on:
+      mssql-db:
+        condition: service_healthy
+    env_file: ./subscription-service/.env
+    environment:
+      - DB_PASSWORD=${MSSQL_SA_PASSWORD}
+    networks: [transport-net]
+    command: >
+      sh -c "
+        echo 'Attente de la base de données terminée (healthcheck OK).' &&
+        echo 'Lancement des migrations...' &&
+        npx db-migrate up &&
+        echo 'Migrations terminees. Demarrage de l application...' &&
+        node src/server.js 
+      "
+
+  # Service de Notifications
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports: ["3001:3000"]
+    depends_on:
+      mongodb-db:
+        condition: service_healthy
+      rabbitmq-service:
+        condition: service_healthy
+    env_file: ./notification-service/.env
+    networks: [transport-net]
+
+  # Service de géolocalisation
+  geolocation-service:
+    build: ./geolocation-service
+    container_name: geolocation-service
+    ports: ["5000:5000"]
+    environment:
+      - REDIS_HOST=redis-cache
+      - REDIS_PORT=6379
+    env_file: ./geolocation-service/.env
+    depends_on:
+      redis-cache:
+        condition: service_healthy
+    networks: [transport-net]
+    restart: unless-stopped
+
+  # Service des trajets
+  routes-service:
+    build: ./routes-service
+    container_name: routes-service
+    ports: ["8083:8083"]
+    environment:
+      - DB_HOST=postgres-gis-db
+      - DB_PORT=5432
+      - DB_NAME=transport_db
+      - DB_USER=transport_user
+      - DB_PASSWORD=transport_password
+    env_file: ./routes-service/.env
+    depends_on: 
+    - postgres-gis-db
+    - rabbitmq-service
+    networks: [transport-net]
+    restart: unless-stopped
+
+  # Service des tickets
+  tickets-service:
+    build: ./tickets-service
+    container_name: tickets-service
+    ports: ["8082:8082"]
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/tickets_db
+      - SPRING_DATASOURCE_USERNAME=tickets_user
+      - SPRING_DATASOURCE_PASSWORD=tickets_password
+    env_file: ./tickets-service/.env
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      rabbitmq-service:
+        condition: service_healthy
+    networks: [transport-net]
+    restart: unless-stopped
+
+  # API Gateway
+  api-gateway:
+    build: ./apigateway
+    container_name: api-gateway
+    hostname: api-gateway
+    ports:
+      - "8081:8081"
+    environment:
+      - JWT_SECRET=${JWT_SECRET:-MaSuperCleSecretePourLeProjetTransportUrbainQuiEstTresLongueEtComplexe123!@#}
+      - SERVICES_USER_URL=http://user-service:8080
+      - SERVICES_SUBSCRIPTION_URL=http://subscription-service:3000
+      - SERVICES_TICKETS_URL=http://tickets-service:8082
+      - SERVICES_ROUTES_URL=http://routes-service:8083
+      - SERVICES_GEOLOCATION_URL=http://geolocation-service:5000
+      - SPRING_RABBITMQ_HOST=rabbitmq-service
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=user
+      - SPRING_RABBITMQ_PASSWORD=password
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      user-service:
+        condition: service_started
+      subscription-service:
+        condition: service_started
+      tickets-service:
+        condition: service_started
+      routes-service:
+        condition: service_started
+      geolocation-service:
+        condition: service_started
+    networks:
+      - transport-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend
+  frontend:
+    build: ./Frontend/project
+    container_name: frontend-app
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8081
+    depends_on:
+      - api-gateway
+    networks: [transport-net]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  postgres_data:
+  mssql_data:
+  mongodb_data:
+  rabbitmq_data:
+  postgis_data:
+  mysql_data:
+  redis_data:
+
+networks:
+  transport-net:

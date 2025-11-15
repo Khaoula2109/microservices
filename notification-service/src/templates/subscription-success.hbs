@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmation de votre abonnement</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: #ffffff;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: #ffffff;
+            border-radius: 50% 50% 0 0;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .header h1 {
+            margin: 10px 0 0 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 40px 35px 30px;
+            line-height: 1.8;
+            color: #333;
+        }
+        .content p { margin: 0 0 16px 0; }
+        .details-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-left: 4px solid #667eea;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        .details-box strong {
+            color: #667eea;
+            font-weight: 600;
+            display: inline-block;
+            min-width: 150px;
+        }
+        .value {
+            color: #333;
+            font-weight: 500;
+        }
+        .details-box hr {
+            border: none;
+            border-top: 1px solid rgba(102, 126, 234, 0.3);
+            margin: 15px 0;
+        }
+        .footer {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #666;
+            padding: 25px 30px;
+            font-size: 0.85em;
+            text-align: center;
+            border-top: 3px solid #667eea;
+        }
+        .footer-logo {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">KOWIHAN</div>
+            <h1>{{subject}}</h1>
+        </div>
+        <div class="content">
+            <p>Bonjour,</p>
+            <p>Merci pour votre confiance ! Votre abonnement a été confirmé avec succès.</p>
+
+            <div class="details-box">
+                <strong>Votre abonnement :</strong>
+                <span class="value">{{planName}}</span>
+                <hr>
+                <strong>Montant payé :</strong>
+                <span class="value">{{amount}} {{currency}}</span>
+                <hr>
+                <strong>Valide jusqu'au :</strong>
+                <span class="value">{{endDate}}</span>
+            </div>
+
+            <p style="margin-top: 25px;">Cordialement,<br><strong>L'équipe Kowihan</strong></p>
+        </div>
+        <div class="footer">
+            <div class="footer-logo">KOWIHAN</div>
+            Merci de voyager avec Kowihan !
+        </div>
+    </div>
+</body>
+</html>
