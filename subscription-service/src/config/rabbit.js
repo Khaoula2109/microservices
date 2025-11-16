@@ -1,7 +1,32 @@
+// Charger .env SEULEMENT si pas en production
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
 const amqp = require('amqplib');
 const { handleUserRegistered } = require('../services/event.handler');
 
-const RABBITMQ_URI = process.env.RABBITMQ_URI || 'amqp://user:password@localhost:5672';
+// Construire l'URL RabbitMQ depuis les variables d'environnement
+const getRabbitMQUrl = () => {
+  // Priorité 1: RABBITMQ_URL ou RABBITMQ_URI
+  if (process.env.RABBITMQ_URL) {
+    return process.env.RABBITMQ_URL;
+  }
+  
+  if (process.env.RABBITMQ_URI) {
+    return process.env.RABBITMQ_URI;
+  }
+  
+  // Priorité 2: Construire depuis les composants
+  const host = process.env.RABBITMQ_HOST || 'localhost';
+  const port = process.env.RABBITMQ_PORT || '5672';
+  const user = process.env.RABBITMQ_USER || 'user';
+  const password = process.env.RABBITMQ_PASSWORD || 'password';
+  
+  return `amqp://${user}:${password}@${host}:${port}`;
+};
+
+const RABBITMQ_URI = getRabbitMQUrl();
 const EXCHANGE_NAME = 'transport_events';
 
 let connection = null;
@@ -10,6 +35,9 @@ let channel = null;
 async function connectRabbitMQ() {
     try {
         if (!connection || connection.connection.isClosed()) {
+            console.log('🔄 Connexion à RabbitMQ...');
+            console.log(`   URL: ${RABBITMQ_URI.replace(/:[^:@]+@/, ':****@')}`);
+            
             connection = await amqp.connect(RABBITMQ_URI);
             console.log('✅ Connecté à RabbitMQ (publication et consommation)');
 
@@ -34,7 +62,6 @@ async function connectRabbitMQ() {
         }
 
         await startEventConsumers();
-
     } catch (error) {
         console.error('❌ Échec de la connexion à RabbitMQ:', error.message);
         console.log('Retrying RabbitMQ connection in 5 seconds...');
@@ -49,6 +76,7 @@ function publishEvent(routingKey, eventData) {
         connectRabbitMQ().catch(err => console.error("Échec de la reconnexion pour la publication:", err));
         return;
     }
+
     const payload = Buffer.from(JSON.stringify(eventData));
     channel.publish(EXCHANGE_NAME, routingKey, payload, {
         contentType: 'application/json',
@@ -71,6 +99,7 @@ async function startEventConsumers() {
 
         const routingKey = 'user.registered';
         await channel.bindQueue(queueName, EXCHANGE_NAME, routingKey);
+
         console.log(`✅ Consommateur configuré pour la queue '${queueName}' avec clé '${routingKey}'.`);
 
         channel.consume(queueName, async (msg) => {
@@ -78,9 +107,7 @@ async function startEventConsumers() {
                 try {
                     const eventData = JSON.parse(msg.content.toString());
                     console.log(`📨 ÉVÉNEMENT [${routingKey}] REÇU :`, eventData.userId);
-
                     await handleUserRegistered(eventData);
-
                     channel.ack(msg);
                 } catch (error) {
                     console.error(`❌ Erreur lors du traitement du message ${routingKey}:`, error);
@@ -88,7 +115,6 @@ async function startEventConsumers() {
                 }
             }
         });
-
     } catch (error) {
         console.error(`❌ Erreur lors de la configuration du consommateur 'user.registered':`, error);
     }

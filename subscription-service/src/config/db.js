@@ -23,4 +23,37 @@ const config = {
   }
 };
 
-module.exports = { config, sql };
+let pool = null;
+
+const connectDB = async () => {
+  try {
+    if (pool) {
+      return pool;
+    }
+    
+    console.log('🔄 Connexion à MSSQL...');
+    console.log(`   Server: ${config.server}:${config.port}`);
+    console.log(`   Database: ${config.database}`);
+    
+    pool = await sql.connect(config);
+    console.log('✅ Connecté à MSSQL');
+    return pool;
+  } catch (err) {
+    console.error('❌ Erreur de connexion MSSQL:', err.message);
+    throw err;
+  }
+};
+
+const getPool = () => {
+  if (!pool) {
+    throw new Error('Database not connected. Call connectDB first.');
+  }
+  return pool;
+};
+
+module.exports = { 
+  config, 
+  sql, 
+  connectDB,
+  getPool
+};
