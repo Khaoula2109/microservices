@@ -8,6 +8,7 @@ from routes_data import ROUTES
 
 REDIS_HOST = os.getenv('REDIS_HOST', 'redis-cache')
 REDIS_PORT = 6379
+REDIS_PASSWORD = os.getenv('REDIS_PASSWORD', None)
 REDIS_POSITIONS_KEY = "bus_positions"
 
 DELAY_THRESHOLD_SECONDS = 30
@@ -20,7 +21,7 @@ RABBITMQ_ROUTING_KEY = 'bus.delayed'
 
 class DelayDetector:
     def __init__(self):
-        self.db = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+        self.db = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, decode_responses=True)
         self.notified_buses = set()
         self.rabbit_channel = None
         self.rabbit_connection = None
