@@ -8,6 +8,8 @@ import { join } from 'path';
 import * as Handlebars from 'handlebars';
 
 import { NotificationsModule } from './notifications/notifications.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 Handlebars.registerHelper('formatDate', function (dateString) {
     if (!dateString) return '';
@@ -68,7 +70,7 @@ Handlebars.registerHelper('eq', function (v1, v2) {
 
         NotificationsModule,
     ],
-    controllers: [],
-    providers: [],
+    controllers: [AppController],
+    providers: [AppService],
 })
 export class AppModule {}
