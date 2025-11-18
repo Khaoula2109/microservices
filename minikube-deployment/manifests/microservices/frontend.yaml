@@ -38,8 +38,8 @@ spec:
         ports:
         - containerPort: 5173
         env:
-        - name: REACT_APP_API_URL
-          value: "http://kowihan.local/api"
+        - name: VITE_API_BASE_URL
+          value: "http://kowihan.local"
         resources:
           requests:
             memory: "512Mi"
