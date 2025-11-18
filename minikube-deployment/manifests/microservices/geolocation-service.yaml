@@ -44,8 +44,14 @@ spec:
           value: "6379"
         - name: REDIS_PASSWORD
           value: "redis123"
-        - name: RABBITMQ_URI
-          value: "amqp://user:password123456@rabbitmq.transport-databases.svc.cluster.local:5672"
+        - name: RABBITMQ_HOST
+          value: "rabbitmq.transport-databases.svc.cluster.local"
+        - name: RABBITMQ_PORT
+          value: "5672"
+        - name: RABBITMQ_USER
+          value: "user"
+        - name: RABBITMQ_PASSWORD
+          value: "password123456"
         - name: RABBITMQ_EXCHANGE
           value: "transport_events"
         resources:
