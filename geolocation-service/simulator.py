@@ -12,7 +12,8 @@ def run_simulator():
     print("Démarrage du simulateur de bus - BUS-07 toujours en retard...")
     try:
         redis_host = os.getenv('REDIS_HOST', 'redis-cache')
-        r = redis.Redis(host=redis_host, port=6379, decode_responses=True)
+        redis_password = os.getenv('REDIS_PASSWORD', None)
+        r = redis.Redis(host=redis_host, port=6379, password=redis_password, decode_responses=True)
         r.ping()
         print(f"Connecté à Redis avec succès .")
     except redis.exceptions.ConnectionError as e:

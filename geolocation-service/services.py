@@ -14,7 +14,8 @@ class GeolocationService:
     def __init__(self):
         try:
             redis_host = os.getenv('REDIS_HOST', 'redis-cache')
-            self.db = redis.Redis(host=redis_host, port=6379, decode_responses=True)
+            redis_password = os.getenv('REDIS_PASSWORD', None)
+            self.db = redis.Redis(host=redis_host, port=6379, password=redis_password, decode_responses=True)
             self.db.ping()
         except redis.exceptions.ConnectionError as e:
             raise ConnectionError(f"Impossible de se connecter à Redis: {e}") from e
