@@ -52,6 +52,19 @@ spec:
           value: "sk_test_51SIrRuRxfAGItUbxU9eS5AMxaOM60muqMHCJ32d7IBYlwGEYD2DqNSw4hew3nRDY0QUhuM9pDOyXhEO2J5IMmVnI00Ybeo3SNB"
         - name: STRIPE_WEBHOOK_SECRET
           value: "whsec_qaRnUqiWgellHPCtuiQO7SEuZHtDVM8q"
+        - name: RABBITMQ_HOST
+          value: "rabbitmq.transport-databases.svc.cluster.local"
+        - name: RABBITMQ_PORT
+          value: "5672"
+        - name: RABBITMQ_USER
+          value: "user"
+        - name: RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: rabbitmq-password
+        - name: RABBITMQ_URI
+          value: "amqp://user:password123456@rabbitmq.transport-databases.svc.cluster.local:5672"
         resources:
           requests:
             memory: "128Mi"

@@ -48,6 +48,10 @@ spec:
           value: "update"
         - name: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
           value: "org.hibernate.spatial.dialect.postgis.PostgisDialect"
+        - name: RABBITMQ_URI
+          value: "amqp://user:password123456@rabbitmq.transport-databases.svc.cluster.local:5672"
+        - name: RABBITMQ_EXCHANGE
+          value: "transport_events"
         resources:
           requests:
             memory: "256Mi"
