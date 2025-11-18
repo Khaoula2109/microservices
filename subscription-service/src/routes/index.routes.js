@@ -3,6 +3,9 @@ const { createSubscription, stripeWebhook } = require('../controllers/subscripti
 const gatewayAuth = require('../middleware/gatewayAuth'); // NOUVEAU
 const router = express.Router();
 
+// HEALTH CHECK
+router.get('/health', (req, res) => res.status(200).json({ status: 'ok', service: 'subscription-service' }));
+
 // PROTECTED
 router.post('/create-checkout-session', express.json(), gatewayAuth, createSubscription);
 
