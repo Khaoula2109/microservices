@@ -54,6 +54,10 @@ spec:
           value: "7cb03af5c09ce1047f2f9537ffb9ecd9"
         - name: TWILIO_PHONE
           value: "+19785707940"
+        - name: RABBITMQ_URI
+          value: "amqp://user:password123456@rabbitmq.transport-databases.svc.cluster.local:5672"
+        - name: RABBITMQ_NOTIFICATION_EXCHANGE
+          value: "transport_events"
         resources:
           requests:
             memory: "128Mi"
