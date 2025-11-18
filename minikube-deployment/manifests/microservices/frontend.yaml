@@ -39,7 +39,7 @@ spec:
         - containerPort: 5173
         env:
         - name: REACT_APP_API_URL
-          value: "http://api-gateway.transport-prod.svc.cluster.local:8081/api"
+          value: "http://kowihan.local/api"
         resources:
           requests:
             memory: "128Mi"
