@@ -15,7 +15,10 @@ DELAY_THRESHOLD_SECONDS = 30
 CHECK_INTERVAL_SECONDS = 30
 ROUTE_START_TIME = dt_time(8, 0, 0)
 
-RABBITMQ_URI = os.getenv('RABBITMQ_URI', 'amqp://user:password@rabbitmq-service:5672')
+RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'rabbitmq.transport-databases.svc.cluster.local')
+RABBITMQ_PORT = int(os.getenv('RABBITMQ_PORT', '5672'))
+RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'user')
+RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'password123456')
 RABBITMQ_EXCHANGE = os.getenv('RABBITMQ_EXCHANGE', 'transport_events')
 RABBITMQ_ROUTING_KEY = 'bus.delayed'
 
@@ -39,10 +42,10 @@ class DelayDetector:
     def connect_to_rabbitmq(self):
         while True:
             try:
-                credentials = pika.PlainCredentials('user', 'password')
+                credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASSWORD)
                 parameters = pika.ConnectionParameters(
-                    host='rabbitmq-service',
-                    port=5672,
+                    host=RABBITMQ_HOST,
+                    port=RABBITMQ_PORT,
                     credentials=credentials
                 )
                 self.rabbit_connection = pika.BlockingConnection(parameters)
