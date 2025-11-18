@@ -32,8 +32,8 @@ const createCheckoutSession = async (userId, email, priceId) => {
             throw new BadRequestError(`Erreur de carte de paiement : ${error.message}`);
         }
         if (error.type === 'StripeInvalidRequestError') {
-            console.error('Stripe Invalid Request:', error.message);
-            throw new BadRequestError('Requête invalide auprès du service de paiement.');
+            console.error('Stripe Invalid Request:', error.message, 'priceId:', priceId, 'customerId:', customerId);
+            throw new BadRequestError(`Requête invalide: ${error.message}`);
         }
         throw new ApiError('Une erreur est survenue lors de la création de la session de paiement.');
     }
