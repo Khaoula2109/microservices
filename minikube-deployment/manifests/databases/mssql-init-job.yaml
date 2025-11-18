@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mssql-init-db
+  namespace: transport-databases
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    metadata:
+      name: mssql-init-db
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: mssql-init
+        image: mcr.microsoft.com/mssql-tools
+        command:
+        - /bin/bash
+        - -c
+        - |
+          # Wait for MSSQL to be ready
+          echo "Waiting for MSSQL to be ready..."
+          until /opt/mssql-tools/bin/sqlcmd -S mssql.transport-databases.svc.cluster.local -U sa -P "$SA_PASSWORD" -Q "SELECT 1" &> /dev/null
+          do
+            echo "MSSQL is unavailable - sleeping"
+            sleep 5
+          done
+
+          echo "MSSQL is up - creating database"
+
+          # Create database if it doesn't exist
+          /opt/mssql-tools/bin/sqlcmd -S mssql.transport-databases.svc.cluster.local -U sa -P "$SA_PASSWORD" -Q "
+          IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'subscription_db')
+          BEGIN
+            CREATE DATABASE subscription_db;
+            PRINT 'Database subscription_db created successfully';
+          END
+          ELSE
+          BEGIN
+            PRINT 'Database subscription_db already exists';
+          END
+          "
+
+          echo "Database initialization completed"
+        env:
+        - name: SA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: mssql-password
