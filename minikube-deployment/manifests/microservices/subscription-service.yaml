@@ -38,11 +38,15 @@ spec:
         ports:
         - containerPort: 3000
         env:
+        - name: NODE_ENV
+          value: "production"
         - name: DB_HOST
           value: "mssql.transport-databases.svc.cluster.local"
         - name: DB_PORT
           value: "1433"
         - name: DB_NAME
+          value: "subscription_db"
+        - name: DB_DATABASE
           value: "subscription_db"
         - name: DB_USER
           value: "sa"

@@ -38,16 +38,16 @@ spec:
         ports:
         - containerPort: 8083
         env:
-        - name: SPRING_DATASOURCE_URL
-          value: "jdbc:postgresql://postgresql-gis.transport-databases.svc.cluster.local:5432/transport_db"
-        - name: SPRING_DATASOURCE_USERNAME
+        - name: NODE_ENV
+          value: "production"
+        - name: DB_HOST
+          value: "postgresql-gis.transport-databases.svc.cluster.local"
+        - name: DB_NAME
+          value: "transport_db"
+        - name: DB_USER
           value: "transport_user"
-        - name: SPRING_DATASOURCE_PASSWORD
+        - name: DB_PASSWORD
           value: "transport_password123"
-        - name: SPRING_JPA_HIBERNATE_DDL_AUTO
-          value: "update"
-        - name: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
-          value: "org.hibernate.spatial.dialect.postgis.PostgisDialect"
         - name: RABBITMQ_URI
           value: "amqp://user:password123456@rabbitmq.transport-databases.svc.cluster.local:5672"
         - name: RABBITMQ_EXCHANGE
@@ -61,16 +61,18 @@ spec:
             cpu: "500m"
         livenessProbe:
           httpGet:
-            path: /actuator/health/liveness
+            path: /health
             port: 8083
-          initialDelaySeconds: 60
+          initialDelaySeconds: 45
           periodSeconds: 10
+          timeoutSeconds: 5
         readinessProbe:
           httpGet:
-            path: /actuator/health/readiness
+            path: /health
             port: 8083
-          initialDelaySeconds: 30
+          initialDelaySeconds: 20
           periodSeconds: 5
+          timeoutSeconds: 3
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
