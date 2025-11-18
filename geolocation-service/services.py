@@ -1,7 +1,8 @@
 import redis
 import json
+import os
 from exceptions import NotFoundException
-from routes_data import ROUTES 
+from routes_data import ROUTES
 from datetime import datetime, time as dt_time, timedelta
 
 REDIS_KEY = "bus_positions"
@@ -12,7 +13,8 @@ class GeolocationService:
   
     def __init__(self):
         try:
-            self.db = redis.Redis(host='redis-cache', port=6379, decode_responses=True)
+            redis_host = os.getenv('REDIS_HOST', 'redis-cache')
+            self.db = redis.Redis(host=redis_host, port=6379, decode_responses=True)
             self.db.ping()
         except redis.exceptions.ConnectionError as e:
             raise ConnectionError(f"Impossible de se connecter à Redis: {e}") from e
