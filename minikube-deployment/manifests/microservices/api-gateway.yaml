@@ -50,6 +50,14 @@ spec:
           value: "http://routes-service.transport-prod.svc.cluster.local:8083"
         - name: SERVICES_GEOLOCATION_URL
           value: "http://geolocation-service.transport-prod.svc.cluster.local:5000"
+        - name: SPRING_RABBITMQ_HOST
+          value: "rabbitmq.transport-databases.svc.cluster.local"
+        - name: SPRING_RABBITMQ_PORT
+          value: "5672"
+        - name: SPRING_RABBITMQ_USERNAME
+          value: "user"
+        - name: SPRING_RABBITMQ_PASSWORD
+          value: "password123456"
         resources:
           requests:
             memory: "256Mi"
