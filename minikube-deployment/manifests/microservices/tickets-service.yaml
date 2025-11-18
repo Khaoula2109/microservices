@@ -53,10 +53,7 @@ spec:
         - name: SPRING_RABBITMQ_USERNAME
           value: "user"
         - name: SPRING_RABBITMQ_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-credentials
-              key: rabbitmq-password
+          value: "password123456"
         resources:
           requests:
             memory: "256Mi"
