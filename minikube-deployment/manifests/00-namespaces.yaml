@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: transport-prod
+  labels:
+    name: transport-prod
+    environment: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: transport-databases
+  labels:
+    name: transport-databases
+    environment: production

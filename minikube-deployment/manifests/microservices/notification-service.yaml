@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: transport-prod
+spec:
+  selector:
+    app: notification-service
+  ports:
+  - port: 3001
+    targetPort: 3001
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: transport-prod
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+      - name: notification-service
+        image: ghcr.io/khaoula2109/notification-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3001
+        env:
+        - name: MONGO_URI
+          value: "mongodb://root:kowihan123@mongodb.transport-databases.svc.cluster.local:27017/notifications_db?authSource=admin"
+        - name: EMAIL_HOST
+          value: "sandbox.smtp.mailtrap.io"
+        - name: EMAIL_PORT
+          value: "587"
+        - name: EMAIL_USER
+          value: "d1416f55fc84d8"
+        - name: EMAIL_PASS
+          value: "72019289c18555"
+        - name: TWILIO_ACCOUNT_SID
+          value: "ACee0037d40245135d2b7596f01b288261"
+        - name: TWILIO_AUTH_TOKEN
+          value: "7cb03af5c09ce1047f2f9537ffb9ecd9"
+        - name: TWILIO_PHONE
+          value: "+19785707940"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 45
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 20
+          periodSeconds: 5
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: notification-service-hpa
+  namespace: transport-prod
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: notification-service
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70

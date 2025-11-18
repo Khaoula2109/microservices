@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: subscription-service
+  namespace: transport-prod
+spec:
+  selector:
+    app: subscription-service
+  ports:
+  - port: 3000
+    targetPort: 3000
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subscription-service
+  namespace: transport-prod
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: subscription-service
+  template:
+    metadata:
+      labels:
+        app: subscription-service
+    spec:
+      containers:
+      - name: subscription-service
+        image: ghcr.io/khaoula2109/subscription-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DB_HOST
+          value: "mssql.transport-databases.svc.cluster.local"
+        - name: DB_PORT
+          value: "1433"
+        - name: DB_NAME
+          value: "subscription_db"
+        - name: DB_USER
+          value: "sa"
+        - name: DB_PASSWORD
+          value: "Kowihan!1234"
+        - name: STRIPE_API_KEY
+          value: "sk_test_51SIrRuRxfAGItUbxU9eS5AMxaOM60muqMHCJ32d7IBYlwGEYD2DqNSw4hew3nRDY0QUhuM9pDOyXhEO2J5IMmVnI00Ybeo3SNB"
+        - name: STRIPE_WEBHOOK_SECRET
+          value: "whsec_qaRnUqiWgellHPCtuiQO7SEuZHtDVM8q"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 45
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          timeoutSeconds: 3
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: subscription-service-hpa
+  namespace: transport-prod
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: subscription-service
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
