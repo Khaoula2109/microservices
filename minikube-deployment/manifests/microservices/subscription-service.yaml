@@ -66,6 +66,8 @@ spec:
           value: "password123456"
         - name: RABBITMQ_URI
           value: "amqp://user:password123456@rabbitmq.transport-databases.svc.cluster.local:5672"
+        - name: FRONTEND_URL
+          value: "http://kowihan.local"
         resources:
           requests:
             memory: "128Mi"
