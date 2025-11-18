@@ -8,7 +8,7 @@ spec:
     app: frontend
   ports:
   - port: 80
-    targetPort: 80
+    targetPort: 5173
   type: ClusterIP
 ---
 apiVersion: apps/v1
@@ -36,7 +36,7 @@ spec:
         image: ghcr.io/khaoula2109/frontend:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 80
+        - containerPort: 5173
         env:
         - name: REACT_APP_API_URL
           value: "http://api-gateway.transport-prod.svc.cluster.local:8081/api"
@@ -50,13 +50,13 @@ spec:
         livenessProbe:
           httpGet:
             path: /
-            port: 80
+            port: 5173
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /
-            port: 80
+            port: 5173
           initialDelaySeconds: 10
           periodSeconds: 5
 ---
