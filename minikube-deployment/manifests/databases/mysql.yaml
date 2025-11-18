@@ -67,21 +67,21 @@ spec:
         livenessProbe:
           exec:
             command:
-            - mysqladmin
-            - ping
-            - -h
-            - localhost
-          initialDelaySeconds: 30
-          periodSeconds: 10
+            - sh
+            - -c
+            - "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD}"
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 5
         readinessProbe:
           exec:
             command:
-            - mysqladmin
-            - ping
-            - -h
-            - localhost
-          initialDelaySeconds: 5
-          periodSeconds: 5
+            - sh
+            - -c
+            - "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD}"
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          timeoutSeconds: 5
   volumeClaimTemplates:
   - metadata:
       name: mysql-data
