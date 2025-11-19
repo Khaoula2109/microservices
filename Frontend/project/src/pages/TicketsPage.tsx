@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Ticket, Plus, Minus, ShoppingCart, Check, AlertCircle, RefreshCw, Download, Send, X } from 'lucide-react';
 import { apiService } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 
 
@@ -31,7 +32,7 @@ interface HistoryTicket {
 
 
 export default function TicketsPage({ token, userId }: TicketsPageProps) {
-
+  const { t } = useLanguage();
   const [cart, setCart] = useState<{ [key: string]: number }>({});
   
 
@@ -64,35 +65,35 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
     }
   }, [token, userId]);
 
- 
+
   const tickets: TicketType[] = [
     {
       id: 'SIMPLE',
-      name: 'Ticket Simple',
-      description: 'Un trajet simple, valable 1h après validation',
-      price: 8.0, // 8 DH au lieu de 1.9€
-      validity: '1 heure',
+      name: t.tickets.simple,
+      description: t.tickets.simpleDesc,
+      price: 8.0,
+      validity: '1h',
     },
     {
       id: 'JOURNEE',
-      name: 'Pass Journée',
-      description: 'Voyages illimités pendant 24h',
-      price: 30.0, // 30 DH au lieu de 7.5€
-      validity: '24 heures',
+      name: t.tickets.daily,
+      description: t.tickets.dailyDesc,
+      price: 30.0,
+      validity: '24h',
     },
     {
       id: 'HEBDO',
-      name: 'Pass Semaine',
-      description: 'Voyages illimités pendant 7 jours',
-      price: 100.0, // 100 DH au lieu de 22€
-      validity: '7 jours',
+      name: t.tickets.weekly,
+      description: t.tickets.weeklyDesc,
+      price: 100.0,
+      validity: '7d',
     },
     {
       id: 'MENSUEL',
-      name: 'Pass Mensuel',
-      description: 'Voyages illimités pendant 30 jours',
-      price: 350.0, // 350 DH
-      validity: '30 jours',
+      name: t.tickets.monthly,
+      description: t.tickets.monthlyDesc,
+      price: 350.0,
+      validity: '30d',
     }
   ];
 
@@ -476,29 +477,26 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
 
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4">
-            Acheter des Tickets
+            {t.tickets.title}
           </h1>
           <p className="text-xl text-gray-600">
-            Choisissez votre titre de transport
+            {t.tickets.subtitle}
           </p>
-          
-          
-          
         </div>
 
-        
+
         {showSuccess && (
           <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-8 max-w-3xl mx-auto" role="alert">
-            <p className="font-bold">Opération effectuée avec succès!</p>
-            <p>Vos tickets ont été mis à jour.</p>
+            <p className="font-bold">{t.tickets.purchaseSuccess}</p>
+            <p>{t.tickets.ticketsUpdated}</p>
           </div>
         )}
-        
+
         {error && (
           <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-8 flex items-start space-x-3 max-w-3xl mx-auto">
             <AlertCircle className="h-5 w-5 text-red-500 mt-0.5" />
             <div>
-              <p className="text-red-800 font-semibold">Erreur</p>
+              <p className="text-red-800 font-semibold">{t.common.error}</p>
               <p className="text-red-600 text-sm">{error}</p>
             </div>
           </div>
@@ -529,7 +527,7 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                         </span>
                       </div>
                       <p className="text-gray-600 text-sm">
-                        Validité: {ticket.validity}
+                        {t.tickets.validity}: {ticket.validity}
                       </p>
                     </div>
 
@@ -557,7 +555,7 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                         className="w-full bg-mustard-500 text-navy-900 font-bold py-3 rounded-lg hover:bg-mustard-600 transition-all duration-200 flex items-center justify-center space-x-2"
                       >
                         <Plus className="h-5 w-5" />
-                        <span>Ajouter au Panier</span>
+                        <span>{t.tickets.addToCart}</span>
                       </button>
                     )}
                   </div>
@@ -566,17 +564,17 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
             </div>
           </div>
 
-          
+
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-lg p-6 sticky top-24">
               <div className="flex items-center space-x-3 mb-6">
                 <ShoppingCart className="h-6 w-6 text-mustard-500" />
-                <h2 className="text-2xl font-bold text-navy-900">Panier</h2>
+                <h2 className="text-2xl font-bold text-navy-900">{t.tickets.cart}</h2>
               </div>
 
               {Object.keys(cart).length === 0 ? (
                 <p className="text-gray-500 text-center py-8">
-                  Votre panier est vide
+                  {t.tickets.emptyCart}
                 </p>
               ) : (
                 <>
@@ -605,7 +603,7 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
 
                   <div className="border-t-2 border-gray-200 pt-4 mb-6">
                     <div className="flex justify-between items-center">
-                      <span className="text-xl font-bold text-navy-900">Total</span>
+                      <span className="text-xl font-bold text-navy-900">{t.tickets.total}</span>
                       <span className="text-3xl font-bold text-mustard-500">
                         {getTotal().toFixed(2)} DH
                       </span>
@@ -617,12 +615,12 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                     disabled={loading || !localUserId}
                     className="w-full bg-mustard-500 text-navy-900 font-bold py-4 rounded-lg hover:bg-mustard-600 transition-all duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {loading ? 'Achat en cours...' : `Payer ${getTotal().toFixed(2)} DH`}
+                    {loading ? t.tickets.paying : `${t.tickets.pay} ${getTotal().toFixed(2)} DH`}
                   </button>
-                  
+
                   {!localUserId && (
                     <p className="text-red-500 text-sm mt-2 text-center">
-                      ID utilisateur manquant - Veuillez vous reconnecter
+                      {t.tickets.missingUserId}
                     </p>
                   )}
                 </>
@@ -637,34 +635,34 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
         <div className="max-w-3xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-3xl font-bold text-navy-900">
-              Mon Historique d'Achats
+              {t.tickets.history}
             </h2>
             <button
               onClick={fetchHistory}
               disabled={historyLoading}
               className="text-navy-900 p-2 rounded-full hover:bg-gray-200 disabled:opacity-50"
-              title="Rafraîchir l'historique"
+              title={t.tickets.refresh}
             >
               <RefreshCw className={`h-5 w-5 ${historyLoading ? 'animate-spin' : ''}`} />
             </button>
           </div>
-          
+
           <div className="bg-white rounded-xl shadow-lg">
             {!token ? (
               <p className="text-gray-500 text-center p-8">
-                Vous devez être connecté pour voir votre historique.
+                {t.tickets.notLoggedIn}
               </p>
             ) : historyLoading ? (
               <p className="text-gray-500 text-center p-8">
-                Chargement de l'historique...
+                {t.tickets.loading}
               </p>
             ) : historyError ? (
               <p className="text-red-600 text-center p-8">
-                Erreur: {historyError}
+                {t.common.error}: {historyError}
               </p>
             ) : history.length === 0 ? (
               <p className="text-gray-500 text-center p-8">
-                Vous n'avez encore acheté aucun ticket.
+                {t.tickets.noTickets}
               </p>
             ) : (
               <ul className="divide-y divide-gray-200">
