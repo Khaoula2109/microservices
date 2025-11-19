@@ -144,17 +144,19 @@ export default function Navbar({
           {/* Right side actions */}
           {token ? (
             <div className="hidden md:flex items-center space-x-2 flex-shrink-0">
-              <button
-                onClick={() => onNavigate('account')}
-                className={`px-3 lg:px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-1 lg:space-x-2 whitespace-nowrap ${
-                  currentPage === 'account'
-                    ? 'bg-mustard-500 text-navy-900 font-semibold'
-                    : 'bg-navy-700 hover:bg-navy-600 text-white'
-                }`}
-              >
-                <User className="h-4 w-4 lg:h-5 lg:w-5" />
-                <span className="hidden lg:inline">{t.nav.myAccount}</span>
-              </button>
+              {!isUserAdmin && !isUserController && (
+                <button
+                  onClick={() => onNavigate('account')}
+                  className={`px-3 lg:px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-1 lg:space-x-2 whitespace-nowrap ${
+                    currentPage === 'account'
+                      ? 'bg-mustard-500 text-navy-900 font-semibold'
+                      : 'bg-navy-700 hover:bg-navy-600 text-white'
+                  }`}
+                >
+                  <User className="h-4 w-4 lg:h-5 lg:w-5" />
+                  <span className="hidden lg:inline">{t.nav.myAccount}</span>
+                </button>
+              )}
               <NotificationBell />
               <div className="relative">
                 <button
@@ -331,19 +333,21 @@ export default function Navbar({
                   </button>
                 )}
 
-                <button
-                  onClick={() => {
-                    onNavigate('account');
-                    setIsMenuOpen(false);
-                  }}
-                  className={`block w-full text-left px-3 py-2 rounded-lg transition-all duration-200 ${
-                    currentPage === 'account'
-                      ? 'bg-mustard-500 text-navy-900 font-semibold'
-                      : 'hover:bg-navy-700 text-white'
-                  }`}
-                >
-                  {t.nav.myAccount}
-                </button>
+                {!isUserAdmin && !isUserController && (
+                  <button
+                    onClick={() => {
+                      onNavigate('account');
+                      setIsMenuOpen(false);
+                    }}
+                    className={`block w-full text-left px-3 py-2 rounded-lg transition-all duration-200 ${
+                      currentPage === 'account'
+                        ? 'bg-mustard-500 text-navy-900 font-semibold'
+                        : 'hover:bg-navy-700 text-white'
+                    }`}
+                  >
+                    {t.nav.myAccount}
+                  </button>
+                )}
                 <button
                   onClick={toggleTheme}
                   className="block w-full text-left px-3 py-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
