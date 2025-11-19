@@ -1,11 +1,17 @@
 import { useState } from 'react';
-import { Shield, Mail, Lock, User, AlertCircle, ArrowLeft, Bus } from 'lucide-react';
+import { Shield, Mail, Lock, User, AlertCircle, ArrowLeft, Scan, Truck } from 'lucide-react';
 import { apiService } from '../services/api';
 
 interface AdminUserCreationProps {
   token: string;
   onNavigate: (page: string) => void;
 }
+
+const roles = [
+  { value: 'ADMIN', label: 'Administrateur', icon: Shield, color: 'bg-blue-500', description: 'Accès complet au système' },
+  { value: 'CONTROLLER', label: 'Contrôleur', icon: Scan, color: 'bg-green-500', description: 'Validation des tickets' },
+  { value: 'DRIVER', label: 'Chauffeur', icon: Truck, color: 'bg-orange-500', description: 'Conduite des bus' },
+];
 
 export default function AdminUserCreation({ token, onNavigate }: AdminUserCreationProps) {
   const [formData, setFormData] = useState({
@@ -14,13 +20,16 @@ export default function AdminUserCreation({ token, onNavigate }: AdminUserCreati
     email: '',
     password: '',
     confirmPassword: '',
+    role: 'ADMIN',
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const selectedRole = roles.find(r => r.value === formData.role) || roles[0];
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -48,22 +57,20 @@ export default function AdminUserCreation({ token, onNavigate }: AdminUserCreati
     }
 
     try {
-      
-
       const response = await apiService.registerAdmin({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
+        role: formData.role,
       }, token);
 
       if (response.error) {
         throw new Error(response.error);
       }
 
-      
-      setSuccess(`Compte administrateur créé avec succès pour ${formData.email}`);
-      
+      setSuccess(`Compte ${selectedRole.label.toLowerCase()} créé avec succès pour ${formData.email}`);
+
       // Réinitialiser le formulaire
       setFormData({
         firstName: '',
@@ -71,11 +78,11 @@ export default function AdminUserCreation({ token, onNavigate }: AdminUserCreati
         email: '',
         password: '',
         confirmPassword: '',
+        role: formData.role,
       });
 
     } catch (err: any) {
-      
-      setError(err.message || 'Une erreur est survenue lors de la création du compte administrateur');
+      setError(err.message || 'Une erreur est survenue lors de la création du compte');
     } finally {
       setLoading(false);
     }
@@ -86,11 +93,11 @@ export default function AdminUserCreation({ token, onNavigate }: AdminUserCreati
       <div className="max-w-md w-full">
         {/* En-tête */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center bg-blue-500 p-4 rounded-full mb-4">
-            <Shield className="h-12 w-12 text-white" />
+          <div className={`inline-flex items-center justify-center ${selectedRole.color} p-4 rounded-full mb-4 transition-colors duration-300`}>
+            <selectedRole.icon className="h-12 w-12 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2">TransportCity</h1>
-          <p className="text-navy-200">Création de compte administrateur</p>
+          <h1 className="text-4xl font-bold text-white mb-2">KowihanTransit</h1>
+          <p className="text-navy-200">Création de compte utilisateur</p>
         </div>
 
         {/* Bouton retour */}
@@ -107,8 +114,8 @@ export default function AdminUserCreation({ token, onNavigate }: AdminUserCreati
         {/* Formulaire */}
         <div className="bg-white rounded-xl shadow-2xl p-8">
           <div className="flex items-center space-x-3 mb-6">
-            <Shield className="h-6 w-6 text-blue-500" />
-            <h2 className="text-2xl font-bold text-navy-900">Nouvel Administrateur</h2>
+            <selectedRole.icon className={`h-6 w-6 ${selectedRole.color === 'bg-blue-500' ? 'text-blue-500' : selectedRole.color === 'bg-green-500' ? 'text-green-500' : 'text-orange-500'}`} />
+            <h2 className="text-2xl font-bold text-navy-900">Nouveau {selectedRole.label}</h2>
           </div>
 
           {error && (
@@ -132,6 +139,36 @@ export default function AdminUserCreation({ token, onNavigate }: AdminUserCreati
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Sélecteur de rôle */}
+            <div>
+              <label className="block text-navy-900 font-semibold mb-3 text-sm">
+                Type de compte
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {roles.map((role) => {
+                  const Icon = role.icon;
+                  const isSelected = formData.role === role.value;
+                  return (
+                    <button
+                      key={role.value}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, role: role.value })}
+                      className={`p-3 rounded-lg border-2 transition-all duration-200 flex flex-col items-center space-y-1 ${
+                        isSelected
+                          ? `${role.color} text-white border-transparent shadow-lg transform scale-105`
+                          : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300'
+                      }`}
+                      disabled={loading}
+                    >
+                      <Icon className="h-5 w-5" />
+                      <span className="text-xs font-semibold">{role.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-gray-500 mt-2 text-center">{selectedRole.description}</p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-navy-900 font-semibold mb-2 text-sm">
@@ -144,7 +181,7 @@ export default function AdminUserCreation({ token, onNavigate }: AdminUserCreati
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleChange}
-                    placeholder="Jean"
+                    placeholder="Prénom"
                     className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors text-sm"
                     required
                     disabled={loading}
@@ -162,7 +199,7 @@ export default function AdminUserCreation({ token, onNavigate }: AdminUserCreati
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleChange}
-                    placeholder="Dupont"
+                    placeholder="Nom"
                     className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors text-sm"
                     required
                     disabled={loading}
@@ -173,7 +210,7 @@ export default function AdminUserCreation({ token, onNavigate }: AdminUserCreati
 
             <div>
               <label className="block text-navy-900 font-semibold mb-2 text-sm">
-                Email Administrateur
+                Email
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -182,7 +219,7 @@ export default function AdminUserCreation({ token, onNavigate }: AdminUserCreati
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="admin@transportcity.com"
+                  placeholder="email@kowihan.ma"
                   className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors text-sm"
                   required
                   disabled={loading}
@@ -230,12 +267,10 @@ export default function AdminUserCreation({ token, onNavigate }: AdminUserCreati
               </div>
             </div>
 
-            
-
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-500 text-white font-bold py-4 rounded-lg hover:bg-blue-600 transition-all duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center space-x-2"
+              className={`w-full ${selectedRole.color} text-white font-bold py-4 rounded-lg hover:opacity-90 transition-all duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center space-x-2`}
             >
               {loading ? (
                 <>
@@ -244,8 +279,8 @@ export default function AdminUserCreation({ token, onNavigate }: AdminUserCreati
                 </>
               ) : (
                 <>
-                  <Shield className="h-5 w-5" />
-                  <span>Créer le Compte Administrateur</span>
+                  <selectedRole.icon className="h-5 w-5" />
+                  <span>Créer le Compte {selectedRole.label}</span>
                 </>
               )}
             </button>
