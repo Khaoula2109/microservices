@@ -8,7 +8,7 @@ spec:
     app: frontend
   ports:
   - port: 80
-    targetPort: 5173
+    targetPort: 80
   type: ClusterIP
 ---
 apiVersion: apps/v1
@@ -36,28 +36,28 @@ spec:
         image: ghcr.io/khaoula2109/frontend:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 5173
+        - containerPort: 80
         env:
         - name: VITE_API_BASE_URL
           value: "http://kowihan.local"
         resources:
           requests:
-            memory: "512Mi"
-            cpu: "100m"
+            memory: "128Mi"
+            cpu: "50m"
           limits:
-            memory: "1Gi"
-            cpu: "500m"
+            memory: "256Mi"
+            cpu: "200m"
         livenessProbe:
           httpGet:
             path: /
-            port: 5173
-          initialDelaySeconds: 30
+            port: 80
+          initialDelaySeconds: 10
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /
-            port: 5173
-          initialDelaySeconds: 10
+            port: 80
+          initialDelaySeconds: 5
           periodSeconds: 5
 ---
 apiVersion: autoscaling/v2
