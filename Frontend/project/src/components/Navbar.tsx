@@ -46,7 +46,7 @@ export default function Navbar({
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => onNavigate('home')}>
             <Bus className="h-8 w-8 text-mustard-500" />
-            <span className="font-bold text-xl">TransportCity</span>
+            <span className="font-bold text-xl">KowihanTransit</span>
           </div>
 
           {/* Desktop */}

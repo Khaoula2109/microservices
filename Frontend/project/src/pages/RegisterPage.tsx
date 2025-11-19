@@ -130,7 +130,7 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
           <div className="flex justify-center mb-4">
             <Bus className="h-12 w-12 text-mustard-500" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">TransportCity</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">KowihanTransit</h1>
           <p className="text-gray-300">Rejoignez notre réseau de transport</p>
         </div>
 
@@ -162,7 +162,7 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleChange}
-                    placeholder="Jean"
+                    placeholder="Prénom"
                     className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-mustard-500 focus:outline-none transition-colors text-sm"
                     required
                     disabled={loading}
@@ -180,7 +180,7 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleChange}
-                    placeholder="Dupont"
+                    placeholder="Nom"
                     className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-mustard-500 focus:outline-none transition-colors text-sm"
                     required
                     disabled={loading}
@@ -219,7 +219,7 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="+33 6 12 34 56 78"
+                  placeholder="+212 6 12 34 56 78"
                   className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-mustard-500 focus:outline-none transition-colors text-sm"
                   disabled={loading}
                 />

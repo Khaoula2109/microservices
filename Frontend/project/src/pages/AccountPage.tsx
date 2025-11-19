@@ -228,28 +228,6 @@ export default function AccountPage({ onNavigate, token, onLogout, userId }: Acc
           </div>
         </div>
 
-        
-        <div className="mt-8 bg-white rounded-xl shadow-lg p-6 max-w-3xl mx-auto">
-          <h3 className="text-lg font-semibold text-navy-900 mb-4">
-            À propos de votre compte
-          </h3>
-          
-          <div className="space-y-3 text-gray-600">
-            <p>
-              • Votre ID utilisateur est unique et vous identifie dans notre système
-            </p>
-            <p>
-              • Vous pouvez consulter votre historique de tickets à tout moment
-            </p>
-            <p>
-              • Vos données personnelles sont sécurisées et confidentielles
-            </p>
-            <p>
-              • Pour toute question, contactez notre service client
-            </p>
-          </div>
-        </div>
-
       </div>
     </div>
   );
