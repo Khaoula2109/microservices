@@ -85,6 +85,18 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
 
   const [isConnected, setIsConnected] = useState(false);
 
+  // Define addNotification first (before useEffects that depend on it)
+  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+    const newNotification: Notification = {
+      ...notification,
+      id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: new Date(),
+      read: false,
+    };
+
+    setNotifications(prev => [newNotification, ...prev].slice(0, 50)); // Keep max 50 notifications
+  }, []);
+
   // Save notifications to localStorage
   useEffect(() => {
     localStorage.setItem('notifications', JSON.stringify(notifications));
@@ -148,17 +160,6 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
 
     return () => clearInterval(interval);
   }, [simulatorEnabled, addNotification]);
-
-  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
-    const newNotification: Notification = {
-      ...notification,
-      id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: new Date(),
-      read: false,
-    };
-
-    setNotifications(prev => [newNotification, ...prev].slice(0, 50)); // Keep max 50 notifications
-  }, []);
 
   const markAsRead = useCallback((id: string) => {
     setNotifications(prev =>
