@@ -68,13 +68,10 @@ const INITIAL_BUS_STATE: ActiveBus[] = [
   { id: 'BUS-19', line: 'Ligne 19', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null },
   { id: 'BUS-30', line: 'Ligne 30', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null },
   { id: 'BUS-04', line: 'Ligne 4', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null },
-  { id: 'BUS-15', line: 'Ligne 15', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null },
-  { id: 'BUS-22', line: 'Ligne 22', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null },
-  { id: 'BUS-08', line: 'Ligne 8', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null },
 ];
 
 // Available lines for filtering
-const AVAILABLE_LINES = ['Toutes', 'Ligne 4', 'Ligne 7', 'Ligne 8', 'Ligne 12', 'Ligne 15', 'Ligne 19', 'Ligne 22', 'Ligne 30'];
+const AVAILABLE_LINES = ['Toutes', 'Ligne 4', 'Ligne 7', 'Ligne 12', 'Ligne 19', 'Ligne 30'];
 
 function MapController({ center, zoom }: { center: [number, number] | null; zoom?: number }) {
   const map = useMap();
