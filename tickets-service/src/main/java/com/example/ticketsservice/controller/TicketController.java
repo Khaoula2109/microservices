@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.ticketsservice.dto.QrValidationResponse;
 import com.example.ticketsservice.dto.TicketPurchaseRequest;
 import com.example.ticketsservice.dto.TicketStatsResponse;
+import com.example.ticketsservice.dto.ValidationStatsResponse;
 import com.example.ticketsservice.model.Ticket;
 import com.example.ticketsservice.service.TicketService;
 
@@ -138,5 +139,23 @@ public class TicketController {
         }
 
         return ResponseEntity.ok(response);
+    }
+
+    // Controller dashboard endpoints
+
+    @GetMapping("/validation-stats")
+    public ResponseEntity<ValidationStatsResponse> getValidationStats() {
+        System.out.println("📊 Récupération des statistiques de validation");
+
+        ValidationStatsResponse stats = ticketService.getValidationStats();
+        return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/validation-history")
+    public ResponseEntity<List<Ticket>> getValidationHistory() {
+        System.out.println("📋 Récupération de l'historique de validation");
+
+        List<Ticket> history = ticketService.getValidationHistory();
+        return ResponseEntity.ok(history);
     }
 }

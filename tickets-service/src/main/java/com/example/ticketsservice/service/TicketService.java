@@ -15,6 +15,7 @@ import com.example.ticketsservice.config.RabbitMQConfig;
 import com.example.ticketsservice.dto.QrValidationResponse;
 import com.example.ticketsservice.dto.TicketPurchaseRequest;
 import com.example.ticketsservice.dto.TicketStatsResponse;
+import com.example.ticketsservice.dto.ValidationStatsResponse;
 import com.example.ticketsservice.event.TicketPurchasedEvent;
 import com.example.ticketsservice.exception.DuplicateTicketException;
 import com.example.ticketsservice.exception.InsufficientFundsException;
@@ -314,5 +315,51 @@ public class TicketService {
         } while (!isUnique);
 
         return qrCode;
+    }
+
+    // Controller dashboard methods
+
+    public ValidationStatsResponse getValidationStats() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
+        LocalDateTime startOfWeek = now.minusDays(7);
+        LocalDateTime startOfMonth = now.minusDays(30);
+
+        // Count tickets that have been validated (have a validationDate)
+        long validationsToday = ticketRepository.countByStatusAndValidationDateAfter("VALIDE", startOfDay);
+        long validationsThisWeek = ticketRepository.countByStatusAndValidationDateAfter("VALIDE", startOfWeek);
+        long validationsThisMonth = ticketRepository.countByStatusAndValidationDateAfter("VALIDE", startOfMonth);
+
+        // Also count tickets with validationDate set (used tickets)
+        List<Ticket> allTickets = ticketRepository.findAll();
+        long totalValidated = allTickets.stream()
+                .filter(t -> t.getValidationDate() != null)
+                .count();
+
+        long validTickets = allTickets.stream()
+                .filter(t -> "VALIDE".equals(t.getStatus()))
+                .count();
+
+        long invalidTickets = allTickets.stream()
+                .filter(t -> "ANNULE".equals(t.getStatus()) || "EXPIRE".equals(t.getStatus()))
+                .count();
+
+        return ValidationStatsResponse.builder()
+                .validationsToday(validationsToday)
+                .validationsThisWeek(validationsThisWeek)
+                .validationsThisMonth(validationsThisMonth)
+                .totalValidations(totalValidated)
+                .validTickets(validTickets)
+                .invalidTickets(invalidTickets)
+                .build();
+    }
+
+    public List<Ticket> getValidationHistory() {
+        // Get all tickets that have been validated, ordered by validation date
+        return ticketRepository.findAll().stream()
+                .filter(t -> t.getValidationDate() != null)
+                .sorted((a, b) -> b.getValidationDate().compareTo(a.getValidationDate()))
+                .limit(100)
+                .toList();
     }
 }

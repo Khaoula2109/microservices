@@ -13,7 +13,9 @@ import Success from './pages/Success';
 import Cancel from './pages/Cancel';
 import AdminUserCreation from './pages/AdminUserCreation';
 import ValidateTicketPage from './pages/ValidateTicketPage';
-import { Shield, Scan } from 'lucide-react';
+import UserManagementPage from './pages/UserManagementPage';
+import ControllerDashboardPage from './pages/ControllerDashboardPage';
+import { Shield, Scan, Users, BarChart3 } from 'lucide-react';
 
 const protectedPages = ['schedules', 'tickets', 'map', 'account','subscriptions'];
 
@@ -282,7 +284,35 @@ const handleAuthSuccess = async (newToken: string, newUserId: number, newUserRol
         );
   }
   return <AdminUserCreation token={token!} onNavigate={handleNavigate} />;
-        
+
+      case 'user-management':
+        if (userRole !== 'ADMIN') {
+          return (
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center">
+                <Users className="h-16 w-16 text-red-500 mx-auto mb-4" />
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Accès Refusé</h2>
+                <p className="text-gray-600">Vous n'avez pas les droits d'administrateur.</p>
+              </div>
+            </div>
+          );
+        }
+        return <UserManagementPage token={token!} />;
+
+      case 'controller-dashboard':
+        if (userRole !== 'CONTROLLER' && userRole !== 'ADMIN') {
+          return (
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center">
+                <BarChart3 className="h-16 w-16 text-red-500 mx-auto mb-4" />
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Accès Refusé</h2>
+                <p className="text-gray-600">Seuls les contrôleurs peuvent accéder au dashboard.</p>
+              </div>
+            </div>
+          );
+        }
+        return <ControllerDashboardPage token={token!} onNavigate={handleNavigate} />;
+
       default:
 
         return <HomePage onNavigate={handleNavigate} token={token} />;

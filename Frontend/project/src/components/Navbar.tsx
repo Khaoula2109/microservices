@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, Bus, LogIn, User, LogOut, Shield, Scan } from 'lucide-react';
+import { Menu, X, Bus, LogIn, User, LogOut, Shield, Scan, Users, BarChart3 } from 'lucide-react';
 
 interface NavbarProps {
   currentPage: string;
@@ -84,6 +84,21 @@ export default function Navbar({
                   </button>
                 )}
 
+                {(isUserController || isUserAdmin) && (
+                  <button
+                    onClick={() => onNavigate('controller-dashboard')}
+                    className={`px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                      currentPage === 'controller-dashboard'
+                        ? 'bg-teal-600 text-white font-semibold border-2 border-teal-300'
+                        : 'bg-teal-500 hover:bg-teal-600 text-white border-2 border-teal-400'
+                    }`}
+                    title="Dashboard Contrôleur"
+                  >
+                    <BarChart3 className="h-5 w-5" />
+                    <span>Stats</span>
+                  </button>
+                )}
+
                 {isUserAdmin && (
                   <button
                     onClick={() => onNavigate('admin-creation')}
@@ -98,7 +113,22 @@ export default function Navbar({
                     <span>Créer Admin</span>
                   </button>
                 )}
-                
+
+                {isUserAdmin && (
+                  <button
+                    onClick={() => onNavigate('user-management')}
+                    className={`px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                      currentPage === 'user-management'
+                        ? 'bg-purple-600 text-white font-semibold border-2 border-purple-300'
+                        : 'bg-purple-500 hover:bg-purple-600 text-white border-2 border-purple-400'
+                    }`}
+                    title="Gérer les utilisateurs"
+                  >
+                    <Users className="h-5 w-5" />
+                    <span>Utilisateurs</span>
+                  </button>
+                )}
+
                 <button
                   onClick={() => onNavigate('account')}
                   className={`px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
@@ -179,6 +209,23 @@ export default function Navbar({
                   </button>
                 )}
 
+                {(isUserController || isUserAdmin) && (
+                  <button
+                    onClick={() => {
+                      onNavigate('controller-dashboard');
+                      setIsMenuOpen(false);
+                    }}
+                    className={`block w-full text-left px-3 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                      currentPage === 'controller-dashboard'
+                        ? 'bg-teal-600 text-white font-semibold border-2 border-teal-300'
+                        : 'bg-teal-500 hover:bg-teal-600 text-white border-2 border-teal-400'
+                    }`}
+                  >
+                    <BarChart3 className="h-5 w-5" />
+                    <span>Dashboard Stats</span>
+                  </button>
+                )}
+
                 {isUserAdmin && (
                   <button
                     onClick={() => {
@@ -195,7 +242,24 @@ export default function Navbar({
                     <span>Créer Admin</span>
                   </button>
                 )}
-                
+
+                {isUserAdmin && (
+                  <button
+                    onClick={() => {
+                      onNavigate('user-management');
+                      setIsMenuOpen(false);
+                    }}
+                    className={`block w-full text-left px-3 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                      currentPage === 'user-management'
+                        ? 'bg-purple-600 text-white font-semibold border-2 border-purple-300'
+                        : 'bg-purple-500 hover:bg-purple-600 text-white border-2 border-purple-400'
+                    }`}
+                  >
+                    <Users className="h-5 w-5" />
+                    <span>Utilisateurs</span>
+                  </button>
+                )}
+
                 <button
                   onClick={() => {
                     onNavigate('account');
