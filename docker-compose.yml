@@ -106,6 +106,46 @@ services:
       timeout: 3s
       retries: 5
 
+    # --- MONITORING ---
+    # Prometheus
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: prometheus
+    hostname: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks: [transport-net]
+    restart: unless-stopped
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: grafana
+    hostname: grafana
+    ports:
+      - "3002:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+    networks: [transport-net]
+    restart: unless-stopped
+
     # --- INFRASTRUCTURE ---
     # Broker de messages RabbitMQ
   rabbitmq-service:
@@ -294,6 +334,8 @@ volumes:
   postgis_data:
   mysql_data:
   redis_data:
+  prometheus_data:
+  grafana_data:
 
 networks:
   transport-net:
