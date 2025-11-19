@@ -626,6 +626,22 @@ async getSubscriptionPlans(token: string) {
     );
   }
 
+  // --- Ticket Transfer ---
+
+  async transferTicket(ticketId: number, recipientEmail: string, token: string) {
+    return this.fetchWithFallback<any>(
+      `${API_BASE_URL}/api/tickets/${ticketId}/transfer`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ recipientEmail }),
+      }
+    );
+  }
+
   async testFallback() {
     return this.fetchWithFallback<any>(`${API_BASE_URL}/fallback/test`);
   }

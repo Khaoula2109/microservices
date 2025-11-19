@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Ticket, Plus, Minus, ShoppingCart, Check, AlertCircle, RefreshCw, Download } from 'lucide-react';
+import { Ticket, Plus, Minus, ShoppingCart, Check, AlertCircle, RefreshCw, Download, Send, X } from 'lucide-react';
 import { apiService } from '../services/api';
 
 
@@ -44,7 +44,15 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState('');
 
-  
+  // Transfer modal state
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [transferTicketId, setTransferTicketId] = useState<number | null>(null);
+  const [recipientEmail, setRecipientEmail] = useState('');
+  const [transferLoading, setTransferLoading] = useState(false);
+  const [transferError, setTransferError] = useState('');
+  const [transferSuccess, setTransferSuccess] = useState('');
+
+
   const [localUserId, setLocalUserId] = useState<number | null>(userId);
 
 
@@ -389,11 +397,72 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
     printWindow.document.close();
   };
 
+  // Transfer ticket functions
+  const openTransferModal = (ticketId: number) => {
+    setTransferTicketId(ticketId);
+    setRecipientEmail('');
+    setTransferError('');
+    setTransferSuccess('');
+    setShowTransferModal(true);
+  };
+
+  const closeTransferModal = () => {
+    setShowTransferModal(false);
+    setTransferTicketId(null);
+    setRecipientEmail('');
+    setTransferError('');
+  };
+
+  const handleTransferTicket = async () => {
+    if (!token || !transferTicketId) {
+      setTransferError('Erreur: données manquantes');
+      return;
+    }
+
+    if (!recipientEmail.trim()) {
+      setTransferError('Veuillez entrer l\'email du destinataire');
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(recipientEmail)) {
+      setTransferError('Veuillez entrer une adresse email valide');
+      return;
+    }
+
+    setTransferLoading(true);
+    setTransferError('');
+
+    try {
+      const result = await apiService.transferTicket(transferTicketId, recipientEmail.trim(), token);
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      setTransferSuccess(`Ticket transféré avec succès à ${recipientEmail}`);
+
+      // Refresh history after transfer
+      await fetchHistory();
+
+      // Close modal after a short delay
+      setTimeout(() => {
+        closeTransferModal();
+        setTransferSuccess('');
+      }, 2000);
+
+    } catch (err: any) {
+      setTransferError(err.message || 'Erreur lors du transfert du ticket');
+    } finally {
+      setTransferLoading(false);
+    }
+  };
 
 
   useEffect(() => {
     if (token && localUserId) {
-      
+
       fetchHistory();
     }
   }, [token, localUserId]);
@@ -649,6 +718,16 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                             Valider
                           </button>
                         )}
+                        {(ticket.status === 'ACTIVE' || ticket.status === 'VALIDE') && !ticket.validationDate && (
+                          <button
+                            onClick={() => openTransferModal(ticket.id)}
+                            className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors flex items-center space-x-1"
+                            title="Transférer le ticket"
+                          >
+                            <Send className="h-3 w-3" />
+                            <span>Transférer</span>
+                          </button>
+                        )}
                         <button
                           onClick={() => handleExportPDF(ticket)}
                           className="text-xs bg-navy-900 text-white px-2 py-1 rounded hover:bg-navy-700 transition-colors flex items-center space-x-1"
@@ -667,6 +746,94 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
         </div>
 
       </div>
+
+      {/* Transfer Modal */}
+      {showTransferModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h3 className="text-xl font-bold text-navy-900">Transférer le ticket</h3>
+              <button
+                onClick={closeTransferModal}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {transferSuccess ? (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center space-x-3">
+                  <Check className="h-5 w-5 text-green-500" />
+                  <p className="text-green-700">{transferSuccess}</p>
+                </div>
+              ) : (
+                <>
+                  <p className="text-gray-600 mb-4">
+                    Entrez l'adresse email du destinataire pour lui transférer ce ticket.
+                  </p>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email du destinataire
+                    </label>
+                    <input
+                      type="email"
+                      value={recipientEmail}
+                      onChange={(e) => setRecipientEmail(e.target.value)}
+                      placeholder="exemple@email.com"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      disabled={transferLoading}
+                    />
+                  </div>
+
+                  {transferError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-center space-x-2">
+                      <AlertCircle className="h-4 w-4 text-red-500" />
+                      <p className="text-red-600 text-sm">{transferError}</p>
+                    </div>
+                  )}
+
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                    <p className="text-yellow-800 text-sm">
+                      <strong>Attention:</strong> Cette action est irréversible. Le ticket sera transféré au destinataire et ne sera plus disponible dans votre compte.
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {!transferSuccess && (
+              <div className="flex space-x-3 p-6 border-t bg-gray-50 rounded-b-xl">
+                <button
+                  onClick={closeTransferModal}
+                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+                  disabled={transferLoading}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleTransferTicket}
+                  disabled={transferLoading || !recipientEmail.trim()}
+                  className="flex-1 px-4 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                >
+                  {transferLoading ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      <span>Transfert...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4" />
+                      <span>Transférer</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

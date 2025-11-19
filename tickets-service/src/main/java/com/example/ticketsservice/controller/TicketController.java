@@ -14,9 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.ticketsservice.dto.QrValidationResponse;
 import com.example.ticketsservice.dto.TicketPurchaseRequest;
 import com.example.ticketsservice.dto.TicketStatsResponse;
+import com.example.ticketsservice.dto.TicketTransferRequest;
 import com.example.ticketsservice.dto.ValidationStatsResponse;
 import com.example.ticketsservice.model.Ticket;
 import com.example.ticketsservice.service.TicketService;
+
+import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -157,5 +160,31 @@ public class TicketController {
 
         List<Ticket> history = ticketService.getValidationHistory();
         return ResponseEntity.ok(history);
+    }
+
+    @PostMapping("/{ticketId}/transfer")
+    public ResponseEntity<?> transferTicket(
+            @PathVariable Long ticketId,
+            @RequestBody TicketTransferRequest request,
+            HttpServletRequest httpRequest) {
+        try {
+            String userIdHeader = httpRequest.getHeader("X-User-Id");
+
+            System.out.println("🔄 Transfert de ticket - Ticket ID: " + ticketId + ", User ID: " + userIdHeader);
+
+            if (userIdHeader == null || userIdHeader.equals("me")) {
+                return ResponseEntity.badRequest().body(Map.of("error", "User ID requis"));
+            }
+
+            Long userId = Long.parseLong(userIdHeader);
+            Ticket transferredTicket = ticketService.transferTicket(ticketId, userId, request.getRecipientEmail());
+
+            System.out.println("✅ Ticket transféré avec succès vers " + request.getRecipientEmail());
+            return ResponseEntity.ok(transferredTicket);
+
+        } catch (Exception e) {
+            System.out.println("❌ Erreur de transfert: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }

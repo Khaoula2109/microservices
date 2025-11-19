@@ -3,6 +3,7 @@ import { Menu, X, Bus, LogIn, User, LogOut, Shield, Scan, Users, BarChart3, Sun,
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Language } from '../i18n/translations';
+import NotificationBell from './NotificationBell';
 
 interface NavbarProps {
   currentPage: string;
@@ -150,6 +151,7 @@ export default function Navbar({
                   <User className="h-5 w-5" />
                   <span>{t.nav.myAccount}</span>
                 </button>
+                <NotificationBell />
                 <div className="relative">
                   <button
                     onClick={() => setShowLangMenu(!showLangMenu)}

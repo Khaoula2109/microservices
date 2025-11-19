@@ -362,4 +362,40 @@ public class TicketService {
                 .limit(100)
                 .toList();
     }
+
+    @Transactional
+    public Ticket transferTicket(Long ticketId, Long fromUserId, String recipientEmail) {
+        // Find the ticket
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new TicketNotFoundException("Ticket non trouvé avec l'ID: " + ticketId));
+
+        // Verify ownership
+        if (!ticket.getUserId().equals(fromUserId)) {
+            throw new InvalidTicketException("Vous n'êtes pas propriétaire de ce ticket");
+        }
+
+        // Check if ticket is valid for transfer
+        if (!"VALIDE".equals(ticket.getStatus())) {
+            throw new InvalidTicketException("Seuls les tickets valides peuvent être transférés");
+        }
+
+        if (ticket.getValidationDate() != null) {
+            throw new InvalidTicketException("Les tickets déjà utilisés ne peuvent pas être transférés");
+        }
+
+        // Find recipient user
+        User recipient = userRepository.findByEmail(recipientEmail)
+                .orElseThrow(() -> new TicketNotFoundException("Aucun utilisateur trouvé avec l'email: " + recipientEmail));
+
+        // Check not transferring to self
+        if (recipient.getId().equals(fromUserId)) {
+            throw new InvalidTicketException("Vous ne pouvez pas transférer un ticket à vous-même");
+        }
+
+        // Perform transfer
+        log.info("Transfert du ticket {} de l'utilisateur {} vers {}", ticketId, fromUserId, recipientEmail);
+        ticket.setUserId(recipient.getId());
+
+        return ticketRepository.save(ticket);
+    }
 }

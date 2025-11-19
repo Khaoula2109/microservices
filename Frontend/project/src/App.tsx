@@ -15,7 +15,8 @@ import AdminUserCreation from './pages/AdminUserCreation';
 import ValidateTicketPage from './pages/ValidateTicketPage';
 import UserManagementPage from './pages/UserManagementPage';
 import ControllerDashboardPage from './pages/ControllerDashboardPage';
-import { Shield, Scan, Users, BarChart3 } from 'lucide-react';
+import MySubscriptionsPage from './pages/MySubscriptionsPage';
+import { Shield, Scan, Users, BarChart3, CreditCard } from 'lucide-react';
 
 const protectedPages = ['schedules', 'tickets', 'map', 'account','subscriptions'];
 
@@ -312,6 +313,17 @@ const handleAuthSuccess = async (newToken: string, newUserId: number, newUserRol
           );
         }
         return <ControllerDashboardPage token={token!} onNavigate={handleNavigate} />;
+
+      case 'my-subscriptions':
+        if (!token) {
+          return (
+            <LoginPage
+              onNavigate={handleNavigate}
+              onAuthSuccess={handleAuthSuccess}
+            />
+          );
+        }
+        return <MySubscriptionsPage token={token} userId={userId!} />;
 
       default:
 
