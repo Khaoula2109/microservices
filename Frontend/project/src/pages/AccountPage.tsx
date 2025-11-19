@@ -19,8 +19,15 @@ interface UserProfile {
   role: string;
 }
 
+interface TicketStats {
+  totalPurchased: number;
+  activeTickets: number;
+  usedTickets: number;
+}
+
 export default function AccountPage({ onNavigate, token, onLogout, userId }: AccountPageProps) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [ticketStats, setTicketStats] = useState<TicketStats>({ totalPurchased: 0, activeTickets: 0, usedTickets: 0 });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -29,8 +36,22 @@ export default function AccountPage({ onNavigate, token, onLogout, userId }: Acc
   useEffect(() => {
     if (token) {
       fetchUserProfile();
+      fetchTicketStats();
     }
   }, [token]);
+
+  const fetchTicketStats = async () => {
+    if (!token) return;
+
+    try {
+      const response = await apiService.getTicketStats(token);
+      if (response.data) {
+        setTicketStats(response.data);
+      }
+    } catch (err: any) {
+      console.error('Erreur lors du chargement des statistiques:', err);
+    }
+  };
 
   const fetchUserProfile = async () => {
     if (!token) return;
@@ -201,17 +222,17 @@ export default function AccountPage({ onNavigate, token, onLogout, userId }: Acc
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="bg-blue-50 rounded-lg p-4 text-center">
-                    <p className="text-2xl font-bold text-blue-600">0</p>
+                    <p className="text-2xl font-bold text-blue-600">{ticketStats.totalPurchased}</p>
                     <p className="text-sm text-blue-600">Tickets achetés</p>
                   </div>
-                  
+
                   <div className="bg-green-50 rounded-lg p-4 text-center">
-                    <p className="text-2xl font-bold text-green-600">0</p>
+                    <p className="text-2xl font-bold text-green-600">{ticketStats.activeTickets}</p>
                     <p className="text-sm text-green-600">Tickets actifs</p>
                   </div>
-                  
+
                   <div className="bg-purple-50 rounded-lg p-4 text-center">
-                    <p className="text-2xl font-bold text-purple-600">0</p>
+                    <p className="text-2xl font-bold text-purple-600">{ticketStats.usedTickets}</p>
                     <p className="text-sm text-purple-600">Tickets utilisés</p>
                   </div>
                 </div>

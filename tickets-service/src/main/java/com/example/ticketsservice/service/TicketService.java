@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.ticketsservice.config.RabbitMQConfig;
 import com.example.ticketsservice.dto.TicketPurchaseRequest;
+import com.example.ticketsservice.dto.TicketStatsResponse;
 import com.example.ticketsservice.event.TicketPurchasedEvent;
 import com.example.ticketsservice.exception.DuplicateTicketException;
 import com.example.ticketsservice.exception.InsufficientFundsException;
@@ -84,6 +85,24 @@ public class TicketService {
         }
 
         return tickets;
+    }
+
+    public TicketStatsResponse getTicketStats(Long userId) {
+        if (userId == null || userId <= 0) {
+            throw new IllegalArgumentException("L'ID utilisateur est invalide");
+        }
+
+        List<Ticket> tickets = ticketRepository.findByUserId(userId);
+
+        long totalPurchased = tickets.size();
+        long activeTickets = tickets.stream()
+                .filter(t -> "VALIDE".equals(t.getStatus()) && t.getValidationDate() == null)
+                .count();
+        long usedTickets = tickets.stream()
+                .filter(t -> t.getValidationDate() != null)
+                .count();
+
+        return new TicketStatsResponse(totalPurchased, activeTickets, usedTickets);
     }
 
     public Ticket getTicketById(Long ticketId) {

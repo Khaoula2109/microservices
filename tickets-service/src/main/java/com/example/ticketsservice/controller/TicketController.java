@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.ticketsservice.dto.TicketPurchaseRequest;
+import com.example.ticketsservice.dto.TicketStatsResponse;
 import com.example.ticketsservice.model.Ticket;
 import com.example.ticketsservice.service.TicketService;
 
@@ -96,5 +97,30 @@ public class TicketController {
     public ResponseEntity<Ticket> cancelTicket(@PathVariable Long ticketId) {
         Ticket cancelledTicket = ticketService.cancelTicket(ticketId);
         return ResponseEntity.ok(cancelledTicket);
+    }
+
+    @GetMapping("/stats/me")
+    public ResponseEntity<TicketStatsResponse> getMyStats(HttpServletRequest request) {
+        try {
+            String userIdHeader = request.getHeader("X-User-Id");
+
+            System.out.println("📊 Statistiques tickets - User ID: " + userIdHeader);
+
+            Long userId;
+            if (userIdHeader != null && !userIdHeader.equals("me")) {
+                userId = Long.parseLong(userIdHeader);
+            } else {
+                userId = 1L;
+                System.out.println("ℹ️ Utilisation de l'ID par défaut: " + userId);
+            }
+
+            TicketStatsResponse stats = ticketService.getTicketStats(userId);
+            return ResponseEntity.ok(stats);
+
+        } catch (Exception e) {
+            System.out.println("❌ Erreur dans getMyStats: " + e.getMessage());
+            // Return zeros if no tickets found
+            return ResponseEntity.ok(new TicketStatsResponse(0, 0, 0));
+        }
     }
 }
