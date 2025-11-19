@@ -125,15 +125,15 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 flex items-center justify-center px-4 py-8">
       <div className="max-w-md w-full">
 
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <Bus className="h-12 w-12 text-mustard-500" />
           </div>
-          <h1 className="text-3xl font-bold text-navy-900 mb-2">KowihanTransit</h1>
-          <p className="text-gray-600">{t.register.subtitle}</p>
+          <h1 className="text-3xl font-bold text-white mb-2">KowihanTransit</h1>
+          <p className="text-gray-300">{t.register.subtitle}</p>
         </div>
 
 

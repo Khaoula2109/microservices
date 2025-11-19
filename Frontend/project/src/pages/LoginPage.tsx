@@ -88,14 +88,14 @@ export default function LoginPage({ onNavigate, onAuthSuccess }: LoginPageProps)
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 flex items-center justify-center px-4 py-8">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <div className="inline-block bg-mustard-500 p-4 rounded-full mb-4">
             <Bus className="h-12 w-12 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-navy-900 mb-2">KowihanTransit</h1>
-          <p className="text-gray-600">{t.login.subtitle}</p>
+          <h1 className="text-4xl font-bold text-white mb-2">KowihanTransit</h1>
+          <p className="text-navy-200">{t.login.subtitle}</p>
         </div>
 
         <div className="bg-white rounded-xl shadow-2xl p-8">
@@ -185,7 +185,7 @@ export default function LoginPage({ onNavigate, onAuthSuccess }: LoginPageProps)
         <div className="text-center mt-6">
           <button
             onClick={() => onNavigate('home')}
-            className="text-gray-500 hover:text-navy-900 transition-colors disabled:opacity-50"
+            className="text-navy-200 hover:text-white transition-colors disabled:opacity-50"
             disabled={loading}
           >
             ← {t.login.backToHome}
