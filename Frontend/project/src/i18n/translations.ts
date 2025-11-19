@@ -21,11 +21,31 @@ export const translations = {
     // Home page
     home: {
       title: 'Bienvenue sur KowihanTransit',
-      subtitle: 'Votre solution de transport urbain intelligent',
+      subtitle: 'Votre solution de transport urbain moderne, rapide et écologique',
       getStarted: 'Commencer',
+      buyTicket: 'Acheter un Ticket',
+      quickAccess: 'Accès Rapide',
+      whyChooseUs: 'Pourquoi Nous Choisir?',
       readyToTravel: 'Prêt à Voyager?',
-      createAccount: 'Créez votre compte gratuitement',
+      createAccountNow: 'Créez un compte dès maintenant et profitez de tous nos services',
+      createAccount: 'Créer un Compte',
       register: "S'inscrire",
+      // Quick actions
+      checkSchedules: 'Consulter les Horaires',
+      checkSchedulesDesc: 'Trouvez les horaires de tous nos trajets en temps réel',
+      buyTicketAction: 'Acheter un Ticket',
+      buyTicketDesc: 'Achetez vos tickets en ligne rapidement et facilement',
+      trackBus: 'Suivre mon Bus',
+      trackBusDesc: 'Localisez votre bus en temps réel sur la carte',
+      myAccount: 'Mon Compte',
+      myAccountDesc: 'Gérez votre profil et vos abonnements',
+      // Features
+      reliableService: 'Service Fiable',
+      reliableServiceDesc: 'Des bus ponctuels et un service de qualité',
+      secure: 'Sécurisé',
+      secureDesc: 'Paiements sécurisés et données protégées',
+      geolocation: 'Géolocalisation',
+      geolocationDesc: 'Suivez vos bus en temps réel',
     },
     // Tickets page
     tickets: {
@@ -163,11 +183,31 @@ export const translations = {
     // Home page
     home: {
       title: 'Welcome to KowihanTransit',
-      subtitle: 'Your smart urban transport solution',
+      subtitle: 'Your modern, fast and eco-friendly urban transport solution',
       getStarted: 'Get Started',
+      buyTicket: 'Buy a Ticket',
+      quickAccess: 'Quick Access',
+      whyChooseUs: 'Why Choose Us?',
       readyToTravel: 'Ready to Travel?',
-      createAccount: 'Create your free account',
+      createAccountNow: 'Create an account now and enjoy all our services',
+      createAccount: 'Create Account',
       register: 'Sign Up',
+      // Quick actions
+      checkSchedules: 'Check Schedules',
+      checkSchedulesDesc: 'Find schedules for all our routes in real time',
+      buyTicketAction: 'Buy a Ticket',
+      buyTicketDesc: 'Buy your tickets online quickly and easily',
+      trackBus: 'Track my Bus',
+      trackBusDesc: 'Locate your bus in real time on the map',
+      myAccount: 'My Account',
+      myAccountDesc: 'Manage your profile and subscriptions',
+      // Features
+      reliableService: 'Reliable Service',
+      reliableServiceDesc: 'Punctual buses and quality service',
+      secure: 'Secure',
+      secureDesc: 'Secure payments and protected data',
+      geolocation: 'Geolocation',
+      geolocationDesc: 'Track your buses in real time',
     },
     // Tickets page
     tickets: {
@@ -305,11 +345,31 @@ export const translations = {
     // Home page
     home: {
       title: 'مرحبا بكم في كوهيان ترانزيت',
-      subtitle: 'حل النقل الحضري الذكي',
+      subtitle: 'حل النقل الحضري الحديث والسريع والصديق للبيئة',
       getStarted: 'ابدأ الآن',
+      buyTicket: 'شراء تذكرة',
+      quickAccess: 'الوصول السريع',
+      whyChooseUs: 'لماذا تختارنا؟',
       readyToTravel: 'مستعد للسفر؟',
-      createAccount: 'أنشئ حسابك مجانا',
+      createAccountNow: 'أنشئ حسابك الآن واستمتع بجميع خدماتنا',
+      createAccount: 'إنشاء حساب',
       register: 'سجل الآن',
+      // Quick actions
+      checkSchedules: 'مراجعة الجداول',
+      checkSchedulesDesc: 'ابحث عن جداول جميع رحلاتنا في الوقت الفعلي',
+      buyTicketAction: 'شراء تذكرة',
+      buyTicketDesc: 'اشترِ تذاكرك عبر الإنترنت بسرعة وسهولة',
+      trackBus: 'تتبع حافلتي',
+      trackBusDesc: 'حدد موقع حافلتك في الوقت الفعلي على الخريطة',
+      myAccount: 'حسابي',
+      myAccountDesc: 'إدارة ملفك الشخصي واشتراكاتك',
+      // Features
+      reliableService: 'خدمة موثوقة',
+      reliableServiceDesc: 'حافلات دقيقة وخدمة عالية الجودة',
+      secure: 'آمن',
+      secureDesc: 'مدفوعات آمنة وبيانات محمية',
+      geolocation: 'تحديد الموقع',
+      geolocationDesc: 'تتبع حافلاتك في الوقت الفعلي',
     },
     // Tickets page
     tickets: {
