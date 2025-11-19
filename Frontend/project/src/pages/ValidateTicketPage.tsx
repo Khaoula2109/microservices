@@ -37,6 +37,13 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
 
   const startCamera = async () => {
     try {
+      // Check if mediaDevices API is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setError(t.validate.cameraError + ' (API non disponible - HTTPS requis)');
+        console.error('Camera error: mediaDevices API not available. HTTPS is required.');
+        return;
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
       });
@@ -48,7 +55,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
       setIsScanning(true);
       setError('');
     } catch (err) {
-      setError('Impossible d\'accéder à la caméra. Veuillez autoriser l\'accès.');
+      setError(t.validate.cameraError);
       console.error('Camera error:', err);
     }
   };
