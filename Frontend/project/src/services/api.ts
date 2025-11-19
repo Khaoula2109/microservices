@@ -442,6 +442,17 @@ async getAllStops(token: string): Promise<ApiResponse<any>> {
     );
   }
 
+  async getTicketStats(token: string) {
+    return this.fetchWithFallback<{ totalPurchased: number; activeTickets: number; usedTickets: number }>(
+      `${API_BASE_URL}/api/tickets/stats/me`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  }
+
 
 async createSubscriptionCheckout(priceId: string, token: string, userId: number, userEmail: string) {
 
