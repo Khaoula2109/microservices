@@ -21,15 +21,24 @@ kubectl apply -f grafana.yaml
 
 ## Access
 
-### Prometheus
-- **URL**: `http://<minikube-ip>:30090`
-- Or use port-forward: `kubectl port-forward svc/prometheus 9090:9090 -n transport-prod`
+### Via Ingress (recommended)
 
-### Grafana
-- **URL**: `http://<minikube-ip>:30030`
-- **Username**: `admin`
-- **Password**: `admin123`
-- Or use port-forward: `kubectl port-forward svc/grafana 3000:3000 -n transport-prod`
+Add entries to your `/etc/hosts`:
+```bash
+echo "$(minikube ip) prometheus.kowihan.local grafana.kowihan.local" | sudo tee -a /etc/hosts
+```
+
+- **Prometheus**: `http://prometheus.kowihan.local`
+- **Grafana**: `http://grafana.kowihan.local`
+  - **Username**: `admin`
+  - **Password**: `admin123`
+
+### Via Port-Forward (alternative)
+```bash
+kubectl port-forward svc/prometheus 9090:9090 -n transport-prod
+kubectl port-forward svc/grafana 3000:3000 -n transport-prod
+```
+Then access at `http://localhost:9090` and `http://localhost:3000`
 
 ## Metrics Endpoints
 
