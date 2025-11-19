@@ -99,13 +99,14 @@ class ApiService {
       }
     );
   }
-async registerAdmin(userData: { 
-  firstName: string; 
-  lastName: string; 
-  email: string; 
+async registerAdmin(userData: {
+  firstName: string;
+  lastName: string;
+  email: string;
   password: string;
+  role?: string;
 }, token: string) {
-  
+
   return this.fetchWithFallback<{ token: string }>(
     `${API_BASE_URL}/api/auth/register`,
     {
@@ -116,8 +117,8 @@ async registerAdmin(userData: {
       },
       body: JSON.stringify({
         ...userData,
-        role: 'ADMIN' 
-      }), 
+        role: userData.role || 'ADMIN'
+      }),
     }
   );
 }
