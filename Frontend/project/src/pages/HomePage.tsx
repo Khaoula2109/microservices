@@ -61,7 +61,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               Bienvenue sur{' '}
-              <span className="text-mustard-500">TransportCity</span>
+              <span className="text-mustard-500">KowihanTransit</span>
             </h1>
             <p className="text-xl md:text-2xl text-navy-200 mb-8 max-w-3xl mx-auto">
               Votre solution de transport urbain moderne, rapide et écologique
