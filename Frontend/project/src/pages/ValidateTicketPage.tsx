@@ -121,7 +121,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8">
+    <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Header */}
@@ -129,10 +129,10 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-mustard-500 to-yellow-400 rounded-2xl mb-4 shadow-lg">
             <Scan className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold text-navy-900 mb-2">
             {t.validate.title}
           </h1>
-          <p className="text-gray-400">
+          <p className="text-gray-600">
             {t.validate.subtitle}
           </p>
         </div>
@@ -140,15 +140,15 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* Scanner Section */}
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-            <h2 className="text-xl font-bold text-white mb-4 flex items-center">
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+            <h2 className="text-xl font-bold text-navy-900 mb-4 flex items-center">
               <Camera className="h-5 w-5 mr-2 text-mustard-500" />
               {t.validate.scannerQR}
             </h2>
 
             {!isScanning ? (
               <div className="text-center py-12">
-                <div className="w-32 h-32 mx-auto mb-6 bg-gray-700/50 rounded-2xl flex items-center justify-center border-2 border-dashed border-gray-500">
+                <div className="w-32 h-32 mx-auto mb-6 bg-gray-100 rounded-2xl flex items-center justify-center border-2 border-dashed border-gray-300">
                   <Camera className="h-12 w-12 text-gray-400" />
                 </div>
                 <button
@@ -182,8 +182,8 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
             )}
 
             {/* Manual Input */}
-            <div className="mt-6 pt-6 border-t border-white/10">
-              <h3 className="text-sm font-semibold text-gray-300 mb-3">
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-600 mb-3">
                 {t.validate.manualEntry}
               </h3>
               <form onSubmit={handleManualSubmit} className="space-y-3">
@@ -192,7 +192,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
                   value={manualCode}
                   onChange={(e) => setManualCode(e.target.value)}
                   placeholder="TICKET-XXXX-XXXX-XXXX"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-mustard-500 focus:outline-none transition-colors"
+                  className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-navy-900 placeholder-gray-400 focus:border-mustard-500 focus:outline-none transition-colors"
                 />
                 <button
                   type="submit"
@@ -209,8 +209,8 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
           <div className="space-y-6">
 
             {/* Current Result */}
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-              <h2 className="text-xl font-bold text-white mb-4 flex items-center">
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+              <h2 className="text-xl font-bold text-navy-900 mb-4 flex items-center">
                 <Ticket className="h-5 w-5 mr-2 text-mustard-500" />
                 {t.validate.result}
               </h2>
@@ -225,7 +225,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
               {loading && (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mustard-500 mx-auto"></div>
-                  <p className="mt-4 text-gray-400">{t.validate.validationInProgress}</p>
+                  <p className="mt-4 text-gray-600">{t.validate.validationInProgress}</p>
                 </div>
               )}
 
@@ -249,39 +249,39 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
 
                   {result.ticketType && (
                     <div className="space-y-3 text-sm">
-                      <div className="flex items-center justify-between text-gray-300">
+                      <div className="flex items-center justify-between text-gray-600">
                         <span className="flex items-center">
-                          <Ticket className="h-4 w-4 mr-2 text-gray-500" />
+                          <Ticket className="h-4 w-4 mr-2 text-gray-400" />
                           {t.validate.type}
                         </span>
-                        <span className="font-semibold text-white">{getTicketTypeLabel(result.ticketType)}</span>
+                        <span className="font-semibold text-navy-900">{getTicketTypeLabel(result.ticketType)}</span>
                       </div>
 
                       {result.ownerName && (
-                        <div className="flex items-center justify-between text-gray-300">
+                        <div className="flex items-center justify-between text-gray-600">
                           <span className="flex items-center">
-                            <User className="h-4 w-4 mr-2 text-gray-500" />
+                            <User className="h-4 w-4 mr-2 text-gray-400" />
                             {t.validate.passenger}
                           </span>
-                          <span className="font-semibold text-white">{result.ownerName}</span>
+                          <span className="font-semibold text-navy-900">{result.ownerName}</span>
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between text-gray-300">
+                      <div className="flex items-center justify-between text-gray-600">
                         <span className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                          <Calendar className="h-4 w-4 mr-2 text-gray-400" />
                           {t.validate.purchase}
                         </span>
-                        <span className="font-semibold text-white">{formatDate(result.purchaseDate)}</span>
+                        <span className="font-semibold text-navy-900">{formatDate(result.purchaseDate)}</span>
                       </div>
 
                       {result.expirationDate && (
-                        <div className="flex items-center justify-between text-gray-300">
+                        <div className="flex items-center justify-between text-gray-600">
                           <span className="flex items-center">
-                            <Clock className="h-4 w-4 mr-2 text-gray-500" />
+                            <Clock className="h-4 w-4 mr-2 text-gray-400" />
                             {t.validate.expiration}
                           </span>
-                          <span className="font-semibold text-white">{formatDate(result.expirationDate)}</span>
+                          <span className="font-semibold text-navy-900">{formatDate(result.expirationDate)}</span>
                         </div>
                       )}
                     </div>
@@ -290,7 +290,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
               )}
 
               {!result && !loading && !error && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-400">
                   <Scan className="h-12 w-12 mx-auto mb-3 opacity-50" />
                   <p>{t.validate.waitingForQR}</p>
                 </div>
@@ -299,23 +299,23 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
 
             {/* History */}
             {scanHistory.length > 0 && (
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-                <h2 className="text-lg font-bold text-white mb-4">
+              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+                <h2 className="text-lg font-bold text-navy-900 mb-4">
                   {t.validate.recentHistory}
                 </h2>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {scanHistory.map((item, index) => (
                     <div
                       key={index}
-                      className={`flex items-center justify-between p-3 rounded-lg ${item.valid ? 'bg-green-500/10' : 'bg-red-500/10'}`}
+                      className={`flex items-center justify-between p-3 rounded-lg ${item.valid ? 'bg-green-50' : 'bg-red-50'}`}
                     >
                       <div className="flex items-center space-x-3">
                         {item.valid ? (
-                          <CheckCircle className="h-4 w-4 text-green-400" />
+                          <CheckCircle className="h-4 w-4 text-green-600" />
                         ) : (
-                          <XCircle className="h-4 w-4 text-red-400" />
+                          <XCircle className="h-4 w-4 text-red-600" />
                         )}
-                        <span className="text-sm text-gray-300">{item.ownerName || t.validate.unknown}</span>
+                        <span className="text-sm text-gray-700">{item.ownerName || t.validate.unknown}</span>
                       </div>
                       <span className="text-xs text-gray-500">{getTicketTypeLabel(item.ticketType)}</span>
                     </div>

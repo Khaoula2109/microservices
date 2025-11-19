@@ -122,25 +122,25 @@ export default function MySubscriptionsPage({ token, userId }: MySubscriptionsPa
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 pt-20 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-mustard-500 mx-auto"></div>
-          <p className="mt-4 text-white">{t.mySubscriptions.loadingSubscription}</p>
+          <p className="mt-4 text-gray-600">{t.mySubscriptions.loadingSubscription}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 pt-20 pb-8 px-4">
+    <div className="min-h-screen bg-gray-50 pt-20 pb-8 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center bg-mustard-500 p-4 rounded-full mb-4">
             <CreditCard className="h-12 w-12 text-navy-900" />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2">{t.mySubscriptions.title}</h1>
-          <p className="text-navy-200">{t.mySubscriptions.subtitle}</p>
+          <h1 className="text-4xl font-bold text-navy-900 mb-2">{t.mySubscriptions.title}</h1>
+          <p className="text-gray-600">{t.mySubscriptions.subtitle}</p>
         </div>
 
         {/* Alerts */}

@@ -93,17 +93,17 @@ export default function ControllerDashboardPage({ token, onNavigate }: Controlle
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 pt-20 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-500 mx-auto"></div>
-          <p className="mt-4 text-white">{t.controllerDashboardExt.loadingDashboard}</p>
+          <p className="mt-4 text-gray-600">{t.controllerDashboardExt.loadingDashboard}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 pt-20 pb-8 px-4">
+    <div className="min-h-screen bg-gray-50 pt-20 pb-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
@@ -111,8 +111,8 @@ export default function ControllerDashboardPage({ token, onNavigate }: Controlle
             <div className="inline-flex items-center justify-center bg-green-500 p-4 rounded-full mb-4">
               <BarChart3 className="h-12 w-12 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-white mb-2">{t.controllerDashboard.title}</h1>
-            <p className="text-navy-200">{t.controllerDashboard.subtitle}</p>
+            <h1 className="text-4xl font-bold text-navy-900 mb-2">{t.controllerDashboard.title}</h1>
+            <p className="text-gray-600">{t.controllerDashboard.subtitle}</p>
           </div>
           <div className="flex space-x-3 justify-center md:justify-end">
             <button

@@ -110,15 +110,15 @@ export default function AdminUserCreation({ token, onNavigate }: AdminUserCreati
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
       <div className="max-w-md w-full">
         {/* En-tête */}
         <div className="text-center mb-8">
           <div className={`inline-flex items-center justify-center ${selectedRole.color} p-4 rounded-full mb-4 transition-colors duration-300`}>
             <selectedRole.icon className="h-12 w-12 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2">{t.adminCreation.pageTitle}</h1>
-          <p className="text-navy-200">{t.adminCreation.pageSubtitle}</p>
+          <h1 className="text-4xl font-bold text-navy-900 mb-2">{t.adminCreation.pageTitle}</h1>
+          <p className="text-gray-600">{t.adminCreation.pageSubtitle}</p>
         </div>
 
         {/* Bouton retour */}
@@ -326,7 +326,7 @@ export default function AdminUserCreation({ token, onNavigate }: AdminUserCreati
         <div className="text-center mt-6">
           <button
             onClick={() => onNavigate('home')}
-            className="text-navy-200 hover:text-white transition-colors disabled:opacity-50 text-sm"
+            className="text-gray-500 hover:text-navy-900 transition-colors disabled:opacity-50 text-sm"
             disabled={loading}
           >
             ← {t.adminCreation.backToHomeSmall}

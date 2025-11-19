@@ -119,15 +119,15 @@ export default function UserManagementPage({ token }: UserManagementProps) {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 pt-20 pb-8 px-4">
+    <div className="min-h-screen bg-gray-50 pt-20 pb-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center bg-blue-500 p-4 rounded-full mb-4">
             <Users className="h-12 w-12 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2">{t.userManagement.title}</h1>
-          <p className="text-navy-200">{t.userManagement.subtitle}</p>
+          <h1 className="text-4xl font-bold text-navy-900 mb-2">{t.userManagement.title}</h1>
+          <p className="text-gray-600">{t.userManagement.subtitle}</p>
         </div>
 
         {/* Alerts */}
@@ -331,7 +331,7 @@ export default function UserManagementPage({ token }: UserManagementProps) {
 
         {/* Total count */}
         <div className="text-center mt-4">
-          <p className="text-navy-200">
+          <p className="text-gray-600">
             {filteredUsers.length} {filteredUsers.length > 1 ? t.userManagementExt.usersDisplayed : t.userManagementExt.userDisplayed}
           </p>
         </div>
