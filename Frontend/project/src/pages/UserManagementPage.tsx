@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Users, Shield, Scan, Truck, User, Trash2, Edit3, Search, Filter, AlertCircle, CheckCircle } from 'lucide-react';
 import { apiService } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface UserManagementProps {
   token: string;
@@ -31,6 +32,7 @@ const roleConfig: Record<string, { label: string; icon: any; color: string; bgCo
 };
 
 export default function UserManagementPage({ token }: UserManagementProps) {
+  const { t } = useLanguage();
   const [users, setUsers] = useState<UserData[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -63,7 +65,7 @@ export default function UserManagementPage({ token }: UserManagementProps) {
         setStats(statsResponse.data);
       }
     } catch (err: any) {
-      setError(err.message || 'Erreur lors du chargement des données');
+      setError(err.message || t.userManagementExt.dataLoadError);
     } finally {
       setLoading(false);
     }
@@ -78,14 +80,14 @@ export default function UserManagementPage({ token }: UserManagementProps) {
         throw new Error(response.error);
       }
 
-      setSuccess('Rôle mis à jour avec succès');
+      setSuccess(t.userManagement.roleUpdated);
       setEditingUser(null);
       setNewRole('');
       fetchData();
 
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
-      setError(err.message || 'Erreur lors de la mise à jour du rôle');
+      setError(err.message || t.userManagementExt.roleUpdateError);
       setTimeout(() => setError(''), 3000);
     }
   };
@@ -97,13 +99,13 @@ export default function UserManagementPage({ token }: UserManagementProps) {
         throw new Error(response.error);
       }
 
-      setSuccess('Utilisateur supprimé avec succès');
+      setSuccess(t.userManagement.userDeleted);
       setDeleteConfirm(null);
       fetchData();
 
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
-      setError(err.message || 'Erreur lors de la suppression');
+      setError(err.message || t.userManagementExt.deleteError);
       setTimeout(() => setError(''), 3000);
     }
   };
@@ -117,15 +119,15 @@ export default function UserManagementPage({ token }: UserManagementProps) {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 pt-20 pb-8 px-4">
+    <div className="min-h-screen bg-gray-50 pt-20 pb-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center bg-blue-500 p-4 rounded-full mb-4">
             <Users className="h-12 w-12 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2">Gestion des Utilisateurs</h1>
-          <p className="text-navy-200">Gérez les comptes et les rôles des utilisateurs</p>
+          <h1 className="text-4xl font-bold text-navy-900 mb-2">{t.userManagement.title}</h1>
+          <p className="text-gray-600">{t.userManagement.subtitle}</p>
         </div>
 
         {/* Alerts */}
@@ -148,23 +150,23 @@ export default function UserManagementPage({ token }: UserManagementProps) {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
             <div className="bg-white rounded-xl p-4 text-center shadow-lg">
               <p className="text-3xl font-bold text-navy-900">{stats.total}</p>
-              <p className="text-sm text-gray-600">Total</p>
+              <p className="text-sm text-gray-600">{t.common.total}</p>
             </div>
             <div className="bg-white rounded-xl p-4 text-center shadow-lg">
               <p className="text-3xl font-bold text-gray-600">{stats.passengers}</p>
-              <p className="text-sm text-gray-600">Passagers</p>
+              <p className="text-sm text-gray-600">{t.userManagement.passengers}</p>
             </div>
             <div className="bg-white rounded-xl p-4 text-center shadow-lg">
               <p className="text-3xl font-bold text-blue-600">{stats.admins}</p>
-              <p className="text-sm text-gray-600">Admins</p>
+              <p className="text-sm text-gray-600">{t.userManagement.admins}</p>
             </div>
             <div className="bg-white rounded-xl p-4 text-center shadow-lg">
               <p className="text-3xl font-bold text-green-600">{stats.controllers}</p>
-              <p className="text-sm text-gray-600">Contrôleurs</p>
+              <p className="text-sm text-gray-600">{t.userManagement.controllers}</p>
             </div>
             <div className="bg-white rounded-xl p-4 text-center shadow-lg">
               <p className="text-3xl font-bold text-orange-600">{stats.drivers}</p>
-              <p className="text-sm text-gray-600">Chauffeurs</p>
+              <p className="text-sm text-gray-600">{t.userManagement.drivers}</p>
             </div>
           </div>
         )}
@@ -176,7 +178,7 @@ export default function UserManagementPage({ token }: UserManagementProps) {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Rechercher par nom ou email..."
+                placeholder={t.userManagement.searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
@@ -189,11 +191,11 @@ export default function UserManagementPage({ token }: UserManagementProps) {
                 onChange={(e) => setRoleFilter(e.target.value)}
                 className="pl-10 pr-8 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none appearance-none bg-white"
               >
-                <option value="">Tous les rôles</option>
-                <option value="PASSENGER">Passagers</option>
-                <option value="ADMIN">Admins</option>
-                <option value="CONTROLLER">Contrôleurs</option>
-                <option value="DRIVER">Chauffeurs</option>
+                <option value="">{t.userManagement.allRoles}</option>
+                <option value="PASSENGER">{t.userManagement.passengers}</option>
+                <option value="ADMIN">{t.userManagement.admins}</option>
+                <option value="CONTROLLER">{t.userManagement.controllers}</option>
+                <option value="DRIVER">{t.userManagement.drivers}</option>
               </select>
             </div>
           </div>
@@ -204,24 +206,24 @@ export default function UserManagementPage({ token }: UserManagementProps) {
           {loading ? (
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Chargement...</p>
+              <p className="mt-4 text-gray-600">{t.userManagementExt.loading}</p>
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="p-8 text-center">
               <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Aucun utilisateur trouvé</p>
+              <p className="text-gray-600">{t.userManagement.noUsers}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-navy-900 text-white">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">ID</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Nom</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Email</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Téléphone</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Rôle</th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold">Actions</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">{t.userManagementExt.tableId}</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">{t.userManagementExt.tableName}</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">{t.userManagementExt.tableEmail}</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">{t.userManagementExt.tablePhone}</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">{t.userManagementExt.tableRole}</th>
+                    <th className="px-6 py-4 text-center text-sm font-semibold">{t.userManagementExt.tableActions}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -249,11 +251,11 @@ export default function UserManagementPage({ token }: UserManagementProps) {
                                 onChange={(e) => setNewRole(e.target.value)}
                                 className="text-sm border rounded px-2 py-1"
                               >
-                                <option value="">Choisir...</option>
-                                <option value="PASSENGER">Passager</option>
-                                <option value="ADMIN">Admin</option>
-                                <option value="CONTROLLER">Contrôleur</option>
-                                <option value="DRIVER">Chauffeur</option>
+                                <option value="">{t.userManagementExt.choose}</option>
+                                <option value="PASSENGER">{t.userManagement.passengers}</option>
+                                <option value="ADMIN">{t.userManagement.admins}</option>
+                                <option value="CONTROLLER">{t.userManagement.controllers}</option>
+                                <option value="DRIVER">{t.userManagement.drivers}</option>
                               </select>
                               <button
                                 onClick={() => handleRoleChange(user.id)}
@@ -286,13 +288,13 @@ export default function UserManagementPage({ token }: UserManagementProps) {
                                   onClick={() => handleDelete(user.id)}
                                   className="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
                                 >
-                                  Confirmer
+                                  {t.userManagement.confirmDelete}
                                 </button>
                                 <button
                                   onClick={() => setDeleteConfirm(null)}
                                   className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded hover:bg-gray-400"
                                 >
-                                  Annuler
+                                  {t.userManagementExt.cancel}
                                 </button>
                               </>
                             ) : (
@@ -329,8 +331,8 @@ export default function UserManagementPage({ token }: UserManagementProps) {
 
         {/* Total count */}
         <div className="text-center mt-4">
-          <p className="text-navy-200">
-            {filteredUsers.length} utilisateur{filteredUsers.length > 1 ? 's' : ''} affiché{filteredUsers.length > 1 ? 's' : ''}
+          <p className="text-gray-600">
+            {filteredUsers.length} {filteredUsers.length > 1 ? t.userManagementExt.usersDisplayed : t.userManagementExt.userDisplayed}
           </p>
         </div>
       </div>

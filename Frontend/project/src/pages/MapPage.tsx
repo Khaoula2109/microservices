@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { MapPin, Bus, Navigation, Clock, AlertCircle, Target, Filter, RefreshCw, Info } from 'lucide-react';
 import { apiService } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -88,6 +89,7 @@ function MapController({ center, zoom }: { center: [number, number] | null; zoom
 }
 
 export default function MapPage({ token }: MapPageProps) {
+  const { t } = useLanguage();
   const [activeBuses, setActiveBuses] = useState<ActiveBus[]>(INITIAL_BUS_STATE);
   const [error, setError] = useState<string | null>(null);
   const [selectedBusId, setSelectedBusId] = useState<string | null>(null);
@@ -221,10 +223,10 @@ export default function MapPage({ token }: MapPageProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4">
-            Carte en Temps Réel
+            {t.map.title}
           </h1>
           <p className="text-xl text-gray-600">
-            Suivez la position de vos bus en direct
+            {t.map.subtitle}
           </p>
         </div>
 
@@ -235,7 +237,7 @@ export default function MapPage({ token }: MapPageProps) {
               <Bus className="h-5 w-5 text-navy-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Total Bus</p>
+              <p className="text-sm text-gray-500">{t.map.totalBuses}</p>
               <p className="text-xl font-bold text-navy-900">{busStats.total}</p>
             </div>
           </div>
@@ -244,7 +246,7 @@ export default function MapPage({ token }: MapPageProps) {
               <Clock className="h-5 w-5 text-green-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">À l'heure</p>
+              <p className="text-sm text-gray-500">{t.map.onTime}</p>
               <p className="text-xl font-bold text-green-600">{busStats.onTime}</p>
             </div>
           </div>
@@ -253,7 +255,7 @@ export default function MapPage({ token }: MapPageProps) {
               <AlertCircle className="h-5 w-5 text-red-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">En retard</p>
+              <p className="text-sm text-gray-500">{t.map.delayed}</p>
               <p className="text-xl font-bold text-red-600">{busStats.delayed}</p>
             </div>
           </div>
@@ -262,7 +264,7 @@ export default function MapPage({ token }: MapPageProps) {
               <Clock className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">En avance</p>
+              <p className="text-sm text-gray-500">{t.map.early}</p>
               <p className="text-xl font-bold text-blue-600">{busStats.early}</p>
             </div>
           </div>
@@ -273,7 +275,7 @@ export default function MapPage({ token }: MapPageProps) {
           <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-8 flex items-start space-x-3 max-w-3xl mx-auto">
             <AlertCircle className="h-5 w-5 text-red-500 mt-0.5" />
             <div>
-              <p className="text-red-800 font-semibold">Erreur</p>
+              <p className="text-red-800 font-semibold">{t.common.error}</p>
               <p className="text-red-600 text-sm">{error}</p>
             </div>
           </div>
@@ -432,7 +434,7 @@ export default function MapPage({ token }: MapPageProps) {
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-navy-900 flex items-center space-x-2">
                   <Bus className="h-6 w-6 text-mustard-500" />
-                  <span>Bus en Circulation</span>
+                  <span>{t.map.busesInCirculation}</span>
                 </h2>
                 <span className="text-sm text-gray-500">
                   {filteredBuses.length}/{activeBuses.length}

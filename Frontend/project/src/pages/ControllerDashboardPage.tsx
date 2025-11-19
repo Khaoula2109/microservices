@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Scan, TrendingUp, Calendar, Clock, CheckCircle, XCircle, BarChart3, History, RefreshCw } from 'lucide-react';
 import { apiService } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface ControllerDashboardProps {
   token: string;
@@ -26,6 +27,7 @@ interface ValidationHistoryItem {
 }
 
 export default function ControllerDashboardPage({ token, onNavigate }: ControllerDashboardProps) {
+  const { t } = useLanguage();
   const [stats, setStats] = useState<ValidationStats | null>(null);
   const [history, setHistory] = useState<ValidationHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,17 +93,17 @@ export default function ControllerDashboardPage({ token, onNavigate }: Controlle
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 pt-20 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-500 mx-auto"></div>
-          <p className="mt-4 text-white">Chargement du dashboard...</p>
+          <p className="mt-4 text-gray-600">{t.controllerDashboardExt.loadingDashboard}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 pt-20 pb-8 px-4">
+    <div className="min-h-screen bg-gray-50 pt-20 pb-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
@@ -109,8 +111,8 @@ export default function ControllerDashboardPage({ token, onNavigate }: Controlle
             <div className="inline-flex items-center justify-center bg-green-500 p-4 rounded-full mb-4">
               <BarChart3 className="h-12 w-12 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-white mb-2">Dashboard Contrôleur</h1>
-            <p className="text-navy-200">Statistiques et historique des validations</p>
+            <h1 className="text-4xl font-bold text-navy-900 mb-2">{t.controllerDashboard.title}</h1>
+            <p className="text-gray-600">{t.controllerDashboard.subtitle}</p>
           </div>
           <div className="flex space-x-3 justify-center md:justify-end">
             <button
@@ -118,14 +120,14 @@ export default function ControllerDashboardPage({ token, onNavigate }: Controlle
               className="px-4 py-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg flex items-center space-x-2 transition-colors"
             >
               <RefreshCw className="h-5 w-5" />
-              <span>Actualiser</span>
+              <span>{t.controllerDashboard.refresh}</span>
             </button>
             <button
               onClick={() => onNavigate('validate')}
               className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg flex items-center space-x-2 transition-colors"
             >
               <Scan className="h-5 w-5" />
-              <span>Scanner</span>
+              <span>{t.controllerDashboard.scan}</span>
             </button>
           </div>
         </div>
@@ -144,7 +146,7 @@ export default function ControllerDashboardPage({ token, onNavigate }: Controlle
                 <Clock className="h-5 w-5 text-green-600" />
               </div>
               <p className="text-3xl font-bold text-green-600">{stats.validationsToday}</p>
-              <p className="text-sm text-gray-600">Aujourd'hui</p>
+              <p className="text-sm text-gray-600">{t.controllerDashboard.validationsToday}</p>
             </div>
 
             <div className="bg-white rounded-xl p-4 text-center shadow-lg">
@@ -152,7 +154,7 @@ export default function ControllerDashboardPage({ token, onNavigate }: Controlle
                 <Calendar className="h-5 w-5 text-blue-600" />
               </div>
               <p className="text-3xl font-bold text-blue-600">{stats.validationsThisWeek}</p>
-              <p className="text-sm text-gray-600">Cette semaine</p>
+              <p className="text-sm text-gray-600">{t.controllerDashboard.validationsWeek}</p>
             </div>
 
             <div className="bg-white rounded-xl p-4 text-center shadow-lg">
@@ -160,7 +162,7 @@ export default function ControllerDashboardPage({ token, onNavigate }: Controlle
                 <TrendingUp className="h-5 w-5 text-purple-600" />
               </div>
               <p className="text-3xl font-bold text-purple-600">{stats.validationsThisMonth}</p>
-              <p className="text-sm text-gray-600">Ce mois</p>
+              <p className="text-sm text-gray-600">{t.controllerDashboard.validationsMonth}</p>
             </div>
 
             <div className="bg-white rounded-xl p-4 text-center shadow-lg">
@@ -168,7 +170,7 @@ export default function ControllerDashboardPage({ token, onNavigate }: Controlle
                 <BarChart3 className="h-5 w-5 text-navy-600" />
               </div>
               <p className="text-3xl font-bold text-navy-900">{stats.totalValidations}</p>
-              <p className="text-sm text-gray-600">Total</p>
+              <p className="text-sm text-gray-600">{t.controllerDashboard.totalValidations}</p>
             </div>
 
             <div className="bg-white rounded-xl p-4 text-center shadow-lg">
@@ -176,7 +178,7 @@ export default function ControllerDashboardPage({ token, onNavigate }: Controlle
                 <CheckCircle className="h-5 w-5 text-green-600" />
               </div>
               <p className="text-3xl font-bold text-green-600">{stats.validTickets}</p>
-              <p className="text-sm text-gray-600">Valides</p>
+              <p className="text-sm text-gray-600">{t.controllerDashboard.validTickets}</p>
             </div>
 
             <div className="bg-white rounded-xl p-4 text-center shadow-lg">
@@ -184,7 +186,7 @@ export default function ControllerDashboardPage({ token, onNavigate }: Controlle
                 <XCircle className="h-5 w-5 text-red-600" />
               </div>
               <p className="text-3xl font-bold text-red-600">{stats.invalidTickets}</p>
-              <p className="text-sm text-gray-600">Invalides</p>
+              <p className="text-sm text-gray-600">{t.controllerDashboard.invalidTickets}</p>
             </div>
           </div>
         )}
@@ -193,24 +195,24 @@ export default function ControllerDashboardPage({ token, onNavigate }: Controlle
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="bg-navy-900 text-white px-6 py-4 flex items-center space-x-3">
             <History className="h-6 w-6" />
-            <h2 className="text-xl font-bold">Historique des Validations</h2>
+            <h2 className="text-xl font-bold">{t.controllerDashboard.validationHistory}</h2>
           </div>
 
           {history.length === 0 ? (
             <div className="p-8 text-center">
               <Scan className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Aucune validation enregistrée</p>
+              <p className="text-gray-600">{t.controllerDashboard.noValidations}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Type</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Achat</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Validation</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Statut</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{t.controllerDashboardExt.tableId}</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{t.controllerDashboardExt.tableType}</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{t.controllerDashboardExt.tablePurchase}</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{t.controllerDashboardExt.tableValidation}</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{t.controllerDashboardExt.tableStatus}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -231,7 +233,7 @@ export default function ControllerDashboardPage({ token, onNavigate }: Controlle
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center space-x-1 text-green-600">
                           <CheckCircle className="h-4 w-4" />
-                          <span className="text-sm">Validé</span>
+                          <span className="text-sm">{t.controllerDashboardExt.validated}</span>
                         </span>
                       </td>
                     </tr>
@@ -244,7 +246,7 @@ export default function ControllerDashboardPage({ token, onNavigate }: Controlle
           {history.length > 50 && (
             <div className="px-6 py-3 bg-gray-50 text-center">
               <p className="text-sm text-gray-600">
-                Affichage des 50 dernières validations sur {history.length} au total
+                {t.controllerDashboardExt.displayingLast} {history.length} {t.controllerDashboardExt.atTotal}
               </p>
             </div>
           )}
