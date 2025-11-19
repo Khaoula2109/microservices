@@ -1,21 +1,24 @@
-import { Clock, Ticket, MapPin, User, TrendingUp, Shield } from 'lucide-react';
+import { Clock, Ticket, MapPin, User, TrendingUp, Shield, Scan, UserPlus } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface HomePageProps {
   onNavigate: (page: string) => void;
   token?: string | null;
+  userRole?: string | null;
 }
 
-export default function HomePage({ onNavigate, token }: HomePageProps) {
+export default function HomePage({ onNavigate, token, userRole }: HomePageProps) {
   const { t } = useLanguage();
 
-  const quickActions = [
+  // Define all possible quick actions
+  const allQuickActions = [
     {
       title: t.home.checkSchedules,
       description: t.home.checkSchedulesDesc,
       icon: Clock,
       page: 'schedules',
       color: 'bg-mustard-500',
+      roles: ['PASSENGER', 'ADMIN', 'CONTROLLER', 'DRIVER'],
     },
     {
       title: t.home.buyTicketAction,
@@ -23,6 +26,7 @@ export default function HomePage({ onNavigate, token }: HomePageProps) {
       icon: Ticket,
       page: 'tickets',
       color: 'bg-navy-700',
+      roles: ['PASSENGER'],
     },
     {
       title: t.home.trackBus,
@@ -30,6 +34,7 @@ export default function HomePage({ onNavigate, token }: HomePageProps) {
       icon: MapPin,
       page: 'map',
       color: 'bg-mustard-600',
+      roles: ['PASSENGER', 'ADMIN', 'CONTROLLER', 'DRIVER'],
     },
     {
       title: t.home.myAccount,
@@ -37,8 +42,30 @@ export default function HomePage({ onNavigate, token }: HomePageProps) {
       icon: User,
       page: 'account',
       color: 'bg-navy-800',
+      roles: ['PASSENGER'],
+    },
+    {
+      title: t.home.validateTicket || 'Valider Ticket',
+      description: t.home.validateTicketDesc || 'Scannez les QR codes pour valider les tickets',
+      icon: Scan,
+      page: 'validate',
+      color: 'bg-green-600',
+      roles: ['CONTROLLER'],
+    },
+    {
+      title: t.home.createUser || 'Créer Utilisateur',
+      description: t.home.createUserDesc || 'Créez des comptes administrateur, contrôleur ou chauffeur',
+      icon: UserPlus,
+      page: 'admin-creation',
+      color: 'bg-blue-600',
+      roles: ['ADMIN'],
     },
   ];
+
+  // Filter quick actions based on user role
+  const quickActions = userRole
+    ? allQuickActions.filter(action => action.roles.includes(userRole))
+    : allQuickActions.filter(action => action.roles.includes('PASSENGER'));
 
   const features = [
     {

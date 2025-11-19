@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shield, Mail, Lock, User, AlertCircle, ArrowLeft, Scan, Truck } from 'lucide-react';
+import { Shield, Mail, Lock, User, AlertCircle, Scan, Truck } from 'lucide-react';
 import { apiService } from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -119,17 +119,6 @@ export default function AdminUserCreation({ token, onNavigate }: AdminUserCreati
           </div>
           <h1 className="text-4xl font-bold text-navy-900 mb-2">{t.adminCreation.pageTitle}</h1>
           <p className="text-gray-600">{t.adminCreation.pageSubtitle}</p>
-        </div>
-
-        {/* Bouton retour */}
-        <div className="mb-6">
-          <button
-            onClick={() => onNavigate('account')}
-            className="flex items-center space-x-2 text-mustard-500 hover:text-mustard-600 transition-colors mb-4"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="text-sm font-semibold">{t.adminCreation.backToAccount}</span>
-          </button>
         </div>
 
         {/* Formulaire */}
