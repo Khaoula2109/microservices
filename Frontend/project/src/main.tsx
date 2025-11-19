@@ -5,6 +5,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import './index.css';
+import './styles/animations.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
