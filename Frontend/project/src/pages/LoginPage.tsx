@@ -92,7 +92,7 @@ export default function LoginPage({ onNavigate, onAuthSuccess }: LoginPageProps)
           <div className="inline-block bg-mustard-500 p-4 rounded-full mb-4">
             <Bus className="h-12 w-12 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2">TransportCity</h1>
+          <h1 className="text-4xl font-bold text-white mb-2">KowihanTransit</h1>
           <p className="text-navy-200">Connectez-vous à votre compte</p>
         </div>
 
@@ -146,7 +146,7 @@ export default function LoginPage({ onNavigate, onAuthSuccess }: LoginPageProps)
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center text-sm">
               <label className="flex items-center space-x-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -155,13 +155,6 @@ export default function LoginPage({ onNavigate, onAuthSuccess }: LoginPageProps)
                 />
                 <span className="text-gray-600">Se souvenir de moi</span>
               </label>
-              <button
-                type="button"
-                className="text-mustard-500 hover:text-mustard-600 font-semibold disabled:opacity-50"
-                disabled={loading}
-              >
-                Mot de passe oublié?
-              </button>
             </div>
 
             <button

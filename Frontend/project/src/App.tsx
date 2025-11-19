@@ -199,7 +199,7 @@ const handleAuthSuccess = async (newToken: string, newUserId: number, newUserRol
 
     switch (currentPage) {
       case 'home':
-        return <HomePage onNavigate={handleNavigate} />;
+        return <HomePage onNavigate={handleNavigate} token={token} />;
         
       case 'schedules':
         return <SchedulesPage token={token} userRole={userRole} />;
@@ -271,7 +271,7 @@ const handleAuthSuccess = async (newToken: string, newUserId: number, newUserRol
         
       default:
 
-        return <HomePage onNavigate={handleNavigate} />;
+        return <HomePage onNavigate={handleNavigate} token={token} />;
     }
   };
 

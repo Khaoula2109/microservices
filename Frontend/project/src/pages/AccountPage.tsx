@@ -182,21 +182,13 @@ export default function AccountPage({ onNavigate, token, onLogout, userId }: Acc
                 <h3 className="text-lg font-semibold text-navy-900 mb-4">
                   Actions
                 </h3>
-                
+
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button
                     onClick={() => onNavigate('tickets')}
                     className="flex-1 bg-mustard-500 text-navy-900 font-bold py-3 px-6 rounded-lg hover:bg-mustard-600 transition-all duration-200 text-center"
                   >
                     Voir mes tickets
-                  </button>
-                  
-                  <button
-                    onClick={handleLogout}
-                    className="flex-1 bg-red-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-red-600 transition-all duration-200 flex items-center justify-center space-x-2"
-                  >
-                    <LogOut className="h-5 w-5" />
-                    <span>Déconnexion</span>
                   </button>
                 </div>
               </div>
