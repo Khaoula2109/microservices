@@ -39,6 +39,10 @@ export const translations = {
       trackBusDesc: 'Localisez votre bus en temps réel sur la carte',
       myAccount: 'Mon Compte',
       myAccountDesc: 'Gérez votre profil et vos abonnements',
+      validateTicket: 'Valider Ticket',
+      validateTicketDesc: 'Scannez les QR codes pour valider les tickets',
+      createUser: 'Créer Utilisateur',
+      createUserDesc: 'Créez des comptes administrateur, contrôleur ou chauffeur',
       // Features
       reliableService: 'Service Fiable',
       reliableServiceDesc: 'Des bus ponctuels et un service de qualité',
@@ -444,6 +448,10 @@ export const translations = {
       trackBusDesc: 'Locate your bus in real time on the map',
       myAccount: 'My Account',
       myAccountDesc: 'Manage your profile and subscriptions',
+      validateTicket: 'Validate Ticket',
+      validateTicketDesc: 'Scan QR codes to validate tickets',
+      createUser: 'Create User',
+      createUserDesc: 'Create administrator, controller or driver accounts',
       // Features
       reliableService: 'Reliable Service',
       reliableServiceDesc: 'Punctual buses and quality service',
@@ -849,6 +857,10 @@ export const translations = {
       trackBusDesc: 'حدد موقع حافلتك في الوقت الفعلي على الخريطة',
       myAccount: 'حسابي',
       myAccountDesc: 'إدارة ملفك الشخصي واشتراكاتك',
+      validateTicket: 'التحقق من التذكرة',
+      validateTicketDesc: 'امسح رموز QR للتحقق من التذاكر',
+      createUser: 'إنشاء مستخدم',
+      createUserDesc: 'إنشاء حسابات مدير أو مراقب أو سائق',
       // Features
       reliableService: 'خدمة موثوقة',
       reliableServiceDesc: 'حافلات دقيقة وخدمة عالية الجودة',
