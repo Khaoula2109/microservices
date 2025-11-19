@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, Bus, LogIn, User, LogOut, Shield } from 'lucide-react';
+import { Menu, X, Bus, LogIn, User, LogOut, Shield, Scan } from 'lucide-react';
 
 interface NavbarProps {
   currentPage: string;
@@ -37,6 +37,7 @@ export default function Navbar({
   );
 
   const isUserAdmin = userRole === 'ADMIN' || userRole === 'admin' || userRole?.toUpperCase() === 'ADMIN';
+  const isUserController = userRole === 'CONTROLLER' || userRole?.toUpperCase() === 'CONTROLLER';
 
 
 
@@ -67,7 +68,22 @@ export default function Navbar({
             
             {token ? (
               <div className="flex items-center space-x-2 ml-4">
-              
+
+                {(isUserController || isUserAdmin) && (
+                  <button
+                    onClick={() => onNavigate('validate')}
+                    className={`px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                      currentPage === 'validate'
+                        ? 'bg-green-600 text-white font-semibold border-2 border-green-300'
+                        : 'bg-green-500 hover:bg-green-600 text-white border-2 border-green-400'
+                    }`}
+                    title="Valider les tickets"
+                  >
+                    <Scan className="h-5 w-5" />
+                    <span>Valider</span>
+                  </button>
+                )}
+
                 {isUserAdmin && (
                   <button
                     onClick={() => onNavigate('admin-creation')}
@@ -145,7 +161,24 @@ export default function Navbar({
             
             {token ? (
               <>
-               
+
+                {(isUserController || isUserAdmin) && (
+                  <button
+                    onClick={() => {
+                      onNavigate('validate');
+                      setIsMenuOpen(false);
+                    }}
+                    className={`block w-full text-left px-3 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                      currentPage === 'validate'
+                        ? 'bg-green-600 text-white font-semibold border-2 border-green-300'
+                        : 'bg-green-500 hover:bg-green-600 text-white border-2 border-green-400'
+                    }`}
+                  >
+                    <Scan className="h-5 w-5" />
+                    <span>Valider Tickets</span>
+                  </button>
+                )}
+
                 {isUserAdmin && (
                   <button
                     onClick={() => {

@@ -12,7 +12,8 @@ import SubscriptionPage from './pages/SubscriptionPage';
 import Success from './pages/Success';
 import Cancel from './pages/Cancel';
 import AdminUserCreation from './pages/AdminUserCreation';
-import { Shield } from 'lucide-react';
+import ValidateTicketPage from './pages/ValidateTicketPage';
+import { Shield, Scan } from 'lucide-react';
 
 const protectedPages = ['schedules', 'tickets', 'map', 'account','subscriptions'];
 
@@ -254,6 +255,19 @@ const handleAuthSuccess = async (newToken: string, newUserId: number, newUserRol
         return <Success />;
       case 'cancel':
         return <Cancel />;
+      case 'validate':
+        if (userRole !== 'CONTROLLER' && userRole !== 'ADMIN') {
+          return (
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center">
+                <Scan className="h-16 w-16 text-red-500 mx-auto mb-4" />
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Accès Refusé</h2>
+                <p className="text-gray-600">Seuls les contrôleurs peuvent valider les tickets.</p>
+              </div>
+            </div>
+          );
+        }
+        return <ValidateTicketPage token={token!} />;
       case 'admin-creation':
 
       if (userRole !== 'ADMIN') {

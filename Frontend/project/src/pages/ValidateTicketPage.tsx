@@ -1,0 +1,329 @@
+import { useState, useEffect, useRef } from 'react';
+import { Camera, CheckCircle, XCircle, Scan, User, Calendar, Clock, Ticket, AlertTriangle } from 'lucide-react';
+import { apiService } from '../services/api';
+
+interface ValidateTicketPageProps {
+  token: string;
+}
+
+interface ValidationResult {
+  valid: boolean;
+  message: string;
+  ticketType?: string;
+  status?: string;
+  purchaseDate?: string;
+  expirationDate?: string;
+  ownerName?: string;
+}
+
+export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
+  const [isScanning, setIsScanning] = useState(false);
+  const [manualCode, setManualCode] = useState('');
+  const [result, setResult] = useState<ValidationResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [scanHistory, setScanHistory] = useState<ValidationResult[]>([]);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
+      setIsScanning(true);
+      setError('');
+    } catch (err) {
+      setError('Impossible d\'accéder à la caméra. Veuillez autoriser l\'accès.');
+      console.error('Camera error:', err);
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setIsScanning(false);
+  };
+
+  const validateCode = async (code: string) => {
+    if (!code.trim()) {
+      setError('Veuillez entrer un code QR');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setResult(null);
+
+    try {
+      const response = await apiService.validateQrCode(code, token);
+
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
+      if (response.data) {
+        setResult(response.data);
+        setScanHistory(prev => [response.data!, ...prev].slice(0, 10));
+      }
+    } catch (err: any) {
+      setError(err.message || 'Erreur lors de la validation');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleManualSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    validateCode(manualCode);
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '-';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
+  const getTicketTypeLabel = (type?: string) => {
+    switch (type?.toUpperCase()) {
+      case 'SIMPLE': return 'Ticket Simple';
+      case 'JOURNEE': return 'Pass Journée';
+      case 'HEBDO': return 'Pass Hebdomadaire';
+      case 'MENSUEL': return 'Pass Mensuel';
+      default: return type || '-';
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-mustard-500 to-yellow-400 rounded-2xl mb-4 shadow-lg">
+            <Scan className="h-8 w-8 text-white" />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+            Validation des Tickets
+          </h1>
+          <p className="text-gray-400">
+            Scannez ou entrez le code QR pour valider un ticket
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          {/* Scanner Section */}
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center">
+              <Camera className="h-5 w-5 mr-2 text-mustard-500" />
+              Scanner QR
+            </h2>
+
+            {!isScanning ? (
+              <div className="text-center py-12">
+                <div className="w-32 h-32 mx-auto mb-6 bg-gray-700/50 rounded-2xl flex items-center justify-center border-2 border-dashed border-gray-500">
+                  <Camera className="h-12 w-12 text-gray-400" />
+                </div>
+                <button
+                  onClick={startCamera}
+                  className="bg-gradient-to-r from-mustard-500 to-yellow-400 text-gray-900 font-bold py-3 px-8 rounded-xl hover:from-mustard-600 hover:to-yellow-500 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                >
+                  Activer la Caméra
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
+                  <video
+                    ref={videoRef}
+                    className="w-full h-full object-cover"
+                    playsInline
+                    muted
+                  />
+                  <div className="absolute inset-0 border-4 border-mustard-500/50 rounded-xl pointer-events-none">
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-2 border-mustard-500 rounded-lg"></div>
+                  </div>
+                  <canvas ref={canvasRef} className="hidden" />
+                </div>
+                <button
+                  onClick={stopCamera}
+                  className="w-full bg-red-500/20 text-red-400 font-semibold py-2 px-4 rounded-xl hover:bg-red-500/30 transition-colors border border-red-500/30"
+                >
+                  Arrêter la Caméra
+                </button>
+              </div>
+            )}
+
+            {/* Manual Input */}
+            <div className="mt-6 pt-6 border-t border-white/10">
+              <h3 className="text-sm font-semibold text-gray-300 mb-3">
+                Ou entrez le code manuellement
+              </h3>
+              <form onSubmit={handleManualSubmit} className="space-y-3">
+                <input
+                  type="text"
+                  value={manualCode}
+                  onChange={(e) => setManualCode(e.target.value)}
+                  placeholder="TICKET-XXXX-XXXX-XXXX"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-mustard-500 focus:outline-none transition-colors"
+                />
+                <button
+                  type="submit"
+                  disabled={loading || !manualCode.trim()}
+                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 px-6 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Validation...' : 'Valider le Code'}
+                </button>
+              </form>
+            </div>
+          </div>
+
+          {/* Result Section */}
+          <div className="space-y-6">
+
+            {/* Current Result */}
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center">
+                <Ticket className="h-5 w-5 mr-2 text-mustard-500" />
+                Résultat
+              </h2>
+
+              {error && (
+                <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 flex items-start space-x-3">
+                  <AlertTriangle className="h-5 w-5 text-red-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-red-300 text-sm">{error}</p>
+                </div>
+              )}
+
+              {loading && (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mustard-500 mx-auto"></div>
+                  <p className="mt-4 text-gray-400">Validation en cours...</p>
+                </div>
+              )}
+
+              {result && !loading && (
+                <div className={`rounded-xl p-6 ${result.valid ? 'bg-green-500/20 border border-green-500/30' : 'bg-red-500/20 border border-red-500/30'}`}>
+                  <div className="flex items-center justify-center mb-4">
+                    {result.valid ? (
+                      <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
+                        <CheckCircle className="h-12 w-12 text-white" />
+                      </div>
+                    ) : (
+                      <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center">
+                        <XCircle className="h-12 w-12 text-white" />
+                      </div>
+                    )}
+                  </div>
+
+                  <p className={`text-center text-xl font-bold mb-4 ${result.valid ? 'text-green-400' : 'text-red-400'}`}>
+                    {result.message}
+                  </p>
+
+                  {result.ticketType && (
+                    <div className="space-y-3 text-sm">
+                      <div className="flex items-center justify-between text-gray-300">
+                        <span className="flex items-center">
+                          <Ticket className="h-4 w-4 mr-2 text-gray-500" />
+                          Type
+                        </span>
+                        <span className="font-semibold text-white">{getTicketTypeLabel(result.ticketType)}</span>
+                      </div>
+
+                      {result.ownerName && (
+                        <div className="flex items-center justify-between text-gray-300">
+                          <span className="flex items-center">
+                            <User className="h-4 w-4 mr-2 text-gray-500" />
+                            Passager
+                          </span>
+                          <span className="font-semibold text-white">{result.ownerName}</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between text-gray-300">
+                        <span className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                          Achat
+                        </span>
+                        <span className="font-semibold text-white">{formatDate(result.purchaseDate)}</span>
+                      </div>
+
+                      {result.expirationDate && (
+                        <div className="flex items-center justify-between text-gray-300">
+                          <span className="flex items-center">
+                            <Clock className="h-4 w-4 mr-2 text-gray-500" />
+                            Expiration
+                          </span>
+                          <span className="font-semibold text-white">{formatDate(result.expirationDate)}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!result && !loading && !error && (
+                <div className="text-center py-8 text-gray-500">
+                  <Scan className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p>En attente d'un code QR...</p>
+                </div>
+              )}
+            </div>
+
+            {/* History */}
+            {scanHistory.length > 0 && (
+              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                <h2 className="text-lg font-bold text-white mb-4">
+                  Historique récent
+                </h2>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {scanHistory.map((item, index) => (
+                    <div
+                      key={index}
+                      className={`flex items-center justify-between p-3 rounded-lg ${item.valid ? 'bg-green-500/10' : 'bg-red-500/10'}`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        {item.valid ? (
+                          <CheckCircle className="h-4 w-4 text-green-400" />
+                        ) : (
+                          <XCircle className="h-4 w-4 text-red-400" />
+                        )}
+                        <span className="text-sm text-gray-300">{item.ownerName || 'Inconnu'}</span>
+                      </div>
+                      <span className="text-xs text-gray-500">{getTicketTypeLabel(item.ticketType)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

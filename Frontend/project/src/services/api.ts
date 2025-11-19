@@ -453,6 +453,25 @@ async getAllStops(token: string): Promise<ApiResponse<any>> {
     );
   }
 
+  async validateQrCode(qrCode: string, token: string) {
+    return this.fetchWithFallback<{
+      valid: boolean;
+      message: string;
+      ticketType?: string;
+      status?: string;
+      purchaseDate?: string;
+      expirationDate?: string;
+      ownerName?: string;
+    }>(
+      `${API_BASE_URL}/api/tickets/validate-qr/${encodeURIComponent(qrCode)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  }
+
 
 async createSubscriptionCheckout(priceId: string, token: string, userId: number, userEmail: string) {
 
