@@ -1,4 +1,5 @@
-// WebSocket service for real-time notifications
+// WebSocket service for real-time notifications using Socket.IO
+import { io, Socket } from 'socket.io-client';
 
 interface NotificationMessage {
   id: string;
@@ -15,10 +16,7 @@ interface NotificationMessage {
 type NotificationCallback = (notification: NotificationMessage) => void;
 
 class WebSocketService {
-  private socket: WebSocket | null = null;
-  private reconnectInterval: number = 5000;
-  private reconnectAttempts: number = 0;
-  private maxReconnectAttempts: number = 10;
+  private socket: Socket | null = null;
   private listeners: NotificationCallback[] = [];
   private userId: number | null = null;
   private isConnected: boolean = false;
@@ -26,75 +24,53 @@ class WebSocketService {
   connect(userId: number): void {
     this.userId = userId;
 
-    const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname}:8083/ws`;
+    // Connect to notification-service on port 3001
+    const wsUrl = `${window.location.protocol}//${window.location.hostname}:3001`;
 
     try {
-      // Use SockJS for fallback support
-      this.socket = new WebSocket(wsUrl);
+      this.socket = io(wsUrl, {
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 5000,
+      });
 
-      this.socket.onopen = () => {
+      this.socket.on('connect', () => {
         console.log('WebSocket connected');
         this.isConnected = true;
-        this.reconnectAttempts = 0;
 
-        // Subscribe to user-specific channel
-        this.subscribe(`/topic/user/${userId}`);
-        // Subscribe to broadcast channel
-        this.subscribe('/topic/broadcast');
-      };
+        // Subscribe to user-specific notifications
+        this.socket?.emit('subscribe', { userId });
+      });
 
-      this.socket.onmessage = (event) => {
-        try {
-          const notification = JSON.parse(event.data) as NotificationMessage;
-          this.notifyListeners(notification);
-        } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
-        }
-      };
+      this.socket.on('notification', (notification: NotificationMessage) => {
+        this.notifyListeners(notification);
+      });
 
-      this.socket.onclose = (event) => {
-        console.log('WebSocket disconnected:', event.code, event.reason);
+      this.socket.on('broadcast', (notification: NotificationMessage) => {
+        this.notifyListeners(notification);
+      });
+
+      this.socket.on('disconnect', (reason) => {
+        console.log('WebSocket disconnected:', reason);
         this.isConnected = false;
-        this.attemptReconnect();
-      };
+      });
 
-      this.socket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-      };
+      this.socket.on('connect_error', (error) => {
+        console.error('WebSocket connection error:', error.message);
+      });
 
     } catch (error) {
       console.error('Failed to create WebSocket:', error);
-      this.attemptReconnect();
     }
-  }
-
-  private subscribe(destination: string): void {
-    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-      // Send STOMP SUBSCRIBE frame
-      const subscribeFrame = `SUBSCRIBE\ndestination:${destination}\nid:sub-${Date.now()}\n\n\0`;
-      this.socket.send(subscribeFrame);
-    }
-  }
-
-  private attemptReconnect(): void {
-    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.log('Max reconnection attempts reached');
-      return;
-    }
-
-    this.reconnectAttempts++;
-    console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
-
-    setTimeout(() => {
-      if (this.userId) {
-        this.connect(this.userId);
-      }
-    }, this.reconnectInterval * this.reconnectAttempts);
   }
 
   disconnect(): void {
     if (this.socket) {
-      this.socket.close();
+      if (this.userId) {
+        this.socket.emit('unsubscribe', { userId: this.userId });
+      }
+      this.socket.disconnect();
       this.socket = null;
       this.isConnected = false;
     }
