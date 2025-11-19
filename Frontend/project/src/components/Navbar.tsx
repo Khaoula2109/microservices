@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Menu, X, Bus, LogIn, User, LogOut, Shield, Scan, Users, BarChart3 } from 'lucide-react';
+import { Menu, X, Bus, LogIn, User, LogOut, Shield, Scan, Users, BarChart3, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface NavbarProps {
   currentPage: string;
@@ -19,8 +20,7 @@ export default function Navbar({
   userRole
 }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
- 
+  const { theme, toggleTheme, isDark } = useTheme();
 
   const navLinks = [
     { name: 'Accueil', page: 'home' },
@@ -141,6 +141,13 @@ export default function Navbar({
                   <span>Mon Compte</span>
                 </button>
                 <button
+                  onClick={toggleTheme}
+                  className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200"
+                  title={isDark ? 'Mode clair' : 'Mode sombre'}
+                >
+                  {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                </button>
+                <button
                   onClick={onLogout}
                   className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
                   title="Déconnexion"
@@ -149,13 +156,22 @@ export default function Navbar({
                 </button>
               </div>
             ) : (
-              <button
-                onClick={() => onNavigate('login')}
-                className="ml-4 px-6 py-2 bg-mustard-500 text-navy-900 font-semibold rounded-lg hover:bg-mustard-600 transition-all duration-200 flex items-center space-x-2"
-              >
-                <LogIn className="h-5 w-5" />
-                <span>Connexion</span>
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={toggleTheme}
+                  className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200"
+                  title={isDark ? 'Mode clair' : 'Mode sombre'}
+                >
+                  {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                </button>
+                <button
+                  onClick={() => onNavigate('login')}
+                  className="px-6 py-2 bg-mustard-500 text-navy-900 font-semibold rounded-lg hover:bg-mustard-600 transition-all duration-200 flex items-center space-x-2"
+                >
+                  <LogIn className="h-5 w-5" />
+                  <span>Connexion</span>
+                </button>
+              </div>
             )}
           </div>
 
@@ -274,6 +290,13 @@ export default function Navbar({
                   Mon Compte
                 </button>
                 <button
+                  onClick={toggleTheme}
+                  className="block w-full text-left px-3 py-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
+                >
+                  {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                  <span>{isDark ? 'Mode clair' : 'Mode sombre'}</span>
+                </button>
+                <button
                   onClick={() => {
                     onLogout();
                     setIsMenuOpen(false);
@@ -284,15 +307,24 @@ export default function Navbar({
                 </button>
               </>
             ) : (
-              <button
-                onClick={() => {
-                  onNavigate('login');
-                  setIsMenuOpen(false);
-                }}
-                className="block w-full text-left px-3 py-2 bg-mustard-500 text-navy-900 font-semibold rounded-lg hover:bg-mustard-600 transition-all duration-200"
-              >
-                Connexion
-              </button>
+              <>
+                <button
+                  onClick={toggleTheme}
+                  className="block w-full text-left px-3 py-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
+                >
+                  {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                  <span>{isDark ? 'Mode clair' : 'Mode sombre'}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    onNavigate('login');
+                    setIsMenuOpen(false);
+                  }}
+                  className="block w-full text-left px-3 py-2 bg-mustard-500 text-navy-900 font-semibold rounded-lg hover:bg-mustard-600 transition-all duration-200"
+                >
+                  Connexion
+                </button>
+              </>
             )}
           </div>
         </div>
