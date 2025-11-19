@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, Clock, MapPin, Bus, AlertCircle, Plus, Settings, Map, Link, Trash2, Navigation } from 'lucide-react';
 import { apiService } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 
 interface BusStop {
@@ -51,6 +52,7 @@ declare global {
 }
 
 export default function SchedulesPage({ token, userRole }: SchedulesPageProps) {
+  const { t } = useLanguage();
   const [busLine, setBusLine] = useState('');
   const [stop, setStop] = useState('');
   const [showResults, setShowResults] = useState(false);
@@ -608,10 +610,10 @@ export default function SchedulesPage({ token, userRole }: SchedulesPageProps) {
 
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4">
-            Horaires & Trajets
+            {t.schedules.title}
           </h1>
           <p className="text-xl text-gray-600">
-            Consultez les horaires de tous nos trajets
+            {t.schedules.subtitle}
           </p>
         </div>
 
@@ -1009,7 +1011,7 @@ export default function SchedulesPage({ token, userRole }: SchedulesPageProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-navy-900 font-semibold mb-2">
-                  Ligne de bus
+                  {t.schedules.busLine}
                 </label>
                 <div className="relative">
                   <Bus className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -1025,7 +1027,7 @@ export default function SchedulesPage({ token, userRole }: SchedulesPageProps) {
 
               <div>
                 <label className="block text-navy-900 font-semibold mb-2">
-                  Arrêt
+                  {t.schedules.stop}
                 </label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -1046,7 +1048,7 @@ export default function SchedulesPage({ token, userRole }: SchedulesPageProps) {
               className="w-full bg-mustard-500 text-navy-900 font-bold py-4 rounded-lg hover:bg-mustard-600 transition-all duration-200 shadow-md flex items-center justify-center space-x-2 disabled:opacity-50"
             >
               <Search className="h-5 w-5" />
-              <span>{schedulesLoading ? 'Recherche en cours...' : 'Rechercher les horaires'}</span>
+              <span>{schedulesLoading ? t.schedules.searching : t.schedules.search}</span>
             </button>
           </form>
         </div>
@@ -1057,7 +1059,7 @@ export default function SchedulesPage({ token, userRole }: SchedulesPageProps) {
             <div className="inline-flex items-center space-x-2">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-mustard-500"></div>
               <p className="text-lg font-semibold text-navy-900">
-                Chargement des horaires...
+                {t.schedules.loading}
               </p>
             </div>
           </div>
@@ -1067,7 +1069,7 @@ export default function SchedulesPage({ token, userRole }: SchedulesPageProps) {
           <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6 mb-8 flex items-center space-x-3 max-w-3xl mx-auto">
             <AlertCircle className="h-6 w-6 text-red-500 flex-shrink-0" />
             <div>
-              <p className="text-red-800 font-semibold">Erreur de chargement</p>
+              <p className="text-red-800 font-semibold">{t.schedules.loadingError}</p>
               <p className="text-red-600 text-sm">{error}</p>
             </div>
           </div>
@@ -1077,7 +1079,7 @@ export default function SchedulesPage({ token, userRole }: SchedulesPageProps) {
         {!loading && !error && showResults && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-navy-900">
-              Résultats de la Recherche ({filteredSchedules.length})
+              {t.schedules.results} ({filteredSchedules.length})
             </h2>
 
             {filteredSchedules.map((schedule) => {
@@ -1155,8 +1157,8 @@ export default function SchedulesPage({ token, userRole }: SchedulesPageProps) {
             {filteredSchedules.length === 0 && (
               <div className="text-center py-8">
                 <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg">Aucun horaire trouvé pour cette recherche.</p>
-                <p className="text-gray-400 text-sm mt-2">Essayez avec d'autres critères de recherche.</p>
+                <p className="text-gray-500 text-lg">{t.schedules.noResults}</p>
+                <p className="text-gray-400 text-sm mt-2">{t.schedules.tryOther}</p>
               </div>
             )}
           </div>
@@ -1167,10 +1169,10 @@ export default function SchedulesPage({ token, userRole }: SchedulesPageProps) {
           <div className="text-center py-12">
             <Bus className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-700 mb-2">
-              Bienvenue sur la page des horaires
+              {t.schedules.welcome}
             </h3>
             <p className="text-gray-500 mb-6">
-              Utilisez le formulaire de recherche pour trouver les horaires de bus.
+              {t.schedules.useForm}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
               {schedules.slice(0, 3).map(schedule => (

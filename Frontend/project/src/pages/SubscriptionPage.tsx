@@ -1,6 +1,7 @@
 // SubscriptionPage.tsx - Version finale avec vos URLs
 import { useState, useEffect } from 'react';
 import apiService from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface SubscriptionPlan {
   id: number;
@@ -17,6 +18,7 @@ interface SubscriptionPageProps {
 }
 
 export default function SubscriptionPage({ token, userId }: SubscriptionPageProps) {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState<string | null>(null);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
 
@@ -88,10 +90,10 @@ export default function SubscriptionPage({ token, userId }: SubscriptionPageProp
     <div className="max-w-6xl mx-auto p-6">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Choisissez Votre Abonnement Transport
+          {t.subscriptions.title}
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Accédez à tous les transports en illimité avec l'abonnement qui vous convient
+          {t.subscriptions.subtitle}
         </p>
       </div>
       
