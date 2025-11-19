@@ -24,8 +24,8 @@ class WebSocketService {
   connect(userId: number): void {
     this.userId = userId;
 
-    // Connect to notification-service on port 3001
-    const wsUrl = `${window.location.protocol}//${window.location.hostname}:3001`;
+    // Connect to notification-service via Ingress (routes /socket.io to notification-service)
+    const wsUrl = `${window.location.protocol}//${window.location.hostname}`;
 
     try {
       this.socket = io(wsUrl, {

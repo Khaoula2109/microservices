@@ -9,12 +9,22 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    # WebSocket support
+    nginx.ingress.kubernetes.io/websocket-services: "notification-service"
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$request_uri"
 spec:
   ingressClassName: nginx
   rules:
   - host: kowihan.local
     http:
       paths:
+      - path: /socket.io
+        pathType: Prefix
+        backend:
+          service:
+            name: notification-service
+            port:
+              number: 3001
       - path: /api
         pathType: Prefix
         backend:
