@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Ticket, Plus, Minus, ShoppingCart, Check, AlertCircle, RefreshCw } from 'lucide-react';
+import { Ticket, Plus, Minus, ShoppingCart, Check, AlertCircle, RefreshCw, Download } from 'lucide-react';
 import { apiService } from '../services/api';
 
 
@@ -289,6 +289,106 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
     return typeMap[ticketType] || ticketType;
   };
 
+  const handleExportPDF = (ticket: HistoryTicket) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Veuillez autoriser les popups pour exporter le ticket');
+      return;
+    }
+
+    const ticketInfo = tickets.find(t => t.id === ticket.ticketType);
+    const price = ticketInfo?.price || 0;
+    const validity = ticketInfo?.validity || '';
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Ticket KowihanTransit - ${ticket.id}</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            .ticket { max-width: 400px; margin: 0 auto; border: 2px solid #102a43; border-radius: 12px; overflow: hidden; }
+            .header { background: linear-gradient(135deg, #102a43, #243b53); color: white; padding: 20px; text-align: center; }
+            .logo { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+            .ticket-type { font-size: 20px; font-weight: bold; }
+            .content { padding: 20px; }
+            .qr-section { text-align: center; padding: 20px; border-bottom: 1px dashed #ccc; }
+            .qr-code { font-family: monospace; font-size: 10px; word-break: break-all; background: #f0f0f0; padding: 10px; border-radius: 4px; margin-top: 10px; }
+            .info { padding: 15px 0; }
+            .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+            .info-label { color: #666; }
+            .info-value { font-weight: bold; color: #102a43; }
+            .price { text-align: center; padding: 15px; background: #D4A017; color: #102a43; font-size: 24px; font-weight: bold; }
+            .footer { text-align: center; padding: 15px; font-size: 12px; color: #666; }
+            .status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+            .status-active { background: #d1fae5; color: #065f46; }
+            .status-used { background: #dbeafe; color: #1e40af; }
+            @media print {
+              body { padding: 0; }
+              .ticket { border: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="ticket">
+            <div class="header">
+              <div class="logo">KowihanTransit</div>
+              <div class="ticket-type">${formatTicketType(ticket.ticketType)}</div>
+            </div>
+            <div class="content">
+              <div class="qr-section">
+                <p style="font-weight: bold; margin-bottom: 10px;">QR Code</p>
+                <div class="qr-code">${ticket.qrCodeData}</div>
+              </div>
+              <div class="info">
+                <div class="info-row">
+                  <span class="info-label">ID Ticket</span>
+                  <span class="info-value">#${ticket.id}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Validité</span>
+                  <span class="info-value">${validity}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Date d'achat</span>
+                  <span class="info-value">${new Date(ticket.purchaseDate).toLocaleString('fr-FR')}</span>
+                </div>
+                ${ticket.validationDate ? `
+                <div class="info-row">
+                  <span class="info-label">Date de validation</span>
+                  <span class="info-value">${new Date(ticket.validationDate).toLocaleString('fr-FR')}</span>
+                </div>
+                ` : ''}
+                <div class="info-row">
+                  <span class="info-label">Statut</span>
+                  <span class="info-value">
+                    <span class="status ${ticket.status === 'VALIDE' || ticket.status === 'ACTIVE' ? 'status-active' : 'status-used'}">
+                      ${ticket.status === 'VALIDE' || ticket.status === 'ACTIVE' ? 'Actif' : ticket.status === 'USED' ? 'Utilisé' : ticket.status}
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="price">${price.toFixed(2)} DH</div>
+            <div class="footer">
+              <p>Merci d'avoir choisi KowihanTransit</p>
+              <p style="margin-top: 5px;">Ce ticket est personnel et non transférable</p>
+            </div>
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+  };
+
 
 
   useEffect(() => {
@@ -549,6 +649,14 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                             Valider
                           </button>
                         )}
+                        <button
+                          onClick={() => handleExportPDF(ticket)}
+                          className="text-xs bg-navy-900 text-white px-2 py-1 rounded hover:bg-navy-700 transition-colors flex items-center space-x-1"
+                          title="Exporter en PDF"
+                        >
+                          <Download className="h-3 w-3" />
+                          <span>PDF</span>
+                        </button>
                       </div>
                     </div>
                   </li>
