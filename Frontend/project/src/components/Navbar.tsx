@@ -68,20 +68,20 @@ export default function Navbar({
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-navy-900 text-white shadow-lg z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => onNavigate('home')}>
+          <div className="flex items-center space-x-3 cursor-pointer flex-shrink-0" onClick={() => onNavigate('home')}>
             <Bus className="h-8 w-8 text-mustard-500" />
             <span className="font-bold text-xl">KowihanTransit</span>
           </div>
 
           {/* Desktop */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden md:flex items-center flex-1 justify-center space-x-2 lg:space-x-4">
             {visibleLinks.map((link) => (
               <button
                 key={link.page}
                 onClick={() => onNavigate(link.page)}
-                className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                className={`px-3 lg:px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap ${
                   currentPage === link.page
                     ? 'bg-mustard-500 text-navy-900 font-semibold'
                     : 'hover:bg-navy-800 text-white'
@@ -90,21 +90,20 @@ export default function Navbar({
                 {link.name}
               </button>
             ))}
-            
-            {token ? (
-              <div className="flex items-center space-x-2 ml-4">
 
+            {token && (
+              <>
                 {(isUserController || isUserAdmin) && (
                   <button
                     onClick={() => onNavigate('validate')}
-                    className={`px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                    className={`px-3 lg:px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-1 lg:space-x-2 whitespace-nowrap ${
                       currentPage === 'validate'
                         ? 'bg-mustard-500 text-navy-900 font-semibold'
                         : 'hover:bg-navy-800 text-white'
                     }`}
                     title="Valider les tickets"
                   >
-                    <Scan className="h-5 w-5" />
+                    <Scan className="h-4 w-4 lg:h-5 lg:w-5" />
                     <span>Valider</span>
                   </button>
                 )}
@@ -112,14 +111,14 @@ export default function Navbar({
                 {(isUserController || isUserAdmin) && (
                   <button
                     onClick={() => onNavigate('controller-dashboard')}
-                    className={`px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                    className={`px-3 lg:px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-1 lg:space-x-2 whitespace-nowrap ${
                       currentPage === 'controller-dashboard'
                         ? 'bg-mustard-500 text-navy-900 font-semibold'
                         : 'hover:bg-navy-800 text-white'
                     }`}
                     title="Dashboard Contrôleur"
                   >
-                    <BarChart3 className="h-5 w-5" />
+                    <BarChart3 className="h-4 w-4 lg:h-5 lg:w-5" />
                     <span>Stats</span>
                   </button>
                 )}
@@ -127,121 +126,126 @@ export default function Navbar({
                 {isUserAdmin && (
                   <button
                     onClick={() => onNavigate('admin-creation')}
-                    className={`px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                    className={`px-3 lg:px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-1 lg:space-x-2 whitespace-nowrap ${
                       currentPage === 'admin-creation'
                         ? 'bg-mustard-500 text-navy-900 font-semibold'
                         : 'hover:bg-navy-800 text-white'
                     }`}
                     title="Créer un nouvel utilisateur"
                   >
-                    <UserPlus className="h-5 w-5" />
+                    <UserPlus className="h-4 w-4 lg:h-5 lg:w-5" />
                     <span>Créer Utilisateur</span>
                   </button>
                 )}
-
-                <button
-                  onClick={() => onNavigate('account')}
-                  className={`px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
-                    currentPage === 'account'
-                      ? 'bg-mustard-500 text-navy-900 font-semibold'
-                      : 'bg-navy-700 hover:bg-navy-600 text-white'
-                  }`}
-                >
-                  <User className="h-5 w-5" />
-                  <span>{t.nav.myAccount}</span>
-                </button>
-                <NotificationBell />
-                <div className="relative">
-                  <button
-                    onClick={() => setShowLangMenu(!showLangMenu)}
-                    className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-1"
-                    title="Changer la langue"
-                  >
-                    <Globe className="h-5 w-5" />
-                    <span className="text-xs">{language.toUpperCase()}</span>
-                  </button>
-                  {showLangMenu && (
-                    <div className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-lg py-1 z-50">
-                      {languages.map((lang) => (
-                        <button
-                          key={lang.code}
-                          onClick={() => {
-                            setLanguage(lang.code);
-                            setShowLangMenu(false);
-                          }}
-                          className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center space-x-2 ${
-                            language === lang.code ? 'bg-gray-100 font-semibold' : ''
-                          }`}
-                        >
-                          <span>{lang.flag}</span>
-                          <span className="text-gray-700">{lang.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <button
-                  onClick={toggleTheme}
-                  className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200"
-                  title={isDark ? t.nav.lightMode : t.nav.darkMode}
-                >
-                  {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                </button>
-                <button
-                  onClick={onLogout}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
-                  title={t.nav.logout}
-                >
-                  <LogOut className="h-5 w-5" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <div className="relative">
-                  <button
-                    onClick={() => setShowLangMenu(!showLangMenu)}
-                    className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-1"
-                  >
-                    <Globe className="h-5 w-5" />
-                    <span className="text-xs">{language.toUpperCase()}</span>
-                  </button>
-                  {showLangMenu && (
-                    <div className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-lg py-1 z-50">
-                      {languages.map((lang) => (
-                        <button
-                          key={lang.code}
-                          onClick={() => {
-                            setLanguage(lang.code);
-                            setShowLangMenu(false);
-                          }}
-                          className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center space-x-2 ${
-                            language === lang.code ? 'bg-gray-100 font-semibold' : ''
-                          }`}
-                        >
-                          <span>{lang.flag}</span>
-                          <span className="text-gray-700">{lang.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <button
-                  onClick={toggleTheme}
-                  className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200"
-                  title={isDark ? t.nav.lightMode : t.nav.darkMode}
-                >
-                  {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                </button>
-                <button
-                  onClick={() => onNavigate('login')}
-                  className="px-6 py-2 bg-mustard-500 text-navy-900 font-semibold rounded-lg hover:bg-mustard-600 transition-all duration-200 flex items-center space-x-2"
-                >
-                  <LogIn className="h-5 w-5" />
-                  <span>{t.nav.login}</span>
-                </button>
-              </div>
+              </>
             )}
           </div>
+
+          {/* Right side actions */}
+          {token ? (
+            <div className="hidden md:flex items-center space-x-2 flex-shrink-0">
+              <button
+                onClick={() => onNavigate('account')}
+                className={`px-3 lg:px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-1 lg:space-x-2 whitespace-nowrap ${
+                  currentPage === 'account'
+                    ? 'bg-mustard-500 text-navy-900 font-semibold'
+                    : 'bg-navy-700 hover:bg-navy-600 text-white'
+                }`}
+              >
+                <User className="h-4 w-4 lg:h-5 lg:w-5" />
+                <span className="hidden lg:inline">{t.nav.myAccount}</span>
+              </button>
+              <NotificationBell />
+              <div className="relative">
+                <button
+                  onClick={() => setShowLangMenu(!showLangMenu)}
+                  className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-1"
+                  title="Changer la langue"
+                >
+                  <Globe className="h-4 w-4 lg:h-5 lg:w-5" />
+                  <span className="text-xs">{language.toUpperCase()}</span>
+                </button>
+                {showLangMenu && (
+                  <div className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-lg py-1 z-50">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          setLanguage(lang.code);
+                          setShowLangMenu(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center space-x-2 ${
+                          language === lang.code ? 'bg-gray-100 font-semibold' : ''
+                        }`}
+                      >
+                        <span>{lang.flag}</span>
+                        <span className="text-gray-700">{lang.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={toggleTheme}
+                className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200"
+                title={isDark ? t.nav.lightMode : t.nav.darkMode}
+              >
+                {isDark ? <Sun className="h-4 w-4 lg:h-5 lg:w-5" /> : <Moon className="h-4 w-4 lg:h-5 lg:w-5" />}
+              </button>
+              <button
+                onClick={onLogout}
+                className="px-3 lg:px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 flex items-center space-x-1 lg:space-x-2"
+                title={t.nav.logout}
+              >
+                <LogOut className="h-4 w-4 lg:h-5 lg:w-5" />
+              </button>
+            </div>
+          ) : (
+            <div className="hidden md:flex items-center space-x-2 flex-shrink-0">
+              <div className="relative">
+                <button
+                  onClick={() => setShowLangMenu(!showLangMenu)}
+                  className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-1"
+                >
+                  <Globe className="h-4 w-4 lg:h-5 lg:w-5" />
+                  <span className="text-xs">{language.toUpperCase()}</span>
+                </button>
+                {showLangMenu && (
+                  <div className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-lg py-1 z-50">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          setLanguage(lang.code);
+                          setShowLangMenu(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center space-x-2 ${
+                          language === lang.code ? 'bg-gray-100 font-semibold' : ''
+                        }`}
+                      >
+                        <span>{lang.flag}</span>
+                        <span className="text-gray-700">{lang.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={toggleTheme}
+                className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200"
+                title={isDark ? t.nav.lightMode : t.nav.darkMode}
+              >
+                {isDark ? <Sun className="h-4 w-4 lg:h-5 lg:w-5" /> : <Moon className="h-4 w-4 lg:h-5 lg:w-5" />}
+              </button>
+              <button
+                onClick={() => onNavigate('login')}
+                className="px-4 lg:px-6 py-2 bg-mustard-500 text-navy-900 font-semibold rounded-lg hover:bg-mustard-600 transition-all duration-200 flex items-center space-x-2"
+              >
+                <LogIn className="h-4 w-4 lg:h-5 lg:w-5" />
+                <span>{t.nav.login}</span>
+              </button>
+            </div>
+          )}
 
           <button
             className="md:hidden p-2"
