@@ -99,8 +99,8 @@ export default function Navbar({
                     onClick={() => onNavigate('validate')}
                     className={`px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
                       currentPage === 'validate'
-                        ? 'bg-green-600 text-white font-semibold border-2 border-green-300'
-                        : 'bg-green-500 hover:bg-green-600 text-white border-2 border-green-400'
+                        ? 'bg-mustard-500 text-navy-900 font-semibold'
+                        : 'hover:bg-navy-800 text-white'
                     }`}
                     title="Valider les tickets"
                   >
@@ -114,8 +114,8 @@ export default function Navbar({
                     onClick={() => onNavigate('controller-dashboard')}
                     className={`px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
                       currentPage === 'controller-dashboard'
-                        ? 'bg-teal-600 text-white font-semibold border-2 border-teal-300'
-                        : 'bg-teal-500 hover:bg-teal-600 text-white border-2 border-teal-400'
+                        ? 'bg-mustard-500 text-navy-900 font-semibold'
+                        : 'hover:bg-navy-800 text-white'
                     }`}
                     title="Dashboard Contrôleur"
                   >
@@ -284,12 +284,12 @@ export default function Navbar({
                     }}
                     className={`block w-full text-left px-3 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
                       currentPage === 'validate'
-                        ? 'bg-green-600 text-white font-semibold border-2 border-green-300'
-                        : 'bg-green-500 hover:bg-green-600 text-white border-2 border-green-400'
+                        ? 'bg-mustard-500 text-navy-900 font-semibold'
+                        : 'hover:bg-navy-700 text-white'
                     }`}
                   >
                     <Scan className="h-5 w-5" />
-                    <span>Valider Tickets</span>
+                    <span>Valider</span>
                   </button>
                 )}
 
@@ -301,12 +301,12 @@ export default function Navbar({
                     }}
                     className={`block w-full text-left px-3 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
                       currentPage === 'controller-dashboard'
-                        ? 'bg-teal-600 text-white font-semibold border-2 border-teal-300'
-                        : 'bg-teal-500 hover:bg-teal-600 text-white border-2 border-teal-400'
+                        ? 'bg-mustard-500 text-navy-900 font-semibold'
+                        : 'hover:bg-navy-700 text-white'
                     }`}
                   >
                     <BarChart3 className="h-5 w-5" />
-                    <span>Dashboard Stats</span>
+                    <span>Stats</span>
                   </button>
                 )}
 
