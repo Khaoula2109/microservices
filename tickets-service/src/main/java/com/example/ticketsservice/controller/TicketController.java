@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.ticketsservice.dto.QrValidationResponse;
 import com.example.ticketsservice.dto.TicketPurchaseRequest;
 import com.example.ticketsservice.dto.TicketStatsResponse;
 import com.example.ticketsservice.model.Ticket;
@@ -122,5 +123,20 @@ public class TicketController {
             // Return zeros if no tickets found
             return ResponseEntity.ok(new TicketStatsResponse(0, 0, 0));
         }
+    }
+
+    @GetMapping("/validate-qr/{qrCode}")
+    public ResponseEntity<QrValidationResponse> validateByQrCode(@PathVariable String qrCode) {
+        System.out.println("🔍 Validation QR Code: " + qrCode);
+
+        QrValidationResponse response = ticketService.validateByQrCode(qrCode);
+
+        if (response.isValid()) {
+            System.out.println("✅ Ticket valide - " + response.getTicketType() + " - " + response.getOwnerName());
+        } else {
+            System.out.println("❌ Ticket invalide - " + response.getMessage());
+        }
+
+        return ResponseEntity.ok(response);
     }
 }

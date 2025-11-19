@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.ticketsservice.config.RabbitMQConfig;
+import com.example.ticketsservice.dto.QrValidationResponse;
 import com.example.ticketsservice.dto.TicketPurchaseRequest;
 import com.example.ticketsservice.dto.TicketStatsResponse;
 import com.example.ticketsservice.event.TicketPurchasedEvent;
@@ -145,6 +146,108 @@ public class TicketService {
 
         ticket.setStatus("ANNULE");
         return ticketRepository.save(ticket);
+    }
+
+    @Transactional
+    public QrValidationResponse validateByQrCode(String qrCode) {
+        // Find ticket by QR code
+        Ticket ticket = ticketRepository.findByQrCodeData(qrCode)
+                .orElse(null);
+
+        if (ticket == null) {
+            return QrValidationResponse.builder()
+                    .valid(false)
+                    .message("QR Code invalide - Ticket non trouvé")
+                    .build();
+        }
+
+        // Check if ticket is cancelled
+        if ("ANNULE".equals(ticket.getStatus())) {
+            return QrValidationResponse.builder()
+                    .valid(false)
+                    .message("Ce ticket a été annulé")
+                    .ticketType(ticket.getTicketType())
+                    .status(ticket.getStatus())
+                    .purchaseDate(ticket.getPurchaseDate().toString())
+                    .build();
+        }
+
+        // Check if ticket is already used (for SIMPLE tickets)
+        if (ticket.getValidationDate() != null && "SIMPLE".equals(ticket.getTicketType())) {
+            return QrValidationResponse.builder()
+                    .valid(false)
+                    .message("Ce ticket a déjà été utilisé")
+                    .ticketType(ticket.getTicketType())
+                    .status("UTILISE")
+                    .purchaseDate(ticket.getPurchaseDate().toString())
+                    .build();
+        }
+
+        // Check expiration based on ticket type
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime purchaseDate = ticket.getPurchaseDate();
+        LocalDateTime expirationDate;
+        boolean isExpired = false;
+
+        switch (ticket.getTicketType().toUpperCase()) {
+            case "SIMPLE":
+                // Valid for 2 hours after purchase
+                expirationDate = purchaseDate.plusHours(2);
+                isExpired = now.isAfter(expirationDate);
+                break;
+            case "JOURNEE":
+                // Valid until end of purchase day
+                expirationDate = purchaseDate.toLocalDate().atTime(23, 59, 59);
+                isExpired = now.isAfter(expirationDate);
+                break;
+            case "HEBDO":
+                // Valid for 7 days
+                expirationDate = purchaseDate.plusDays(7);
+                isExpired = now.isAfter(expirationDate);
+                break;
+            case "MENSUEL":
+                // Valid for 30 days
+                expirationDate = purchaseDate.plusDays(30);
+                isExpired = now.isAfter(expirationDate);
+                break;
+            default:
+                expirationDate = purchaseDate.plusDays(1);
+                isExpired = now.isAfter(expirationDate);
+        }
+
+        if (isExpired) {
+            ticket.setStatus("EXPIRE");
+            ticketRepository.save(ticket);
+
+            return QrValidationResponse.builder()
+                    .valid(false)
+                    .message("Ce ticket a expiré")
+                    .ticketType(ticket.getTicketType())
+                    .status("EXPIRE")
+                    .purchaseDate(purchaseDate.toString())
+                    .expirationDate(expirationDate.toString())
+                    .build();
+        }
+
+        // Mark as validated for SIMPLE tickets
+        if ("SIMPLE".equals(ticket.getTicketType()) && ticket.getValidationDate() == null) {
+            ticket.setValidationDate(now);
+            ticketRepository.save(ticket);
+        }
+
+        // Get owner name
+        User user = userRepository.findById(ticket.getUserId()).orElse(null);
+        String ownerName = user != null ? user.getFirstName() + " " + user.getLastName() : "Utilisateur inconnu";
+
+        return QrValidationResponse.builder()
+                .valid(true)
+                .message("Ticket valide - Bon voyage!")
+                .ticketType(ticket.getTicketType())
+                .status(ticket.getStatus())
+                .purchaseDate(purchaseDate.toString())
+                .expirationDate(expirationDate.toString())
+                .ownerName(ownerName)
+                .build();
     }
 
     private void validatePurchaseRequest(TicketPurchaseRequest request) {
