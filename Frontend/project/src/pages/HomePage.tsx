@@ -2,9 +2,10 @@ import { Clock, Ticket, MapPin, User, TrendingUp, Shield } from 'lucide-react';
 
 interface HomePageProps {
   onNavigate: (page: string) => void;
+  token?: string | null;
 }
 
-export default function HomePage({ onNavigate }: HomePageProps) {
+export default function HomePage({ onNavigate, token }: HomePageProps) {
   const quickActions = [
     {
       title: 'Consulter les Horaires',
@@ -135,22 +136,24 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         </div>
       </section>
 
-      <section className="bg-navy-900 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Prêt à Voyager?
-          </h2>
-          <p className="text-xl text-navy-200 mb-8 max-w-2xl mx-auto">
-            Créez un compte dès maintenant et profitez de tous nos services
-          </p>
-          <button
-            onClick={() => onNavigate('register')}
-            className="bg-mustard-500 text-navy-900 font-bold px-8 py-4 rounded-lg hover:bg-mustard-600 transition-all duration-200 transform hover:scale-105 text-lg shadow-lg"
-          >
-            Créer un Compte
-          </button>
-        </div>
-      </section>
+      {!token && (
+        <section className="bg-navy-900 text-white py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              Prêt à Voyager?
+            </h2>
+            <p className="text-xl text-navy-200 mb-8 max-w-2xl mx-auto">
+              Créez un compte dès maintenant et profitez de tous nos services
+            </p>
+            <button
+              onClick={() => onNavigate('register')}
+              className="bg-mustard-500 text-navy-900 font-bold px-8 py-4 rounded-lg hover:bg-mustard-600 transition-all duration-200 transform hover:scale-105 text-lg shadow-lg"
+            >
+              Créer un Compte
+            </button>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
