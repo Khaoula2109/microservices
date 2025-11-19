@@ -1,0 +1,50 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+rule_files: []
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # API Gateway
+  - job_name: 'api-gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['api-gateway:8081']
+    scrape_interval: 10s
+
+  # User Service
+  - job_name: 'user-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['user-service:8080']
+    scrape_interval: 10s
+
+  # Tickets Service
+  - job_name: 'tickets-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['tickets-service:8082']
+    scrape_interval: 10s
+
+  # Routes Service (if Spring Boot)
+  - job_name: 'routes-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['routes-service:8083']
+    scrape_interval: 10s
+
+  # RabbitMQ
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq-service:15692']
+    scrape_interval: 30s
