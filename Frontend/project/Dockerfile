@@ -19,5 +19,5 @@ COPY . .
 
 EXPOSE 5173
 
-
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# Clear Vite cache and start dev server
+CMD ["sh", "-c", "rm -rf node_modules/.vite && npm run dev -- --host 0.0.0.0"]

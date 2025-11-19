@@ -13,7 +13,7 @@ export default defineConfig({
     allowedHosts: ['kowihan.local'],
   },
   resolve: {
-    dedupe: ['react', 'react-dom', 'lucide-react', 'react-leaflet', 'react-router-dom'],
+    dedupe: ['react', 'react-dom', 'lucide-react', 'react-leaflet', 'react-router-dom', '@react-leaflet/core', 'leaflet'],
     alias: {
       'react': path.resolve(__dirname, 'node_modules/react'),
       'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
@@ -22,7 +22,17 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'lucide-react', 'react-leaflet', 'react-router-dom'],
+    include: ['react', 'react-dom', 'lucide-react', 'react-leaflet', 'react-router-dom', '@react-leaflet/core', 'leaflet'],
     force: true,
+    esbuildOptions: {
+      // Force all dependencies to use the same React
+      plugins: [],
+    },
+  },
+  build: {
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true,
+    },
   },
 });
