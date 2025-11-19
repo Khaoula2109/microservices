@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Menu, X, Bus, LogIn, User, LogOut, Shield, Scan, Users, BarChart3, Sun, Moon } from 'lucide-react';
+import { Menu, X, Bus, LogIn, User, LogOut, Shield, Scan, Users, BarChart3, Sun, Moon, Globe } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { Language } from '../i18n/translations';
 
 interface NavbarProps {
   currentPage: string;
@@ -20,14 +22,22 @@ export default function Navbar({
   userRole
 }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { theme, toggleTheme, isDark } = useTheme();
+  const [showLangMenu, setShowLangMenu] = useState(false);
+  const { toggleTheme, isDark } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
+
+  const languages: { code: Language; label: string; flag: string }[] = [
+    { code: 'fr', label: 'Français', flag: '🇫🇷' },
+    { code: 'en', label: 'English', flag: '🇬🇧' },
+    { code: 'ar', label: 'العربية', flag: '🇲🇦' },
+  ];
 
   const navLinks = [
-    { name: 'Accueil', page: 'home' },
-    { name: 'Plannings Bus', page: 'schedules' },
-    { name: 'Acheter Tickets', page: 'tickets' },
-    { name: 'Carte Live', page: 'map' },
-    { name: 'Abonnements', page: 'subscriptions' }, 
+    { name: t.nav.home, page: 'home' },
+    { name: t.nav.schedules, page: 'schedules' },
+    { name: t.nav.tickets, page: 'tickets' },
+    { name: t.nav.map, page: 'map' },
+    { name: t.nav.subscriptions, page: 'subscriptions' },
   ];
   
   const protectedPages = ['schedules', 'tickets', 'map', 'account', 'admin-creation','subscriptions'];
@@ -138,29 +148,86 @@ export default function Navbar({
                   }`}
                 >
                   <User className="h-5 w-5" />
-                  <span>Mon Compte</span>
+                  <span>{t.nav.myAccount}</span>
                 </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setShowLangMenu(!showLangMenu)}
+                    className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-1"
+                    title="Changer la langue"
+                  >
+                    <Globe className="h-5 w-5" />
+                    <span className="text-xs">{language.toUpperCase()}</span>
+                  </button>
+                  {showLangMenu && (
+                    <div className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-lg py-1 z-50">
+                      {languages.map((lang) => (
+                        <button
+                          key={lang.code}
+                          onClick={() => {
+                            setLanguage(lang.code);
+                            setShowLangMenu(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center space-x-2 ${
+                            language === lang.code ? 'bg-gray-100 font-semibold' : ''
+                          }`}
+                        >
+                          <span>{lang.flag}</span>
+                          <span className="text-gray-700">{lang.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={toggleTheme}
                   className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200"
-                  title={isDark ? 'Mode clair' : 'Mode sombre'}
+                  title={isDark ? t.nav.lightMode : t.nav.darkMode}
                 >
                   {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                 </button>
                 <button
                   onClick={onLogout}
                   className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
-                  title="Déconnexion"
+                  title={t.nav.logout}
                 >
                   <LogOut className="h-5 w-5" />
                 </button>
               </div>
             ) : (
               <div className="flex items-center space-x-2">
+                <div className="relative">
+                  <button
+                    onClick={() => setShowLangMenu(!showLangMenu)}
+                    className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-1"
+                  >
+                    <Globe className="h-5 w-5" />
+                    <span className="text-xs">{language.toUpperCase()}</span>
+                  </button>
+                  {showLangMenu && (
+                    <div className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-lg py-1 z-50">
+                      {languages.map((lang) => (
+                        <button
+                          key={lang.code}
+                          onClick={() => {
+                            setLanguage(lang.code);
+                            setShowLangMenu(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center space-x-2 ${
+                            language === lang.code ? 'bg-gray-100 font-semibold' : ''
+                          }`}
+                        >
+                          <span>{lang.flag}</span>
+                          <span className="text-gray-700">{lang.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={toggleTheme}
                   className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200"
-                  title={isDark ? 'Mode clair' : 'Mode sombre'}
+                  title={isDark ? t.nav.lightMode : t.nav.darkMode}
                 >
                   {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                 </button>
@@ -169,7 +236,7 @@ export default function Navbar({
                   className="px-6 py-2 bg-mustard-500 text-navy-900 font-semibold rounded-lg hover:bg-mustard-600 transition-all duration-200 flex items-center space-x-2"
                 >
                   <LogIn className="h-5 w-5" />
-                  <span>Connexion</span>
+                  <span>{t.nav.login}</span>
                 </button>
               </div>
             )}
