@@ -24,6 +24,8 @@ public class UserEventConsumer {
             User user = User.builder()
                     .id(Long.parseLong(event.getUserId()))
                     .email(event.getEmail())
+                    .firstName(event.getFirstName())
+                    .lastName(event.getLastName())
                     .build();
 
             userRepository.save(user);
