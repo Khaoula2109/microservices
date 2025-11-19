@@ -39,7 +39,7 @@ class UserServiceTest {
         testUser.setFirstName("Test");
         testUser.setLastName("User");
         testUser.setPhoneNumber("0600000000");
-        testUser.setRole(UserRole.PASSAGER);
+        testUser.setRole(UserRole.PASSENGER);
     }
 
     @Test
@@ -61,15 +61,15 @@ class UserServiceTest {
     @DisplayName("Should get users by role")
     void getUsersByRole_Success() {
         // Given
-        when(userRepository.findByRole(UserRole.PASSAGER)).thenReturn(List.of(testUser));
+        when(userRepository.findByRole(UserRole.PASSENGER)).thenReturn(List.of(testUser));
 
         // When
-        List<UserResponse> result = userService.getUsersByRole(UserRole.PASSAGER);
+        List<UserResponse> result = userService.getUsersByRole(UserRole.PASSENGER);
 
         // Then
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(UserRole.PASSAGER, result.get(0).getRole());
+        assertEquals(UserRole.PASSENGER, result.get(0).getRole());
     }
 
     @Test
@@ -146,13 +146,13 @@ class UserServiceTest {
     void getUserStats_Success() {
         // Given
         when(userRepository.count()).thenReturn(10L);
-        when(userRepository.countByRole(UserRole.PASSAGER)).thenReturn(5L);
+        when(userRepository.countByRole(UserRole.PASSENGER)).thenReturn(5L);
         when(userRepository.countByRole(UserRole.ADMIN)).thenReturn(2L);
         when(userRepository.countByRole(UserRole.CONTROLLER)).thenReturn(2L);
         when(userRepository.countByRole(UserRole.DRIVER)).thenReturn(1L);
 
         // When
-        Map<String, Long> result = userService.getUserStats();
+        Map<String, Object> result = userService.getUserStats();
 
         // Then
         assertNotNull(result);
