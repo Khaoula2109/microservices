@@ -473,6 +473,34 @@ async getAllStops(token: string): Promise<ApiResponse<any>> {
     );
   }
 
+  async getValidationStats(token: string) {
+    return this.fetchWithFallback<{
+      validationsToday: number;
+      validationsThisWeek: number;
+      validationsThisMonth: number;
+      totalValidations: number;
+      validTickets: number;
+      invalidTickets: number;
+    }>(
+      `${API_BASE_URL}/api/tickets/validation-stats`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  }
+
+  async getValidationHistory(token: string) {
+    return this.fetchWithFallback<any[]>(
+      `${API_BASE_URL}/api/tickets/validation-history`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  }
 
 async createSubscriptionCheckout(priceId: string, token: string, userId: number, userEmail: string) {
 
@@ -543,6 +571,161 @@ async getSubscriptionPlans(token: string) {
   }
 
 
+
+  // --- Admin User Management ---
+
+  async getAllUsers(token: string, role?: string) {
+    const url = role
+      ? `${API_BASE_URL}/api/users?role=${role}`
+      : `${API_BASE_URL}/api/users`;
+
+    return this.fetchWithFallback<any[]>(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+
+  async getUserStats(token: string) {
+    return this.fetchWithFallback<{
+      total: number;
+      passengers: number;
+      admins: number;
+      controllers: number;
+      drivers: number;
+    }>(`${API_BASE_URL}/api/users/stats`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+
+  async updateUserRole(userId: number, role: string, token: string) {
+    return this.fetchWithFallback<any>(
+      `${API_BASE_URL}/api/users/${userId}/role`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ role }),
+      }
+    );
+  }
+
+  async deleteUser(userId: number, token: string) {
+    return this.fetchWithFallback<void>(
+      `${API_BASE_URL}/api/users/${userId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  }
+
+  // --- Ticket Transfer ---
+
+  async transferTicket(ticketId: number, recipientEmail: string, token: string) {
+    return this.fetchWithFallback<any>(
+      `${API_BASE_URL}/api/tickets/${ticketId}/transfer`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ recipientEmail }),
+      }
+    );
+  }
+
+  async getTransferHistory(token: string) {
+    return this.fetchWithFallback<any[]>(
+      `${API_BASE_URL}/api/tickets/transfer-history`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  }
+
+  async getTransferHistorySent(token: string) {
+    return this.fetchWithFallback<any[]>(
+      `${API_BASE_URL}/api/tickets/transfer-history/sent`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  }
+
+  async getTransferHistoryReceived(token: string) {
+    return this.fetchWithFallback<any[]>(
+      `${API_BASE_URL}/api/tickets/transfer-history/received`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  }
+
+  // --- Refunds ---
+
+  async requestRefund(ticketId: number, reason: string, token: string) {
+    return this.fetchWithFallback<any>(
+      `${API_BASE_URL}/api/tickets/refund`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ticketId, reason }),
+      }
+    );
+  }
+
+  async getMyRefunds(token: string) {
+    return this.fetchWithFallback<any[]>(
+      `${API_BASE_URL}/api/tickets/refunds`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  }
+
+  async getPendingRefunds(token: string) {
+    return this.fetchWithFallback<any[]>(
+      `${API_BASE_URL}/api/tickets/refunds/pending`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  }
+
+  async processRefund(refundId: number, approved: boolean, adminNotes: string, token: string) {
+    return this.fetchWithFallback<any>(
+      `${API_BASE_URL}/api/tickets/refunds/${refundId}/process`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ approved, adminNotes }),
+      }
+    );
+  }
 
   async testFallback() {
     return this.fetchWithFallback<any>(`${API_BASE_URL}/fallback/test`);

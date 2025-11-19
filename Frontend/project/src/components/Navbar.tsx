@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import { Menu, X, Bus, LogIn, User, LogOut, Shield, Scan } from 'lucide-react';
+import { Menu, X, Bus, LogIn, User, LogOut, Shield, Scan, Users, BarChart3, Sun, Moon, Globe } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { Language } from '../i18n/translations';
+import NotificationBell from './NotificationBell';
 
 interface NavbarProps {
   currentPage: string;
@@ -19,15 +23,22 @@ export default function Navbar({
   userRole
 }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showLangMenu, setShowLangMenu] = useState(false);
+  const { toggleTheme, isDark } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
 
- 
+  const languages: { code: Language; label: string; flag: string }[] = [
+    { code: 'fr', label: 'Français', flag: '🇫🇷' },
+    { code: 'en', label: 'English', flag: '🇬🇧' },
+    { code: 'ar', label: 'العربية', flag: '🇲🇦' },
+  ];
 
   const navLinks = [
-    { name: 'Accueil', page: 'home' },
-    { name: 'Plannings Bus', page: 'schedules' },
-    { name: 'Acheter Tickets', page: 'tickets' },
-    { name: 'Carte Live', page: 'map' },
-    { name: 'Abonnements', page: 'subscriptions' }, 
+    { name: t.nav.home, page: 'home' },
+    { name: t.nav.schedules, page: 'schedules' },
+    { name: t.nav.tickets, page: 'tickets' },
+    { name: t.nav.map, page: 'map' },
+    { name: t.nav.subscriptions, page: 'subscriptions' },
   ];
   
   const protectedPages = ['schedules', 'tickets', 'map', 'account', 'admin-creation','subscriptions'];
@@ -84,6 +95,21 @@ export default function Navbar({
                   </button>
                 )}
 
+                {(isUserController || isUserAdmin) && (
+                  <button
+                    onClick={() => onNavigate('controller-dashboard')}
+                    className={`px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                      currentPage === 'controller-dashboard'
+                        ? 'bg-teal-600 text-white font-semibold border-2 border-teal-300'
+                        : 'bg-teal-500 hover:bg-teal-600 text-white border-2 border-teal-400'
+                    }`}
+                    title="Dashboard Contrôleur"
+                  >
+                    <BarChart3 className="h-5 w-5" />
+                    <span>Stats</span>
+                  </button>
+                )}
+
                 {isUserAdmin && (
                   <button
                     onClick={() => onNavigate('admin-creation')}
@@ -98,7 +124,22 @@ export default function Navbar({
                     <span>Créer Admin</span>
                   </button>
                 )}
-                
+
+                {isUserAdmin && (
+                  <button
+                    onClick={() => onNavigate('user-management')}
+                    className={`px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                      currentPage === 'user-management'
+                        ? 'bg-purple-600 text-white font-semibold border-2 border-purple-300'
+                        : 'bg-purple-500 hover:bg-purple-600 text-white border-2 border-purple-400'
+                    }`}
+                    title="Gérer les utilisateurs"
+                  >
+                    <Users className="h-5 w-5" />
+                    <span>Utilisateurs</span>
+                  </button>
+                )}
+
                 <button
                   onClick={() => onNavigate('account')}
                   className={`px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
@@ -108,24 +149,98 @@ export default function Navbar({
                   }`}
                 >
                   <User className="h-5 w-5" />
-                  <span>Mon Compte</span>
+                  <span>{t.nav.myAccount}</span>
+                </button>
+                <NotificationBell />
+                <div className="relative">
+                  <button
+                    onClick={() => setShowLangMenu(!showLangMenu)}
+                    className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-1"
+                    title="Changer la langue"
+                  >
+                    <Globe className="h-5 w-5" />
+                    <span className="text-xs">{language.toUpperCase()}</span>
+                  </button>
+                  {showLangMenu && (
+                    <div className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-lg py-1 z-50">
+                      {languages.map((lang) => (
+                        <button
+                          key={lang.code}
+                          onClick={() => {
+                            setLanguage(lang.code);
+                            setShowLangMenu(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center space-x-2 ${
+                            language === lang.code ? 'bg-gray-100 font-semibold' : ''
+                          }`}
+                        >
+                          <span>{lang.flag}</span>
+                          <span className="text-gray-700">{lang.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={toggleTheme}
+                  className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200"
+                  title={isDark ? t.nav.lightMode : t.nav.darkMode}
+                >
+                  {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                 </button>
                 <button
                   onClick={onLogout}
                   className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
-                  title="Déconnexion"
+                  title={t.nav.logout}
                 >
                   <LogOut className="h-5 w-5" />
                 </button>
               </div>
             ) : (
-              <button
-                onClick={() => onNavigate('login')}
-                className="ml-4 px-6 py-2 bg-mustard-500 text-navy-900 font-semibold rounded-lg hover:bg-mustard-600 transition-all duration-200 flex items-center space-x-2"
-              >
-                <LogIn className="h-5 w-5" />
-                <span>Connexion</span>
-              </button>
+              <div className="flex items-center space-x-2">
+                <div className="relative">
+                  <button
+                    onClick={() => setShowLangMenu(!showLangMenu)}
+                    className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-1"
+                  >
+                    <Globe className="h-5 w-5" />
+                    <span className="text-xs">{language.toUpperCase()}</span>
+                  </button>
+                  {showLangMenu && (
+                    <div className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-lg py-1 z-50">
+                      {languages.map((lang) => (
+                        <button
+                          key={lang.code}
+                          onClick={() => {
+                            setLanguage(lang.code);
+                            setShowLangMenu(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center space-x-2 ${
+                            language === lang.code ? 'bg-gray-100 font-semibold' : ''
+                          }`}
+                        >
+                          <span>{lang.flag}</span>
+                          <span className="text-gray-700">{lang.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={toggleTheme}
+                  className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200"
+                  title={isDark ? t.nav.lightMode : t.nav.darkMode}
+                >
+                  {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                </button>
+                <button
+                  onClick={() => onNavigate('login')}
+                  className="px-6 py-2 bg-mustard-500 text-navy-900 font-semibold rounded-lg hover:bg-mustard-600 transition-all duration-200 flex items-center space-x-2"
+                >
+                  <LogIn className="h-5 w-5" />
+                  <span>{t.nav.login}</span>
+                </button>
+              </div>
             )}
           </div>
 
@@ -179,6 +294,23 @@ export default function Navbar({
                   </button>
                 )}
 
+                {(isUserController || isUserAdmin) && (
+                  <button
+                    onClick={() => {
+                      onNavigate('controller-dashboard');
+                      setIsMenuOpen(false);
+                    }}
+                    className={`block w-full text-left px-3 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                      currentPage === 'controller-dashboard'
+                        ? 'bg-teal-600 text-white font-semibold border-2 border-teal-300'
+                        : 'bg-teal-500 hover:bg-teal-600 text-white border-2 border-teal-400'
+                    }`}
+                  >
+                    <BarChart3 className="h-5 w-5" />
+                    <span>Dashboard Stats</span>
+                  </button>
+                )}
+
                 {isUserAdmin && (
                   <button
                     onClick={() => {
@@ -195,7 +327,24 @@ export default function Navbar({
                     <span>Créer Admin</span>
                   </button>
                 )}
-                
+
+                {isUserAdmin && (
+                  <button
+                    onClick={() => {
+                      onNavigate('user-management');
+                      setIsMenuOpen(false);
+                    }}
+                    className={`block w-full text-left px-3 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
+                      currentPage === 'user-management'
+                        ? 'bg-purple-600 text-white font-semibold border-2 border-purple-300'
+                        : 'bg-purple-500 hover:bg-purple-600 text-white border-2 border-purple-400'
+                    }`}
+                  >
+                    <Users className="h-5 w-5" />
+                    <span>Utilisateurs</span>
+                  </button>
+                )}
+
                 <button
                   onClick={() => {
                     onNavigate('account');
@@ -210,6 +359,13 @@ export default function Navbar({
                   Mon Compte
                 </button>
                 <button
+                  onClick={toggleTheme}
+                  className="block w-full text-left px-3 py-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
+                >
+                  {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                  <span>{isDark ? 'Mode clair' : 'Mode sombre'}</span>
+                </button>
+                <button
                   onClick={() => {
                     onLogout();
                     setIsMenuOpen(false);
@@ -220,15 +376,24 @@ export default function Navbar({
                 </button>
               </>
             ) : (
-              <button
-                onClick={() => {
-                  onNavigate('login');
-                  setIsMenuOpen(false);
-                }}
-                className="block w-full text-left px-3 py-2 bg-mustard-500 text-navy-900 font-semibold rounded-lg hover:bg-mustard-600 transition-all duration-200"
-              >
-                Connexion
-              </button>
+              <>
+                <button
+                  onClick={toggleTheme}
+                  className="block w-full text-left px-3 py-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
+                >
+                  {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                  <span>{isDark ? 'Mode clair' : 'Mode sombre'}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    onNavigate('login');
+                    setIsMenuOpen(false);
+                  }}
+                  className="block w-full text-left px-3 py-2 bg-mustard-500 text-navy-900 font-semibold rounded-lg hover:bg-mustard-600 transition-all duration-200"
+                >
+                  Connexion
+                </button>
+              </>
             )}
           </div>
         </div>
