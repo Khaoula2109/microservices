@@ -15,11 +15,16 @@ import com.example.ticketsservice.dto.QrValidationResponse;
 import com.example.ticketsservice.dto.TicketPurchaseRequest;
 import com.example.ticketsservice.dto.TicketStatsResponse;
 import com.example.ticketsservice.dto.TicketTransferRequest;
+import com.example.ticketsservice.dto.RefundRequest;
+import com.example.ticketsservice.dto.TransferHistoryResponse;
 import com.example.ticketsservice.dto.ValidationStatsResponse;
+import com.example.ticketsservice.model.Refund;
 import com.example.ticketsservice.model.Ticket;
+import com.example.ticketsservice.model.TransferHistory;
 import com.example.ticketsservice.service.TicketService;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -184,6 +189,144 @@ public class TicketController {
 
         } catch (Exception e) {
             System.out.println("❌ Erreur de transfert: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/transfer-history")
+    public ResponseEntity<List<TransferHistoryResponse>> getTransferHistory(HttpServletRequest httpRequest) {
+        String userIdHeader = httpRequest.getHeader("X-User-Id");
+
+        System.out.println("📜 Récupération de l'historique de transfert - User ID: " + userIdHeader);
+
+        if (userIdHeader == null || userIdHeader.equals("me")) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            Long userId = Long.parseLong(userIdHeader);
+            List<TransferHistory> history = ticketService.getTransferHistoryByUser(userId);
+
+            List<TransferHistoryResponse> response = history.stream()
+                    .map(h -> TransferHistoryResponse.fromEntity(h, userId))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.out.println("❌ Erreur historique de transfert: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/transfer-history/sent")
+    public ResponseEntity<List<TransferHistoryResponse>> getTransferHistorySent(HttpServletRequest httpRequest) {
+        String userIdHeader = httpRequest.getHeader("X-User-Id");
+
+        if (userIdHeader == null || userIdHeader.equals("me")) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            Long userId = Long.parseLong(userIdHeader);
+            List<TransferHistory> history = ticketService.getTransferHistorySent(userId);
+
+            List<TransferHistoryResponse> response = history.stream()
+                    .map(h -> TransferHistoryResponse.fromEntity(h, userId))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/transfer-history/received")
+    public ResponseEntity<List<TransferHistoryResponse>> getTransferHistoryReceived(HttpServletRequest httpRequest) {
+        String userIdHeader = httpRequest.getHeader("X-User-Id");
+
+        if (userIdHeader == null || userIdHeader.equals("me")) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            Long userId = Long.parseLong(userIdHeader);
+            List<TransferHistory> history = ticketService.getTransferHistoryReceived(userId);
+
+            List<TransferHistoryResponse> response = history.stream()
+                    .map(h -> TransferHistoryResponse.fromEntity(h, userId))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // Refund endpoints
+
+    @PostMapping("/refund")
+    public ResponseEntity<?> requestRefund(
+            @RequestBody RefundRequest request,
+            HttpServletRequest httpRequest) {
+        try {
+            String userIdHeader = httpRequest.getHeader("X-User-Id");
+
+            System.out.println("💰 Demande de remboursement - Ticket ID: " + request.getTicketId() + ", User ID: " + userIdHeader);
+
+            if (userIdHeader == null || userIdHeader.equals("me")) {
+                return ResponseEntity.badRequest().body(Map.of("error", "User ID requis"));
+            }
+
+            Long userId = Long.parseLong(userIdHeader);
+            Refund refund = ticketService.requestRefund(request.getTicketId(), userId, request.getReason());
+
+            System.out.println("✅ Demande de remboursement créée: " + refund.getId());
+            return ResponseEntity.ok(refund);
+
+        } catch (Exception e) {
+            System.out.println("❌ Erreur de remboursement: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/refunds")
+    public ResponseEntity<List<Refund>> getMyRefunds(HttpServletRequest httpRequest) {
+        String userIdHeader = httpRequest.getHeader("X-User-Id");
+
+        if (userIdHeader == null || userIdHeader.equals("me")) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            Long userId = Long.parseLong(userIdHeader);
+            List<Refund> refunds = ticketService.getRefundsByUser(userId);
+            return ResponseEntity.ok(refunds);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/refunds/pending")
+    public ResponseEntity<List<Refund>> getPendingRefunds() {
+        List<Refund> refunds = ticketService.getPendingRefunds();
+        return ResponseEntity.ok(refunds);
+    }
+
+    @PostMapping("/refunds/{refundId}/process")
+    public ResponseEntity<?> processRefund(
+            @PathVariable Long refundId,
+            @RequestBody Map<String, Object> body) {
+        try {
+            boolean approved = (Boolean) body.get("approved");
+            String adminNotes = (String) body.getOrDefault("adminNotes", "");
+
+            Refund refund = ticketService.processRefund(refundId, approved, adminNotes);
+
+            System.out.println("✅ Remboursement traité: " + refundId + " - " + (approved ? "APPROUVÉ" : "REJETÉ"));
+            return ResponseEntity.ok(refund);
+
+        } catch (Exception e) {
+            System.out.println("❌ Erreur traitement remboursement: " + e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }

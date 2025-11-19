@@ -642,6 +642,91 @@ async getSubscriptionPlans(token: string) {
     );
   }
 
+  async getTransferHistory(token: string) {
+    return this.fetchWithFallback<any[]>(
+      `${API_BASE_URL}/api/tickets/transfer-history`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  }
+
+  async getTransferHistorySent(token: string) {
+    return this.fetchWithFallback<any[]>(
+      `${API_BASE_URL}/api/tickets/transfer-history/sent`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  }
+
+  async getTransferHistoryReceived(token: string) {
+    return this.fetchWithFallback<any[]>(
+      `${API_BASE_URL}/api/tickets/transfer-history/received`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  }
+
+  // --- Refunds ---
+
+  async requestRefund(ticketId: number, reason: string, token: string) {
+    return this.fetchWithFallback<any>(
+      `${API_BASE_URL}/api/tickets/refund`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ticketId, reason }),
+      }
+    );
+  }
+
+  async getMyRefunds(token: string) {
+    return this.fetchWithFallback<any[]>(
+      `${API_BASE_URL}/api/tickets/refunds`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  }
+
+  async getPendingRefunds(token: string) {
+    return this.fetchWithFallback<any[]>(
+      `${API_BASE_URL}/api/tickets/refunds/pending`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  }
+
+  async processRefund(refundId: number, approved: boolean, adminNotes: string, token: string) {
+    return this.fetchWithFallback<any>(
+      `${API_BASE_URL}/api/tickets/refunds/${refundId}/process`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ approved, adminNotes }),
+      }
+    );
+  }
+
   async testFallback() {
     return this.fetchWithFallback<any>(`${API_BASE_URL}/fallback/test`);
   }

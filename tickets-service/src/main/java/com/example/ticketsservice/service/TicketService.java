@@ -21,9 +21,13 @@ import com.example.ticketsservice.exception.DuplicateTicketException;
 import com.example.ticketsservice.exception.InsufficientFundsException;
 import com.example.ticketsservice.exception.InvalidTicketException;
 import com.example.ticketsservice.exception.TicketNotFoundException;
+import com.example.ticketsservice.model.Refund;
 import com.example.ticketsservice.model.Ticket;
+import com.example.ticketsservice.model.TransferHistory;
 import com.example.ticketsservice.model.User;
+import com.example.ticketsservice.repository.RefundRepository;
 import com.example.ticketsservice.repository.TicketRepository;
+import com.example.ticketsservice.repository.TransferHistoryRepository;
 import com.example.ticketsservice.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -34,6 +38,8 @@ public class TicketService {
 
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
+    private final TransferHistoryRepository transferHistoryRepository;
+    private final RefundRepository refundRepository;
     private final RabbitTemplate rabbitTemplate;
 
     private static final Logger log = LoggerFactory.getLogger(TicketService.class);
@@ -392,10 +398,133 @@ public class TicketService {
             throw new InvalidTicketException("Vous ne pouvez pas transférer un ticket à vous-même");
         }
 
+        // Get sender info
+        User sender = userRepository.findById(fromUserId)
+                .orElseThrow(() -> new TicketNotFoundException("Expéditeur non trouvé"));
+
         // Perform transfer
         log.info("Transfert du ticket {} de l'utilisateur {} vers {}", ticketId, fromUserId, recipientEmail);
         ticket.setUserId(recipient.getId());
+        Ticket savedTicket = ticketRepository.save(ticket);
 
-        return ticketRepository.save(ticket);
+        // Save transfer history
+        TransferHistory history = TransferHistory.builder()
+                .ticketId(ticketId)
+                .fromUserId(fromUserId)
+                .fromUserEmail(sender.getEmail())
+                .toUserId(recipient.getId())
+                .toUserEmail(recipientEmail)
+                .ticketType(ticket.getTicketType())
+                .transferDate(LocalDateTime.now())
+                .status("COMPLETED")
+                .build();
+        transferHistoryRepository.save(history);
+
+        log.info("Historique de transfert enregistré pour le ticket {}", ticketId);
+
+        return savedTicket;
+    }
+
+    // Transfer history methods
+
+    public List<TransferHistory> getTransferHistoryByUser(Long userId) {
+        return transferHistoryRepository.findAllByUserId(userId);
+    }
+
+    public List<TransferHistory> getTransferHistorySent(Long userId) {
+        return transferHistoryRepository.findByFromUserIdOrderByTransferDateDesc(userId);
+    }
+
+    public List<TransferHistory> getTransferHistoryReceived(Long userId) {
+        return transferHistoryRepository.findByToUserIdOrderByTransferDateDesc(userId);
+    }
+
+    public List<TransferHistory> getTransferHistoryByTicket(Long ticketId) {
+        return transferHistoryRepository.findByTicketIdOrderByTransferDateDesc(ticketId);
+    }
+
+    // Refund methods
+
+    @Transactional
+    public Refund requestRefund(Long ticketId, Long userId, String reason) {
+        // Find the ticket
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new TicketNotFoundException("Ticket non trouvé avec l'ID: " + ticketId));
+
+        // Verify ownership
+        if (!ticket.getUserId().equals(userId)) {
+            throw new InvalidTicketException("Vous n'êtes pas propriétaire de ce ticket");
+        }
+
+        // Check if already refunded or pending
+        if (refundRepository.existsByTicketIdAndStatusIn(ticketId, List.of("PENDING", "APPROVED", "COMPLETED"))) {
+            throw new InvalidTicketException("Une demande de remboursement existe déjà pour ce ticket");
+        }
+
+        // Check if ticket can be refunded (not used)
+        if (ticket.getValidationDate() != null) {
+            throw new InvalidTicketException("Les tickets déjà utilisés ne peuvent pas être remboursés");
+        }
+
+        // Calculate refund amount (full refund if not used)
+        double originalAmount = calculateTicketPrice(ticket.getTicketType());
+        double refundAmount = originalAmount; // 100% refund for unused tickets
+
+        // Create refund request
+        Refund refund = Refund.builder()
+                .ticketId(ticketId)
+                .userId(userId)
+                .ticketType(ticket.getTicketType())
+                .originalAmount(originalAmount)
+                .refundAmount(refundAmount)
+                .reason(reason)
+                .status("PENDING")
+                .requestDate(LocalDateTime.now())
+                .build();
+
+        Refund savedRefund = refundRepository.save(refund);
+
+        // Mark ticket as cancelled
+        ticket.setStatus("ANNULE");
+        ticketRepository.save(ticket);
+
+        log.info("Demande de remboursement créée pour le ticket {}", ticketId);
+
+        return savedRefund;
+    }
+
+    public List<Refund> getRefundsByUser(Long userId) {
+        return refundRepository.findByUserIdOrderByRequestDateDesc(userId);
+    }
+
+    public List<Refund> getPendingRefunds() {
+        return refundRepository.findByStatusOrderByRequestDateDesc("PENDING");
+    }
+
+    @Transactional
+    public Refund processRefund(Long refundId, boolean approved, String adminNotes) {
+        Refund refund = refundRepository.findById(refundId)
+                .orElseThrow(() -> new TicketNotFoundException("Demande de remboursement non trouvée"));
+
+        if (!"PENDING".equals(refund.getStatus())) {
+            throw new InvalidTicketException("Cette demande a déjà été traitée");
+        }
+
+        refund.setStatus(approved ? "COMPLETED" : "REJECTED");
+        refund.setProcessedDate(LocalDateTime.now());
+        refund.setAdminNotes(adminNotes);
+
+        if (!approved) {
+            // Restore ticket if rejected
+            Ticket ticket = ticketRepository.findById(refund.getTicketId()).orElse(null);
+            if (ticket != null) {
+                ticket.setStatus("VALIDE");
+                ticketRepository.save(ticket);
+            }
+        }
+
+        log.info("Remboursement {} - Statut: {}", refundId, refund.getStatus());
+
+        return refundRepository.save(refund);
     }
 }
