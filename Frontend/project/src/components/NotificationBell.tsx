@@ -16,6 +16,7 @@ export default function NotificationBell() {
     clearAll,
     simulatorEnabled,
     toggleSimulator,
+    isConnected,
   } = useNotifications();
 
   // Close dropdown when clicking outside
@@ -70,6 +71,13 @@ export default function NotificationBell() {
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
+        {/* WebSocket connection indicator */}
+        <span
+          className={`absolute bottom-0 right-0 w-2 h-2 rounded-full ${
+            isConnected ? 'bg-green-500' : 'bg-gray-400'
+          }`}
+          title={isConnected ? 'Connecté en temps réel' : 'Mode hors-ligne'}
+        />
       </button>
 
       {isOpen && (

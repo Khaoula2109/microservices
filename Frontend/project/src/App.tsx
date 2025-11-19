@@ -16,6 +16,7 @@ import ValidateTicketPage from './pages/ValidateTicketPage';
 import UserManagementPage from './pages/UserManagementPage';
 import ControllerDashboardPage from './pages/ControllerDashboardPage';
 import MySubscriptionsPage from './pages/MySubscriptionsPage';
+import { NotificationProvider } from './contexts/NotificationContext';
 import { Shield, Scan, Users, BarChart3, CreditCard } from 'lucide-react';
 
 const protectedPages = ['schedules', 'tickets', 'map', 'account','subscriptions'];
@@ -333,22 +334,28 @@ const handleAuthSuccess = async (newToken: string, newUserId: number, newUserRol
 
 
   if (currentPage === 'login' || currentPage === 'register') {
-    return renderPage();
+    return (
+      <NotificationProvider userId={userId}>
+        {renderPage()}
+      </NotificationProvider>
+    );
   }
 
 
-  
+
   return (
-    <Layout 
-      currentPage={currentPage} 
-      onNavigate={handleNavigate} 
-      token={token}
-      onLogout={handleLogout}
-      userId={userId}
-      userRole={userRole}
-    >
-      {renderPage()}
-    </Layout>
+    <NotificationProvider userId={userId}>
+      <Layout
+        currentPage={currentPage}
+        onNavigate={handleNavigate}
+        token={token}
+        onLogout={handleLogout}
+        userId={userId}
+        userRole={userRole}
+      >
+        {renderPage()}
+      </Layout>
+    </NotificationProvider>
   );
 }
 

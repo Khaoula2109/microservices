@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.ticketsservice.config.RabbitMQConfig;
+import com.example.ticketsservice.controller.NotificationController;
 import com.example.ticketsservice.dto.QrValidationResponse;
 import com.example.ticketsservice.dto.TicketPurchaseRequest;
 import com.example.ticketsservice.dto.TicketStatsResponse;
@@ -41,6 +42,7 @@ public class TicketService {
     private final TransferHistoryRepository transferHistoryRepository;
     private final RefundRepository refundRepository;
     private final RabbitTemplate rabbitTemplate;
+    private final NotificationController notificationController;
 
     private static final Logger log = LoggerFactory.getLogger(TicketService.class);
 
@@ -77,6 +79,13 @@ public class TicketService {
 
         } catch (Exception e) {
             log.error("Échec de la publication de l'événement ticket.purchased pour le ticket {}: {}", savedTicket.getId(), e.getMessage());
+        }
+
+        // Send WebSocket notification
+        try {
+            notificationController.notifyTicketPurchased(savedTicket.getUserId(), savedTicket.getId(), savedTicket.getTicketType());
+        } catch (Exception e) {
+            log.error("Échec de l'envoi de la notification pour le ticket {}: {}", savedTicket.getId(), e.getMessage());
         }
 
         return savedTicket;
@@ -136,7 +145,16 @@ public class TicketService {
 
         ticket.setValidationDate(LocalDateTime.now());
 
-        return ticketRepository.save(ticket);
+        Ticket savedTicket = ticketRepository.save(ticket);
+
+        // Send WebSocket notification
+        try {
+            notificationController.notifyTicketValidated(savedTicket.getUserId(), savedTicket.getId());
+        } catch (Exception e) {
+            log.error("Échec de l'envoi de la notification de validation pour le ticket {}: {}", savedTicket.getId(), e.getMessage());
+        }
+
+        return savedTicket;
     }
 
     @Transactional
@@ -422,6 +440,13 @@ public class TicketService {
 
         log.info("Historique de transfert enregistré pour le ticket {}", ticketId);
 
+        // Send WebSocket notifications
+        try {
+            notificationController.notifyTicketTransferred(fromUserId, recipient.getId(), ticketId, ticket.getTicketType());
+        } catch (Exception e) {
+            log.error("Échec de l'envoi des notifications de transfert pour le ticket {}: {}", ticketId, e.getMessage());
+        }
+
         return savedTicket;
     }
 
@@ -525,6 +550,18 @@ public class TicketService {
 
         log.info("Remboursement {} - Statut: {}", refundId, refund.getStatus());
 
-        return refundRepository.save(refund);
+        Refund savedRefund = refundRepository.save(refund);
+
+        // Send WebSocket notification
+        try {
+            String message = approved
+                ? "Votre remboursement de " + refund.getRefundAmount() + "€ a été approuvé"
+                : "Votre demande de remboursement a été refusée. " + (adminNotes != null ? adminNotes : "");
+            notificationController.notifyRefundStatus(refund.getUserId(), refund.getTicketId(), refund.getStatus(), message);
+        } catch (Exception e) {
+            log.error("Échec de l'envoi de la notification de remboursement {}: {}", refundId, e.getMessage());
+        }
+
+        return savedRefund;
     }
 }

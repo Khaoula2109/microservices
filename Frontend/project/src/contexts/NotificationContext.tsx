@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { websocketService, NotificationMessage } from '../services/websocket';
 
 export interface Notification {
   id: string;
@@ -7,6 +8,7 @@ export interface Notification {
   message: string;
   timestamp: Date;
   read: boolean;
+  ticketId?: number;
 }
 
 interface NotificationContextType {
@@ -19,7 +21,26 @@ interface NotificationContextType {
   clearAll: () => void;
   simulatorEnabled: boolean;
   toggleSimulator: () => void;
+  isConnected: boolean;
 }
+
+// Map WebSocket notification types to UI notification types
+const mapNotificationType = (wsType: string): 'info' | 'success' | 'warning' | 'error' => {
+  switch (wsType) {
+    case 'TICKET_PURCHASED':
+    case 'TICKET_VALIDATED':
+    case 'TICKET_RECEIVED':
+      return 'success';
+    case 'TICKET_TRANSFERRED':
+      return 'info';
+    case 'REFUND_STATUS':
+      return 'warning';
+    case 'SYSTEM':
+      return 'info';
+    default:
+      return 'info';
+  }
+};
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
@@ -37,7 +58,12 @@ const simulatedNotifications = [
   { type: 'info' as const, title: 'Nouveau service', message: 'La ligne express E1 est maintenant disponible!' },
 ];
 
-export function NotificationProvider({ children }: { children: ReactNode }) {
+interface NotificationProviderProps {
+  children: ReactNode;
+  userId?: number | null;
+}
+
+export function NotificationProvider({ children, userId }: NotificationProviderProps) {
   const [notifications, setNotifications] = useState<Notification[]>(() => {
     const saved = localStorage.getItem('notifications');
     if (saved) {
@@ -57,6 +83,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     return localStorage.getItem('notificationSimulator') === 'true';
   });
 
+  const [isConnected, setIsConnected] = useState(false);
+
   // Save notifications to localStorage
   useEffect(() => {
     localStorage.setItem('notifications', JSON.stringify(notifications));
@@ -67,7 +95,49 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('notificationSimulator', simulatorEnabled.toString());
   }, [simulatorEnabled]);
 
-  // Notification simulator
+  // WebSocket connection
+  useEffect(() => {
+    if (userId) {
+      websocketService.connect(userId);
+
+      // Check connection status periodically
+      const statusInterval = setInterval(() => {
+        setIsConnected(websocketService.getConnectionStatus());
+      }, 1000);
+
+      // Add listener for incoming WebSocket notifications
+      const removeListener = websocketService.addListener((wsNotification: NotificationMessage) => {
+        const notification: Omit<Notification, 'id' | 'timestamp' | 'read'> = {
+          type: mapNotificationType(wsNotification.type),
+          title: wsNotification.title,
+          message: wsNotification.message,
+          ticketId: wsNotification.ticketId,
+        };
+        addNotification(notification);
+
+        // Show browser notification if permitted
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification(wsNotification.title, {
+            body: wsNotification.message,
+            icon: '/icons/icon-192x192.png',
+          });
+        }
+      });
+
+      // Request notification permission
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+
+      return () => {
+        clearInterval(statusInterval);
+        removeListener();
+        websocketService.disconnect();
+      };
+    }
+  }, [userId, addNotification]);
+
+  // Notification simulator (for testing)
   useEffect(() => {
     if (!simulatorEnabled) return;
 
@@ -77,7 +147,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     }, 15000); // Every 15 seconds
 
     return () => clearInterval(interval);
-  }, [simulatorEnabled]);
+  }, [simulatorEnabled, addNotification]);
 
   const addNotification = useCallback((notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
     const newNotification: Notification = {
@@ -128,6 +198,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         clearAll,
         simulatorEnabled,
         toggleSimulator,
+        isConnected,
       }}
     >
       {children}
