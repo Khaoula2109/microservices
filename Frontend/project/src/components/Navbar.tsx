@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, Bus, LogIn, User, LogOut, Shield, Scan, Users, BarChart3, Sun, Moon, Globe } from 'lucide-react';
+import { Menu, X, Bus, LogIn, User, LogOut, UserPlus, Scan, BarChart3, Sun, Moon, Globe } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Language } from '../i18n/translations';
@@ -33,22 +33,36 @@ export default function Navbar({
     { code: 'ar', label: 'العربية', flag: '🇲🇦' },
   ];
 
-  const navLinks = [
-    { name: t.nav.home, page: 'home' },
-    { name: t.nav.schedules, page: 'schedules' },
-    { name: t.nav.tickets, page: 'tickets' },
-    { name: t.nav.map, page: 'map' },
-    { name: t.nav.subscriptions, page: 'subscriptions' },
-  ];
-  
-  const protectedPages = ['schedules', 'tickets', 'map', 'account', 'admin-creation','subscriptions'];
-  
-  const visibleLinks = navLinks.filter(link => 
-    !protectedPages.includes(link.page) || token
-  );
-
   const isUserAdmin = userRole === 'ADMIN' || userRole === 'admin' || userRole?.toUpperCase() === 'ADMIN';
   const isUserController = userRole === 'CONTROLLER' || userRole?.toUpperCase() === 'CONTROLLER';
+
+  // Define nav links based on user role
+  const getNavLinks = () => {
+    if (isUserController || isUserAdmin) {
+      // CONTROLLER and ADMIN: Accueil, Plannings Bus, Carte Live
+      return [
+        { name: t.nav.home, page: 'home' },
+        { name: t.nav.schedules, page: 'schedules' },
+        { name: t.nav.map, page: 'map' },
+      ];
+    }
+    // PASSENGER: Accueil, Plannings Bus, Acheter Tickets, Carte Live, Abonnements
+    return [
+      { name: t.nav.home, page: 'home' },
+      { name: t.nav.schedules, page: 'schedules' },
+      { name: t.nav.tickets, page: 'tickets' },
+      { name: t.nav.map, page: 'map' },
+      { name: t.nav.subscriptions, page: 'subscriptions' },
+    ];
+  };
+
+  const navLinks = getNavLinks();
+
+  const protectedPages = ['schedules', 'tickets', 'map', 'account', 'admin-creation','subscriptions'];
+
+  const visibleLinks = navLinks.filter(link =>
+    !protectedPages.includes(link.page) || token
+  );
 
 
 
@@ -115,28 +129,13 @@ export default function Navbar({
                     onClick={() => onNavigate('admin-creation')}
                     className={`px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
                       currentPage === 'admin-creation'
-                        ? 'bg-blue-600 text-white font-semibold border-2 border-blue-300'
-                        : 'bg-blue-500 hover:bg-blue-600 text-white border-2 border-blue-400'
+                        ? 'bg-mustard-500 text-navy-900 font-semibold'
+                        : 'hover:bg-navy-800 text-white'
                     }`}
-                    title="Créer un compte administrateur"
+                    title="Créer un nouvel utilisateur"
                   >
-                    <Shield className="h-5 w-5" />
-                    <span>Créer Admin</span>
-                  </button>
-                )}
-
-                {isUserAdmin && (
-                  <button
-                    onClick={() => onNavigate('user-management')}
-                    className={`px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
-                      currentPage === 'user-management'
-                        ? 'bg-purple-600 text-white font-semibold border-2 border-purple-300'
-                        : 'bg-purple-500 hover:bg-purple-600 text-white border-2 border-purple-400'
-                    }`}
-                    title="Gérer les utilisateurs"
-                  >
-                    <Users className="h-5 w-5" />
-                    <span>Utilisateurs</span>
+                    <UserPlus className="h-5 w-5" />
+                    <span>Créer Utilisateur</span>
                   </button>
                 )}
 
@@ -319,29 +318,12 @@ export default function Navbar({
                     }}
                     className={`block w-full text-left px-3 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
                       currentPage === 'admin-creation'
-                        ? 'bg-blue-600 text-white font-semibold border-2 border-blue-300'
-                        : 'bg-blue-500 hover:bg-blue-600 text-white border-2 border-blue-400'
+                        ? 'bg-mustard-500 text-navy-900 font-semibold'
+                        : 'hover:bg-navy-700 text-white'
                     }`}
                   >
-                    <Shield className="h-5 w-5" />
-                    <span>Créer Admin</span>
-                  </button>
-                )}
-
-                {isUserAdmin && (
-                  <button
-                    onClick={() => {
-                      onNavigate('user-management');
-                      setIsMenuOpen(false);
-                    }}
-                    className={`block w-full text-left px-3 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
-                      currentPage === 'user-management'
-                        ? 'bg-purple-600 text-white font-semibold border-2 border-purple-300'
-                        : 'bg-purple-500 hover:bg-purple-600 text-white border-2 border-purple-400'
-                    }`}
-                  >
-                    <Users className="h-5 w-5" />
-                    <span>Utilisateurs</span>
+                    <UserPlus className="h-5 w-5" />
+                    <span>Créer Utilisateur</span>
                   </button>
                 )}
 
