@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Mail, Lock, User, Phone, Bus, AlertCircle } from 'lucide-react';
 import { apiService } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface RegisterPageProps {
   onNavigate: (page: string) => void;
@@ -8,6 +9,7 @@ interface RegisterPageProps {
 }
 
 export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPageProps) {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -16,7 +18,7 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
     password: '',
     confirmPassword: '',
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -35,13 +37,13 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
 
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Les mots de passe ne correspondent pas.');
+      setError(t.register.passwordMismatch);
       setLoading(false);
       return;
     }
 
     if (formData.password.length < 8) {
-      setError('Le mot de passe doit contenir au moins 8 caractères.');
+      setError(t.register.passwordTooShort);
       setLoading(false);
       return;
     }
@@ -131,29 +133,29 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
             <Bus className="h-12 w-12 text-mustard-500" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">KowihanTransit</h1>
-          <p className="text-gray-300">Rejoignez notre réseau de transport</p>
+          <p className="text-gray-300">{t.register.subtitle}</p>
         </div>
 
-        
+
         <div className="bg-white rounded-xl shadow-2xl p-8">
-          <h2 className="text-2xl font-bold text-navy-900 mb-6">Inscription</h2>
+          <h2 className="text-2xl font-bold text-navy-900 mb-6">{t.register.title}</h2>
 
           {error && (
             <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-6 flex items-start space-x-3 animate-pulse">
               <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <p className="text-red-800 font-semibold text-sm">Erreur d'inscription</p>
+                <p className="text-red-800 font-semibold text-sm">{t.register.errorTitle}</p>
                 <p className="text-red-600 text-sm mt-1">{error}</p>
               </div>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-navy-900 font-semibold mb-2 text-sm">
-                  Prénom
+                  {t.register.firstName}
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -162,7 +164,7 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleChange}
-                    placeholder="Prénom"
+                    placeholder={t.register.firstName}
                     className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-mustard-500 focus:outline-none transition-colors text-sm"
                     required
                     disabled={loading}
@@ -171,7 +173,7 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
               </div>
               <div>
                 <label className="block text-navy-900 font-semibold mb-2 text-sm">
-                  Nom
+                  {t.register.lastName}
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -180,7 +182,7 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleChange}
-                    placeholder="Nom"
+                    placeholder={t.register.lastName}
                     className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-mustard-500 focus:outline-none transition-colors text-sm"
                     required
                     disabled={loading}
@@ -191,7 +193,7 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
 
             <div>
               <label className="block text-navy-900 font-semibold mb-2 text-sm">
-                Email
+                {t.register.email}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -200,7 +202,7 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="votre@email.com"
+                  placeholder={t.register.emailPlaceholder}
                   className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-mustard-500 focus:outline-none transition-colors text-sm"
                   required
                   disabled={loading}
@@ -210,7 +212,7 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
 
             <div>
               <label className="block text-navy-900 font-semibold mb-2 text-sm">
-                Téléphone (Optionnel)
+                {t.register.phone}
               </label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -219,7 +221,7 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="+212 6 12 34 56 78"
+                  placeholder={t.register.phonePlaceholder}
                   className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-mustard-500 focus:outline-none transition-colors text-sm"
                   disabled={loading}
                 />
@@ -228,7 +230,7 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
 
             <div>
               <label className="block text-navy-900 font-semibold mb-2 text-sm">
-                Mot de passe
+                {t.register.password}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -244,12 +246,12 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
                   minLength={8}
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">Minimum 8 caractères</p>
+              <p className="text-xs text-gray-500 mt-1">{t.register.passwordHint}</p>
             </div>
 
             <div>
               <label className="block text-navy-900 font-semibold mb-2 text-sm">
-                Confirmer le mot de passe
+                {t.register.confirmPassword}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -274,10 +276,10 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
               {loading ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-navy-900 mr-2"></div>
-                  Création en cours...
+                  {t.register.submitting}
                 </div>
               ) : (
-                'Créer mon Compte'
+                t.register.submit
               )}
             </button>
           </form>
@@ -288,7 +290,7 @@ export default function RegisterPage({ onNavigate, onAuthSuccess }: RegisterPage
               className="text-blue-500 hover:text-blue-700 text-sm transition-colors"
               disabled={loading}
             >
-              Déjà un compte ? Se connecter
+              {t.register.hasAccount}
             </button>
           </div>
         </div>

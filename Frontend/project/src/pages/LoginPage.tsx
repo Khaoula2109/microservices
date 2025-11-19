@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Mail, Lock, Bus, AlertCircle } from 'lucide-react';
 import { apiService } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface LoginPageProps {
   onNavigate: (page: string) => void;
@@ -8,6 +9,7 @@ interface LoginPageProps {
 }
 
 export default function LoginPage({ onNavigate, onAuthSuccess }: LoginPageProps) {
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -93,17 +95,17 @@ export default function LoginPage({ onNavigate, onAuthSuccess }: LoginPageProps)
             <Bus className="h-12 w-12 text-white" />
           </div>
           <h1 className="text-4xl font-bold text-white mb-2">KowihanTransit</h1>
-          <p className="text-navy-200">Connectez-vous à votre compte</p>
+          <p className="text-navy-200">{t.login.subtitle}</p>
         </div>
 
         <div className="bg-white rounded-xl shadow-2xl p-8">
-          <h2 className="text-2xl font-bold text-navy-900 mb-6">Connexion</h2>
+          <h2 className="text-2xl font-bold text-navy-900 mb-6">{t.login.title}</h2>
 
           {error && (
             <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-6 flex items-start space-x-3">
               <AlertCircle className="h-5 w-5 text-red-500 mt-0.5" />
               <div>
-                <p className="text-red-800 font-semibold">Erreur de connexion</p>
+                <p className="text-red-800 font-semibold">{t.login.errorTitle}</p>
                 <p className="text-red-600 text-sm">{error}</p>
               </div>
             </div>
@@ -112,7 +114,7 @@ export default function LoginPage({ onNavigate, onAuthSuccess }: LoginPageProps)
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-navy-900 font-semibold mb-2">
-                Email
+                {t.login.email}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -120,7 +122,7 @@ export default function LoginPage({ onNavigate, onAuthSuccess }: LoginPageProps)
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="votre@email.com"
+                  placeholder={t.login.emailPlaceholder}
                   className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-mustard-500 focus:outline-none transition-colors"
                   required
                   disabled={loading}
@@ -130,7 +132,7 @@ export default function LoginPage({ onNavigate, onAuthSuccess }: LoginPageProps)
 
             <div>
               <label className="block text-navy-900 font-semibold mb-2">
-                Mot de passe
+                {t.login.password}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -153,7 +155,7 @@ export default function LoginPage({ onNavigate, onAuthSuccess }: LoginPageProps)
                   className="w-4 h-4 border-2 border-gray-300 rounded focus:ring-mustard-500"
                   disabled={loading}
                 />
-                <span className="text-gray-600">Se souvenir de moi</span>
+                <span className="text-gray-600">{t.login.rememberMe}</span>
               </label>
             </div>
 
@@ -162,19 +164,19 @@ export default function LoginPage({ onNavigate, onAuthSuccess }: LoginPageProps)
               disabled={loading}
               className="w-full bg-mustard-500 text-navy-900 font-bold py-4 rounded-lg hover:bg-mustard-600 transition-all duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Connexion en cours...' : 'Se Connecter'}
+              {loading ? t.login.submitting : t.login.submit}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-gray-600">
-              Pas encore de compte?{' '}
+              {t.login.noAccount}{' '}
               <button
                 onClick={() => onNavigate('register')}
                 className="text-mustard-500 hover:text-mustard-600 font-semibold"
                 disabled={loading}
               >
-                Créer un compte
+                {t.login.register}
               </button>
             </p>
           </div>
@@ -186,7 +188,7 @@ export default function LoginPage({ onNavigate, onAuthSuccess }: LoginPageProps)
             className="text-navy-200 hover:text-white transition-colors disabled:opacity-50"
             disabled={loading}
           >
-            ← Retour à l'accueil
+            ← {t.login.backToHome}
           </button>
         </div>
       </div>

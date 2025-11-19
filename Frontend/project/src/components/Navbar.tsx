@@ -101,10 +101,10 @@ export default function Navbar({
                         ? 'bg-mustard-500 text-navy-900 font-semibold'
                         : 'hover:bg-navy-800 text-white'
                     }`}
-                    title="Valider les tickets"
+                    title={t.nav.validate}
                   >
                     <Scan className="h-4 w-4 lg:h-5 lg:w-5" />
-                    <span>Valider</span>
+                    <span>{t.nav.validate}</span>
                   </button>
                 )}
 
@@ -116,10 +116,10 @@ export default function Navbar({
                         ? 'bg-mustard-500 text-navy-900 font-semibold'
                         : 'hover:bg-navy-800 text-white'
                     }`}
-                    title="Dashboard Contrôleur"
+                    title={t.nav.stats}
                   >
                     <BarChart3 className="h-4 w-4 lg:h-5 lg:w-5" />
-                    <span>Stats</span>
+                    <span>{t.nav.stats}</span>
                   </button>
                 )}
 
@@ -131,10 +131,10 @@ export default function Navbar({
                         ? 'bg-mustard-500 text-navy-900 font-semibold'
                         : 'hover:bg-navy-800 text-white'
                     }`}
-                    title="Créer un nouvel utilisateur"
+                    title={t.nav.createUser}
                   >
                     <UserPlus className="h-4 w-4 lg:h-5 lg:w-5" />
-                    <span>Créer Utilisateur</span>
+                    <span>{t.nav.createUser}</span>
                   </button>
                 )}
               </>
@@ -293,7 +293,7 @@ export default function Navbar({
                     }`}
                   >
                     <Scan className="h-5 w-5" />
-                    <span>Valider</span>
+                    <span>{t.nav.validate}</span>
                   </button>
                 )}
 
@@ -310,7 +310,7 @@ export default function Navbar({
                     }`}
                   >
                     <BarChart3 className="h-5 w-5" />
-                    <span>Stats</span>
+                    <span>{t.nav.stats}</span>
                   </button>
                 )}
 
@@ -327,7 +327,7 @@ export default function Navbar({
                     }`}
                   >
                     <UserPlus className="h-5 w-5" />
-                    <span>Créer Utilisateur</span>
+                    <span>{t.nav.createUser}</span>
                   </button>
                 )}
 
@@ -342,14 +342,14 @@ export default function Navbar({
                       : 'hover:bg-navy-700 text-white'
                   }`}
                 >
-                  Mon Compte
+                  {t.nav.myAccount}
                 </button>
                 <button
                   onClick={toggleTheme}
                   className="block w-full text-left px-3 py-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
                 >
                   {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                  <span>{isDark ? 'Mode clair' : 'Mode sombre'}</span>
+                  <span>{isDark ? t.nav.lightMode : t.nav.darkMode}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -358,7 +358,7 @@ export default function Navbar({
                   }}
                   className="block w-full text-left px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200"
                 >
-                  Déconnexion
+                  {t.nav.logout}
                 </button>
               </>
             ) : (
@@ -368,7 +368,7 @@ export default function Navbar({
                   className="block w-full text-left px-3 py-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
                 >
                   {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                  <span>{isDark ? 'Mode clair' : 'Mode sombre'}</span>
+                  <span>{isDark ? t.nav.lightMode : t.nav.darkMode}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -377,7 +377,7 @@ export default function Navbar({
                   }}
                   className="block w-full text-left px-3 py-2 bg-mustard-500 text-navy-900 font-semibold rounded-lg hover:bg-mustard-600 transition-all duration-200"
                 >
-                  Connexion
+                  {t.nav.login}
                 </button>
               </>
             )}
