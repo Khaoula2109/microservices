@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MapPin, Bus, Navigation, Clock, AlertCircle, Target } from 'lucide-react';
+import { MapPin, Bus, Navigation, Clock, AlertCircle, Target, Filter, RefreshCw, Info } from 'lucide-react';
 import { apiService } from '../services/api';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -68,7 +68,13 @@ const INITIAL_BUS_STATE: ActiveBus[] = [
   { id: 'BUS-19', line: 'Ligne 19', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null },
   { id: 'BUS-30', line: 'Ligne 30', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null },
   { id: 'BUS-04', line: 'Ligne 4', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null },
+  { id: 'BUS-15', line: 'Ligne 15', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null },
+  { id: 'BUS-22', line: 'Ligne 22', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null },
+  { id: 'BUS-08', line: 'Ligne 8', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null },
 ];
+
+// Available lines for filtering
+const AVAILABLE_LINES = ['Toutes', 'Ligne 4', 'Ligne 7', 'Ligne 8', 'Ligne 12', 'Ligne 15', 'Ligne 19', 'Ligne 22', 'Ligne 30'];
 
 function MapController({ center, zoom }: { center: [number, number] | null; zoom?: number }) {
   const map = useMap();
@@ -90,6 +96,23 @@ export default function MapPage({ token }: MapPageProps) {
   const [selectedBusId, setSelectedBusId] = useState<string | null>(null);
   const [followMode, setFollowMode] = useState<boolean>(false);
   const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
+  const [selectedLine, setSelectedLine] = useState<string>('Toutes');
+  const [showLegend, setShowLegend] = useState<boolean>(false);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
+  // Filter buses by selected line
+  const filteredBuses = selectedLine === 'Toutes'
+    ? activeBuses
+    : activeBuses.filter(bus => bus.line === selectedLine);
+
+  // Stats for the header
+  const busStats = {
+    total: activeBuses.length,
+    onTime: activeBuses.filter(b => b.status === 'ON_TIME').length,
+    delayed: activeBuses.filter(b => b.status === 'DELAYED').length,
+    early: activeBuses.filter(b => b.status === 'EARLY').length,
+  };
 
   useEffect(() => {
     if (!token) {
@@ -100,9 +123,10 @@ export default function MapPage({ token }: MapPageProps) {
 
     const fetchAllBusData = async () => {
       setError(null);
+      setIsRefreshing(true);
 
       const busIdsToFetch = INITIAL_BUS_STATE.map(bus => bus.id);
-      const promises = busIdsToFetch.map(id => 
+      const promises = busIdsToFetch.map(id =>
         apiService.getBusLocation(id, token)
       );
 
@@ -119,7 +143,7 @@ export default function MapPage({ token }: MapPageProps) {
 
           return prevBuses.map(bus => {
             const newData = newDataMap.get(bus.id);
-            
+
             if (newData) {
               const delay = newData.delay_minutes;
               let etaText = '';
@@ -142,9 +166,13 @@ export default function MapPage({ token }: MapPageProps) {
           });
         });
 
+        setLastUpdate(new Date());
+
       } catch (err: any) {
-        
+
         setError("Erreur de connexion au service de géolocalisation.");
+      } finally {
+        setIsRefreshing(false);
       }
     };
 
@@ -203,6 +231,46 @@ export default function MapPage({ token }: MapPageProps) {
           </p>
         </div>
 
+        {/* Stats Bar */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow p-4 flex items-center space-x-3">
+            <div className="bg-navy-100 p-2 rounded-lg">
+              <Bus className="h-5 w-5 text-navy-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Total Bus</p>
+              <p className="text-xl font-bold text-navy-900">{busStats.total}</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4 flex items-center space-x-3">
+            <div className="bg-green-100 p-2 rounded-lg">
+              <Clock className="h-5 w-5 text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">À l'heure</p>
+              <p className="text-xl font-bold text-green-600">{busStats.onTime}</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4 flex items-center space-x-3">
+            <div className="bg-red-100 p-2 rounded-lg">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">En retard</p>
+              <p className="text-xl font-bold text-red-600">{busStats.delayed}</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4 flex items-center space-x-3">
+            <div className="bg-blue-100 p-2 rounded-lg">
+              <Clock className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">En avance</p>
+              <p className="text-xl font-bold text-blue-600">{busStats.early}</p>
+            </div>
+          </div>
+        </div>
+
         
         {error && (
           <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-8 flex items-start space-x-3 max-w-3xl mx-auto">
@@ -219,42 +287,102 @@ export default function MapPage({ token }: MapPageProps) {
          
           <div className="lg:col-span-2">
             <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <div className="bg-navy-900 text-white px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <MapPin className="h-5 w-5 text-mustard-500" />
-                  <span className="font-semibold">Carte Interactive</span>
-                  {selectedBusId && (
-                    <span className="ml-2 text-sm bg-mustard-500 text-navy-900 px-2 py-1 rounded">
-                      Suivi: {activeBuses.find(b => b.id === selectedBusId)?.line}
-                    </span>
-                  )}
-                </div>
-                <div className="flex space-x-2">
-                  {selectedBusId && (
-                    <button 
-                      onClick={() => setFollowMode(!followMode)}
-                      className={`px-4 py-2 rounded-lg font-semibold transition-colors flex items-center space-x-2 ${
-                        followMode 
-                          ? 'bg-green-500 text-white hover:bg-green-600' 
-                          : 'bg-gray-600 text-white hover:bg-gray-700'
+              <div className="bg-navy-900 text-white px-6 py-4">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="h-5 w-5 text-mustard-500" />
+                    <span className="font-semibold">Carte Interactive</span>
+                    {selectedBusId && (
+                      <span className="ml-2 text-sm bg-mustard-500 text-navy-900 px-2 py-1 rounded">
+                        Suivi: {activeBuses.find(b => b.id === selectedBusId)?.line}
+                      </span>
+                    )}
+                    {lastUpdate && (
+                      <span className="text-xs text-gray-400 ml-2">
+                        Mis à jour: {lastUpdate.toLocaleTimeString('fr-FR')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {/* Line Filter */}
+                    <div className="relative">
+                      <select
+                        value={selectedLine}
+                        onChange={(e) => setSelectedLine(e.target.value)}
+                        className="bg-gray-700 text-white px-3 py-2 rounded-lg text-sm appearance-none pr-8 cursor-pointer hover:bg-gray-600 transition-colors"
+                      >
+                        {AVAILABLE_LINES.map(line => (
+                          <option key={line} value={line}>{line}</option>
+                        ))}
+                      </select>
+                      <Filter className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    </div>
+
+                    {/* Legend Toggle */}
+                    <button
+                      onClick={() => setShowLegend(!showLegend)}
+                      className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center space-x-1 ${
+                        showLegend ? 'bg-mustard-500 text-navy-900' : 'bg-gray-600 text-white hover:bg-gray-700'
                       }`}
                     >
-                      <Target className="h-4 w-4" />
-                      <span>{followMode ? 'Suivi Actif' : 'Activer Suivi'}</span>
+                      <Info className="h-4 w-4" />
+                      <span>Légende</span>
                     </button>
-                  )}
-                  <button 
-                    onClick={() => {
-                      setSelectedBusId(null);
-                      setFollowMode(false);
-                      setMapCenter([34.020882, -6.841650]);
-                    }}
-                    className="bg-mustard-500 text-navy-900 px-4 py-2 rounded-lg font-semibold hover:bg-mustard-600 transition-colors flex items-center space-x-2"
-                  >
-                    <Navigation className="h-4 w-4" />
-                    <span>Réinitialiser</span>
-                  </button>
+
+                    {selectedBusId && (
+                      <button
+                        onClick={() => setFollowMode(!followMode)}
+                        className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center space-x-1 ${
+                          followMode
+                            ? 'bg-green-500 text-white hover:bg-green-600'
+                            : 'bg-gray-600 text-white hover:bg-gray-700'
+                        }`}
+                      >
+                        <Target className="h-4 w-4" />
+                        <span>{followMode ? 'Suivi Actif' : 'Suivre'}</span>
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        setSelectedBusId(null);
+                        setFollowMode(false);
+                        setMapCenter([34.020882, -6.841650]);
+                      }}
+                      className="bg-mustard-500 text-navy-900 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-mustard-600 transition-colors flex items-center space-x-1"
+                    >
+                      <Navigation className="h-4 w-4" />
+                      <span>Reset</span>
+                    </button>
+                  </div>
                 </div>
+
+                {/* Legend */}
+                {showLegend && (
+                  <div className="mt-4 pt-4 border-t border-gray-700">
+                    <div className="flex flex-wrap gap-4 text-sm">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                        <span>À l'heure</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                        <span>En retard</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+                        <span>En avance</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
+                        <span>Sélectionné</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 rounded-full bg-gray-500"></div>
+                        <span>Sans signal</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <MapContainer 
@@ -269,10 +397,10 @@ export default function MapPage({ token }: MapPageProps) {
 
                 <MapController center={mapCenter} zoom={followMode ? 16 : undefined} />
 
-                {activeBuses.map(bus => (
+                {filteredBuses.map(bus => (
                   (bus.latitude && bus.longitude && bus.status !== 'NO_SIGNAL') && (
-                    <Marker 
-                      key={bus.id} 
+                    <Marker
+                      key={bus.id}
                       position={[bus.latitude, bus.longitude]}
                       icon={createBusIcon(getMarkerColor(bus))}
                       eventHandlers={{
@@ -304,13 +432,35 @@ export default function MapPage({ token }: MapPageProps) {
 
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-2xl font-bold text-navy-900 mb-6 flex items-center space-x-2">
-                <Bus className="h-6 w-6 text-mustard-500" />
-                <span>Bus en Circulation</span>
-              </h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-navy-900 flex items-center space-x-2">
+                  <Bus className="h-6 w-6 text-mustard-500" />
+                  <span>Bus en Circulation</span>
+                </h2>
+                <span className="text-sm text-gray-500">
+                  {filteredBuses.length}/{activeBuses.length}
+                </span>
+              </div>
 
-              <div className="space-y-4">
-                {activeBuses.map((bus) => (
+              {selectedLine !== 'Toutes' && (
+                <div className="mb-4 bg-mustard-50 border border-mustard-200 rounded-lg p-3 flex items-center justify-between">
+                  <span className="text-sm text-mustard-800">
+                    Filtre: <strong>{selectedLine}</strong>
+                  </span>
+                  <button
+                    onClick={() => setSelectedLine('Toutes')}
+                    className="text-xs text-mustard-600 hover:text-mustard-800"
+                  >
+                    Effacer
+                  </button>
+                </div>
+              )}
+
+              <div className="space-y-4 max-h-[500px] overflow-y-auto">
+                {filteredBuses.length === 0 ? (
+                  <p className="text-center text-gray-500 py-4">Aucun bus trouvé</p>
+                ) : (
+                  filteredBuses.map((bus) => (
                   <div
                     key={bus.id}
                     onClick={() => handleBusClick(bus.id)}
@@ -365,7 +515,8 @@ export default function MapPage({ token }: MapPageProps) {
                       </div>
                     </div>
                   </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </div>
