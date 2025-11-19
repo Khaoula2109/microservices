@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Camera, CheckCircle, XCircle, Scan, User, Calendar, Clock, Ticket, AlertTriangle } from 'lucide-react';
 import { apiService } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface ValidateTicketPageProps {
   token: string;
@@ -17,6 +18,7 @@ interface ValidationResult {
 }
 
 export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
+  const { t } = useLanguage();
   const [isScanning, setIsScanning] = useState(false);
   const [manualCode, setManualCode] = useState('');
   const [result, setResult] = useState<ValidationResult | null>(null);
@@ -110,10 +112,10 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
 
   const getTicketTypeLabel = (type?: string) => {
     switch (type?.toUpperCase()) {
-      case 'SIMPLE': return 'Ticket Simple';
-      case 'JOURNEE': return 'Pass Journée';
-      case 'HEBDO': return 'Pass Hebdomadaire';
-      case 'MENSUEL': return 'Pass Mensuel';
+      case 'SIMPLE': return t.validate.ticketSimple;
+      case 'JOURNEE': return t.validate.ticketDaily;
+      case 'HEBDO': return t.validate.ticketWeekly;
+      case 'MENSUEL': return t.validate.ticketMonthly;
       default: return type || '-';
     }
   };
@@ -128,10 +130,10 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
             <Scan className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-            Validation des Tickets
+            {t.validate.title}
           </h1>
           <p className="text-gray-400">
-            Scannez ou entrez le code QR pour valider un ticket
+            {t.validate.subtitle}
           </p>
         </div>
 
@@ -141,7 +143,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
             <h2 className="text-xl font-bold text-white mb-4 flex items-center">
               <Camera className="h-5 w-5 mr-2 text-mustard-500" />
-              Scanner QR
+              {t.validate.scannerQR}
             </h2>
 
             {!isScanning ? (
@@ -153,7 +155,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
                   onClick={startCamera}
                   className="bg-gradient-to-r from-mustard-500 to-yellow-400 text-gray-900 font-bold py-3 px-8 rounded-xl hover:from-mustard-600 hover:to-yellow-500 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 >
-                  Activer la Caméra
+                  {t.validate.activateCamera}
                 </button>
               </div>
             ) : (
@@ -174,7 +176,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
                   onClick={stopCamera}
                   className="w-full bg-red-500/20 text-red-400 font-semibold py-2 px-4 rounded-xl hover:bg-red-500/30 transition-colors border border-red-500/30"
                 >
-                  Arrêter la Caméra
+                  {t.validate.stopCamera}
                 </button>
               </div>
             )}
@@ -182,7 +184,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
             {/* Manual Input */}
             <div className="mt-6 pt-6 border-t border-white/10">
               <h3 className="text-sm font-semibold text-gray-300 mb-3">
-                Ou entrez le code manuellement
+                {t.validate.manualEntry}
               </h3>
               <form onSubmit={handleManualSubmit} className="space-y-3">
                 <input
@@ -197,7 +199,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
                   disabled={loading || !manualCode.trim()}
                   className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 px-6 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? 'Validation...' : 'Valider le Code'}
+                  {loading ? t.validate.validating : t.validate.validateCode}
                 </button>
               </form>
             </div>
@@ -210,7 +212,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
               <h2 className="text-xl font-bold text-white mb-4 flex items-center">
                 <Ticket className="h-5 w-5 mr-2 text-mustard-500" />
-                Résultat
+                {t.validate.result}
               </h2>
 
               {error && (
@@ -223,7 +225,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
               {loading && (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mustard-500 mx-auto"></div>
-                  <p className="mt-4 text-gray-400">Validation en cours...</p>
+                  <p className="mt-4 text-gray-400">{t.validate.validationInProgress}</p>
                 </div>
               )}
 
@@ -250,7 +252,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
                       <div className="flex items-center justify-between text-gray-300">
                         <span className="flex items-center">
                           <Ticket className="h-4 w-4 mr-2 text-gray-500" />
-                          Type
+                          {t.validate.type}
                         </span>
                         <span className="font-semibold text-white">{getTicketTypeLabel(result.ticketType)}</span>
                       </div>
@@ -259,7 +261,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
                         <div className="flex items-center justify-between text-gray-300">
                           <span className="flex items-center">
                             <User className="h-4 w-4 mr-2 text-gray-500" />
-                            Passager
+                            {t.validate.passenger}
                           </span>
                           <span className="font-semibold text-white">{result.ownerName}</span>
                         </div>
@@ -268,7 +270,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
                       <div className="flex items-center justify-between text-gray-300">
                         <span className="flex items-center">
                           <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                          Achat
+                          {t.validate.purchase}
                         </span>
                         <span className="font-semibold text-white">{formatDate(result.purchaseDate)}</span>
                       </div>
@@ -277,7 +279,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
                         <div className="flex items-center justify-between text-gray-300">
                           <span className="flex items-center">
                             <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                            Expiration
+                            {t.validate.expiration}
                           </span>
                           <span className="font-semibold text-white">{formatDate(result.expirationDate)}</span>
                         </div>
@@ -290,7 +292,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
               {!result && !loading && !error && (
                 <div className="text-center py-8 text-gray-500">
                   <Scan className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>En attente d'un code QR...</p>
+                  <p>{t.validate.waitingForQR}</p>
                 </div>
               )}
             </div>
@@ -299,7 +301,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
             {scanHistory.length > 0 && (
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
                 <h2 className="text-lg font-bold text-white mb-4">
-                  Historique récent
+                  {t.validate.recentHistory}
                 </h2>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {scanHistory.map((item, index) => (
@@ -313,7 +315,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
                         ) : (
                           <XCircle className="h-4 w-4 text-red-400" />
                         )}
-                        <span className="text-sm text-gray-300">{item.ownerName || 'Inconnu'}</span>
+                        <span className="text-sm text-gray-300">{item.ownerName || t.validate.unknown}</span>
                       </div>
                       <span className="text-xs text-gray-500">{getTicketTypeLabel(item.ticketType)}</span>
                     </div>

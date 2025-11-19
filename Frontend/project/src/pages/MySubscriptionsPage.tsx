@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { CreditCard, Calendar, CheckCircle, XCircle, RefreshCw, AlertCircle, Clock, Star } from 'lucide-react';
 import { apiService } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface MySubscriptionsPageProps {
   token: string;
@@ -18,6 +19,7 @@ interface Subscription {
 }
 
 export default function MySubscriptionsPage({ token, userId }: MySubscriptionsPageProps) {
+  const { t } = useLanguage();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -96,21 +98,21 @@ export default function MySubscriptionsPage({ token, userId }: MySubscriptionsPa
         return (
           <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full bg-green-100 text-green-700">
             <CheckCircle className="h-4 w-4" />
-            <span>Actif</span>
+            <span>{t.mySubscriptions.statusActive}</span>
           </span>
         );
       case 'cancelled':
         return (
           <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full bg-orange-100 text-orange-700">
             <XCircle className="h-4 w-4" />
-            <span>Annulé</span>
+            <span>{t.mySubscriptions.statusCancelled}</span>
           </span>
         );
       case 'expired':
         return (
           <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full bg-red-100 text-red-700">
             <XCircle className="h-4 w-4" />
-            <span>Expiré</span>
+            <span>{t.mySubscriptions.statusExpired}</span>
           </span>
         );
       default:
@@ -123,7 +125,7 @@ export default function MySubscriptionsPage({ token, userId }: MySubscriptionsPa
       <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 pt-20 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-mustard-500 mx-auto"></div>
-          <p className="mt-4 text-white">Chargement de votre abonnement...</p>
+          <p className="mt-4 text-white">{t.mySubscriptions.loadingSubscription}</p>
         </div>
       </div>
     );
@@ -137,8 +139,8 @@ export default function MySubscriptionsPage({ token, userId }: MySubscriptionsPa
           <div className="inline-flex items-center justify-center bg-mustard-500 p-4 rounded-full mb-4">
             <CreditCard className="h-12 w-12 text-navy-900" />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2">Mon Abonnement</h1>
-          <p className="text-navy-200">Gérez votre abonnement KowihanTransit</p>
+          <h1 className="text-4xl font-bold text-white mb-2">{t.mySubscriptions.title}</h1>
+          <p className="text-navy-200">{t.mySubscriptions.subtitle}</p>
         </div>
 
         {/* Alerts */}
@@ -160,12 +162,12 @@ export default function MySubscriptionsPage({ token, userId }: MySubscriptionsPa
           /* No subscription */
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
             <Star className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-navy-900 mb-2">Pas d'abonnement actif</h2>
+            <h2 className="text-2xl font-bold text-navy-900 mb-2">{t.mySubscriptions.noSubscription}</h2>
             <p className="text-gray-600 mb-6">
-              Découvrez nos offres d'abonnement pour voyager en illimité!
+              {t.mySubscriptions.noSubscriptionDesc}
             </p>
             <button className="px-6 py-3 bg-mustard-500 text-navy-900 font-bold rounded-lg hover:bg-mustard-600 transition-colors">
-              Voir les abonnements
+              {t.mySubscriptions.viewSubscriptions}
             </button>
           </div>
         ) : (
@@ -189,7 +191,7 @@ export default function MySubscriptionsPage({ token, userId }: MySubscriptionsPa
                 <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
                   <Calendar className="h-5 w-5 text-navy-600" />
                   <div>
-                    <p className="text-sm text-gray-600">Date de début</p>
+                    <p className="text-sm text-gray-600">{t.mySubscriptions.startDate}</p>
                     <p className="font-semibold text-navy-900">
                       {new Date(subscription.startDate).toLocaleDateString('fr-FR')}
                     </p>
@@ -199,7 +201,7 @@ export default function MySubscriptionsPage({ token, userId }: MySubscriptionsPa
                 <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
                   <Clock className="h-5 w-5 text-navy-600" />
                   <div>
-                    <p className="text-sm text-gray-600">Date de fin</p>
+                    <p className="text-sm text-gray-600">{t.mySubscriptions.endDate}</p>
                     <p className="font-semibold text-navy-900">
                       {new Date(subscription.endDate).toLocaleDateString('fr-FR')}
                     </p>
@@ -211,8 +213,8 @@ export default function MySubscriptionsPage({ token, userId }: MySubscriptionsPa
               {subscription.status !== 'expired' && (
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">Jours restants</span>
-                    <span className="font-bold text-navy-900">{getDaysRemaining(subscription.endDate)} jours</span>
+                    <span className="text-sm text-gray-600">{t.mySubscriptions.daysRemaining}</span>
+                    <span className="font-bold text-navy-900">{getDaysRemaining(subscription.endDate)} {t.mySubscriptions.days}</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <div
@@ -228,11 +230,11 @@ export default function MySubscriptionsPage({ token, userId }: MySubscriptionsPa
               {/* Auto-renew toggle */}
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-6">
                 <div>
-                  <p className="font-semibold text-navy-900">Renouvellement automatique</p>
+                  <p className="font-semibold text-navy-900">{t.mySubscriptions.autoRenew}</p>
                   <p className="text-sm text-gray-600">
                     {subscription.autoRenew
-                      ? 'Votre abonnement sera renouvelé automatiquement'
-                      : 'Votre abonnement ne sera pas renouvelé'
+                      ? t.mySubscriptions.autoRenewEnabled
+                      : t.mySubscriptions.autoRenewDisabled
                     }
                   </p>
                 </div>
@@ -257,37 +259,37 @@ export default function MySubscriptionsPage({ token, userId }: MySubscriptionsPa
                     onClick={handleCancelSubscription}
                     className="flex-1 px-4 py-3 border-2 border-red-500 text-red-500 font-semibold rounded-lg hover:bg-red-50 transition-colors"
                   >
-                    Annuler l'abonnement
+                    {t.mySubscriptions.cancelSubscription}
                   </button>
                 ) : subscription.status === 'cancelled' ? (
                   <button
                     onClick={handleReactivateSubscription}
                     className="flex-1 px-4 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-colors"
                   >
-                    Réactiver l'abonnement
+                    {t.mySubscriptions.reactivateSubscription}
                   </button>
                 ) : null}
 
                 <button className="flex-1 px-4 py-3 bg-navy-900 text-white font-semibold rounded-lg hover:bg-navy-800 transition-colors">
-                  Changer de formule
+                  {t.mySubscriptions.changePlan}
                 </button>
               </div>
             </div>
 
             {/* Payment history */}
             <div className="border-t border-gray-200 p-6">
-              <h3 className="font-bold text-navy-900 mb-4">Historique des paiements</h3>
+              <h3 className="font-bold text-navy-900 mb-4">{t.mySubscriptions.paymentHistory}</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div>
-                    <p className="font-medium text-navy-900">Paiement mensuel</p>
+                    <p className="font-medium text-navy-900">{t.mySubscriptions.monthlyPayment}</p>
                     <p className="text-sm text-gray-600">
                       {new Date(subscription.startDate).toLocaleDateString('fr-FR')}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="font-bold text-navy-900">{subscription.price.toFixed(2)} DH</p>
-                    <p className="text-xs text-green-600">Payé</p>
+                    <p className="text-xs text-green-600">{t.mySubscriptions.paid}</p>
                   </div>
                 </div>
               </div>
