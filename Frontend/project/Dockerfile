@@ -12,7 +12,7 @@ COPY postcss.config.js ./
 COPY vite.config.ts ./
 
 
-RUN npm cache clean --force && npm install --legacy-peer-deps
+RUN npm cache clean --force && rm -rf node_modules package-lock.json && npm install --legacy-peer-deps
 
 
 COPY . .
