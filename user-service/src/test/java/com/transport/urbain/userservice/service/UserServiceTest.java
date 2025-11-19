@@ -4,6 +4,7 @@ import com.transport.urbain.userservice.dto.UserResponse;
 import com.transport.urbain.userservice.model.User;
 import com.transport.urbain.userservice.model.UserRole;
 import com.transport.urbain.userservice.repository.UserRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Map;
@@ -40,6 +43,11 @@ class UserServiceTest {
         testUser.setLastName("User");
         testUser.setPhoneNumber("0600000000");
         testUser.setRole(UserRole.PASSENGER);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -118,8 +126,21 @@ class UserServiceTest {
     @Test
     @DisplayName("Should delete user")
     void deleteUser_Success() {
-        // Given
+        // Given - Create admin user as current authenticated user
+        User adminUser = new User();
+        adminUser.setId(2L);
+        adminUser.setEmail("admin@example.com");
+        adminUser.setFirstName("Admin");
+        adminUser.setLastName("User");
+        adminUser.setRole(UserRole.ADMIN);
+
+        // Set up security context
+        UsernamePasswordAuthenticationToken auth =
+            new UsernamePasswordAuthenticationToken("admin@example.com", null, List.of());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(userRepository.findByEmail("admin@example.com")).thenReturn(Optional.of(adminUser));
         doNothing().when(userRepository).delete(any(User.class));
 
         // When
