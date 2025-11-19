@@ -58,7 +58,10 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     if (!this.connectedUsers.has(userId)) {
       this.connectedUsers.set(userId, []);
     }
-    this.connectedUsers.get(userId).push(client.id);
+    const userSockets = this.connectedUsers.get(userId);
+    if (userSockets) {
+      userSockets.push(client.id);
+    }
 
     this.logger.log(`User ${userId} subscribed with socket ${client.id}`);
 
@@ -101,6 +104,6 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
   // Check if user is connected
   isUserConnected(userId: number): boolean {
     const sockets = this.connectedUsers.get(userId);
-    return sockets && sockets.length > 0;
+    return sockets !== undefined && sockets.length > 0;
   }
 }
