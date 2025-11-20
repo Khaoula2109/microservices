@@ -11,19 +11,34 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Always use light mode
-  const [theme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>(() => {
+    // Check localStorage first
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark' || saved === 'light') {
+      return saved;
+    }
+    // Check system preference
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
+  });
 
   useEffect(() => {
-    // Always ensure light mode is active
+    // Update DOM and localStorage when theme changes
     const root = window.document.documentElement;
-    root.classList.remove('dark');
-    localStorage.setItem('theme', 'light');
-  }, []);
 
-  // Disabled - theme is locked to light mode
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
   const toggleTheme = () => {
-    // Do nothing - theme switching is disabled
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
   return (

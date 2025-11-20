@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Menu, X, Bus, LogIn, User, LogOut, UserPlus, Scan, BarChart3, Globe } from 'lucide-react';
+import { Menu, X, Bus, LogIn, User, LogOut, UserPlus, Scan, BarChart3, Sun, Moon, Globe } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Language } from '../i18n/translations';
 import NotificationBell from './NotificationBell';
@@ -23,6 +24,7 @@ export default function Navbar({
 }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const { toggleTheme, isDark } = useTheme();
   const { language, setLanguage, t } = useLanguage();
 
   const languages: { code: Language; label: string; flag: string }[] = [
@@ -186,6 +188,13 @@ export default function Navbar({
                 )}
               </div>
               <button
+                onClick={toggleTheme}
+                className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200"
+                title={isDark ? t.nav.lightMode : t.nav.darkMode}
+              >
+                {isDark ? <Sun className="h-4 w-4 lg:h-5 lg:w-5" /> : <Moon className="h-4 w-4 lg:h-5 lg:w-5" />}
+              </button>
+              <button
                 onClick={onLogout}
                 className="px-3 lg:px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 flex items-center space-x-1 lg:space-x-2"
                 title={t.nav.logout}
@@ -223,6 +232,13 @@ export default function Navbar({
                   </div>
                 )}
               </div>
+              <button
+                onClick={toggleTheme}
+                className="p-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200"
+                title={isDark ? t.nav.lightMode : t.nav.darkMode}
+              >
+                {isDark ? <Sun className="h-4 w-4 lg:h-5 lg:w-5" /> : <Moon className="h-4 w-4 lg:h-5 lg:w-5" />}
+              </button>
               <button
                 onClick={() => onNavigate('login')}
                 className="px-4 lg:px-6 py-2 bg-mustard-500 text-navy-900 font-semibold rounded-lg hover:bg-mustard-600 transition-all duration-200 flex items-center space-x-2"
@@ -333,6 +349,13 @@ export default function Navbar({
                   </button>
                 )}
                 <button
+                  onClick={toggleTheme}
+                  className="block w-full text-left px-3 py-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
+                >
+                  {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                  <span>{isDark ? t.nav.lightMode : t.nav.darkMode}</span>
+                </button>
+                <button
                   onClick={() => {
                     onLogout();
                     setIsMenuOpen(false);
@@ -344,6 +367,13 @@ export default function Navbar({
               </>
             ) : (
               <>
+                <button
+                  onClick={toggleTheme}
+                  className="block w-full text-left px-3 py-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
+                >
+                  {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                  <span>{isDark ? t.nav.lightMode : t.nav.darkMode}</span>
+                </button>
                 <button
                   onClick={() => {
                     onNavigate('login');
