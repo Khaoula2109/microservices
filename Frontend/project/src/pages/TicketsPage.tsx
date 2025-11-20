@@ -128,6 +128,46 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
     }, 0);
   };
 
+  // Check if a ticket is still valid based on purchase date and type
+  const isTicketValid = (ticket: HistoryTicket): boolean => {
+    if (ticket.status !== 'ACTIVE') return false;
+
+    const purchaseDate = new Date(ticket.purchaseDate);
+    const now = new Date();
+    const hoursElapsed = (now.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60);
+
+    switch (ticket.ticketType.toUpperCase()) {
+      case 'SIMPLE':
+        return hoursElapsed < 1;
+      case 'JOURNEE':
+        return hoursElapsed < 24;
+      case 'HEBDO':
+        return hoursElapsed < (24 * 7);
+      case 'MENSUEL':
+        return hoursElapsed < (24 * 30);
+      default:
+        return false;
+    }
+  };
+
+  // Get ticket display status
+  const getTicketStatus = (ticket: HistoryTicket): { status: string; label: string; color: string } => {
+    if (ticket.status === 'USED') {
+      return { status: 'USED', label: 'Utilisé', color: 'bg-blue-100 text-blue-800' };
+    }
+    if (ticket.status === 'CANCELLED') {
+      return { status: 'CANCELLED', label: 'Annulé', color: 'bg-gray-100 text-gray-800' };
+    }
+    if (ticket.status === 'ACTIVE') {
+      if (isTicketValid(ticket)) {
+        return { status: 'VALID', label: 'Valide', color: 'bg-green-100 text-green-800' };
+      } else {
+        return { status: 'EXPIRED', label: 'Expiré', color: 'bg-red-100 text-red-800' };
+      }
+    }
+    return { status: 'EXPIRED', label: 'Expiré', color: 'bg-red-100 text-red-800' };
+  };
+
  
   const fetchHistory = async () => {
     if (!token) {
@@ -379,7 +419,7 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                 </div>
               </div>
             </div>
-            <div class="price">${price.toFixed(2)} DH</div>
+            <div class="price">${price.toFixed(2)} MAD</div>
             <div class="footer">
               <p>Merci d'avoir choisi KowihanTransit</p>
               <p style="margin-top: 5px;">Ce ticket est personnel et non transférable</p>
@@ -523,7 +563,7 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                     <div className="mb-4">
                       <div className="flex items-baseline space-x-2 mb-2">
                         <span className="text-4xl font-bold text-navy-900">
-                          {ticket.price.toFixed(2)} DH
+                          {ticket.price.toFixed(2)} MAD
                         </span>
                       </div>
                       <p className="text-gray-600 text-sm">
@@ -591,11 +631,11 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                               {ticket.name}
                             </p>
                             <p className="text-sm text-gray-500">
-                              {cart[ticket.id]} × {ticket.price.toFixed(2)} DH
+                              {cart[ticket.id]} × {ticket.price.toFixed(2)} MAD
                             </p>
                           </div>
                           <p className="font-bold text-navy-900">
-                            {(cart[ticket.id] * ticket.price).toFixed(2)} DH
+                            {(cart[ticket.id] * ticket.price).toFixed(2)} MAD
                           </p>
                         </div>
                       ))}
@@ -605,7 +645,7 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                     <div className="flex justify-between items-center">
                       <span className="text-xl font-bold text-navy-900">{t.tickets.total}</span>
                       <span className="text-3xl font-bold text-mustard-500">
-                        {getTotal().toFixed(2)} DH
+                        {getTotal().toFixed(2)} MAD
                       </span>
                     </div>
                   </div>
@@ -615,7 +655,7 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                     disabled={loading || !localUserId}
                     className="w-full bg-mustard-500 text-navy-900 font-bold py-4 rounded-lg hover:bg-mustard-600 transition-all duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {loading ? t.tickets.paying : `${t.tickets.pay} ${getTotal().toFixed(2)} DH`}
+                    {loading ? t.tickets.paying : `${t.tickets.pay} ${getTotal().toFixed(2)} MAD`}
                   </button>
 
                   {!localUserId && (
@@ -666,7 +706,9 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
               </p>
             ) : (
               <ul className="divide-y divide-gray-200">
-                {history.map((ticket) => (
+                {history.map((ticket) => {
+                  const ticketStatusInfo = getTicketStatus(ticket);
+                  return (
                   <li key={ticket.id} className="p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
                       <div className="mb-2 sm:mb-0 flex-1">
@@ -683,7 +725,7 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                         )}
                         {ticket.price && (
                           <p className="text-sm text-gray-600">
-                            Prix: {ticket.price.toFixed(2)} DH
+                            Prix: {ticket.price.toFixed(2)} MAD
                           </p>
                         )}
                         <p className="text-xs text-gray-400 mt-1">
@@ -691,22 +733,10 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                         </p>
                       </div>
                       <div className="flex flex-col items-end space-y-2">
-                        <span 
-                          className={`px-3 py-1 rounded-full text-sm font-semibold w-fit ${
-                            ticket.status === 'ACTIVE' 
-                              ? 'bg-green-100 text-green-800'
-                              : ticket.status === 'USED'
-                                ? 'bg-blue-100 text-blue-800'
-                                : ticket.status === 'EXPIRED'
-                                  ? 'bg-red-100 text-red-800'
-                                  : 'bg-gray-100 text-gray-800'
-                          }`}
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-semibold w-fit ${ticketStatusInfo.color}`}
                         >
-                          {ticket.status === 'ACTIVE' ? 'Actif' : 
-                           ticket.status === 'USED' ? 'Utilisé' : 
-                           ticket.status === 'EXPIRED' ? 'Expiré' :
-                           ticket.status === 'CANCELLED' ? 'Annulé' :
-                           ticket.status}
+                          {ticketStatusInfo.label}
                         </span>
                         {ticket.status === 'ACTIVE' && (
                           <button
@@ -737,7 +767,8 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                       </div>
                     </div>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             )}
           </div>

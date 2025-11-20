@@ -298,16 +298,13 @@ export default function AdminUserCreation({ token, onNavigate }: AdminUserCreati
 
           <div className="mt-6 pt-4 border-t border-gray-200">
             <div className="text-center">
-              <p className="text-gray-600 text-sm">
-                {t.adminCreation.returnTo}{' '}
-                <button
-                  onClick={() => onNavigate('account')}
-                  className="text-blue-500 hover:text-blue-700 font-semibold transition-colors"
-                  disabled={loading}
-                >
-                  {t.adminCreation.backToAccountPage}
-                </button>
-              </p>
+              <button
+                onClick={() => onNavigate('home')}
+                className="text-blue-500 hover:text-blue-700 font-semibold transition-colors text-sm"
+                disabled={loading}
+              >
+                {t.adminCreation.viewUsersList || 'Voir la liste des utilisateurs'}
+              </button>
             </div>
           </div>
         </div>

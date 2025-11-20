@@ -37,7 +37,7 @@ export default function MySubscriptionsPage({ token, userId }: MySubscriptionsPa
         status: 'active',
         startDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
         endDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
-        price: 100,
+        price: 100.00,
         autoRenew: true,
       };
       setSubscription(mockSubscription);
@@ -180,7 +180,7 @@ export default function MySubscriptionsPage({ token, userId }: MySubscriptionsPa
                 {getStatusBadge(subscription.status)}
               </div>
               <div className="text-4xl font-bold">
-                {subscription.price.toFixed(2)} DH
+                {subscription.price.toFixed(2)} MAD
                 <span className="text-lg font-normal">/mois</span>
               </div>
             </div>
@@ -288,7 +288,7 @@ export default function MySubscriptionsPage({ token, userId }: MySubscriptionsPa
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-navy-900">{subscription.price.toFixed(2)} DH</p>
+                    <p className="font-bold text-navy-900">{subscription.price.toFixed(2)} MAD</p>
                     <p className="text-xs text-green-600">{t.mySubscriptions.paid}</p>
                   </div>
                 </div>

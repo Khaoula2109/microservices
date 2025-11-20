@@ -112,14 +112,14 @@ export default function HomePage({ onNavigate, token, userRole }: HomePageProps)
           <h2 className="text-3xl md:text-4xl font-bold text-navy-900 text-center mb-12">
             {t.home.quickAccess}
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="flex flex-wrap justify-center gap-6">
             {quickActions.map((action) => {
               const Icon = action.icon;
               return (
                 <div
                   key={action.page}
                   onClick={() => onNavigate(action.page)}
-                  className="bg-white border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 hover:border-mustard-500"
+                  className="bg-white border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 hover:border-mustard-500 w-full md:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] max-w-xs"
                 >
                   <div className={`${action.color} w-14 h-14 rounded-lg flex items-center justify-center mb-4`}>
                     <Icon className="h-7 w-7 text-white" />
@@ -137,34 +137,36 @@ export default function HomePage({ onNavigate, token, userRole }: HomePageProps)
         </div>
       </section>
 
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-navy-900 text-center mb-12">
-            {t.home.whyChooseUs}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map((feature) => {
-              const Icon = feature.icon;
-              return (
-                <div
-                  key={feature.title}
-                  className="bg-white rounded-xl p-8 text-center shadow-md hover:shadow-lg transition-shadow duration-300"
-                >
-                  <div className="bg-mustard-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Icon className="h-8 w-8 text-white" />
+      {userRole !== 'ADMIN' && userRole !== 'CONTROLLER' && (
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-navy-900 text-center mb-12">
+              {t.home.whyChooseUs}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {features.map((feature) => {
+                const Icon = feature.icon;
+                return (
+                  <div
+                    key={feature.title}
+                    className="bg-white rounded-xl p-8 text-center shadow-md hover:shadow-lg transition-shadow duration-300"
+                  >
+                    <div className="bg-mustard-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Icon className="h-8 w-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-navy-900 mb-3">
+                      {feature.title}
+                    </h3>
+                    <p className="text-gray-600">
+                      {feature.description}
+                    </p>
                   </div>
-                  <h3 className="text-xl font-bold text-navy-900 mb-3">
-                    {feature.title}
-                  </h3>
-                  <p className="text-gray-600">
-                    {feature.description}
-                  </p>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {!token && (
         <section className="bg-navy-900 text-white py-16">

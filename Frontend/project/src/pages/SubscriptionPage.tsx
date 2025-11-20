@@ -28,8 +28,8 @@ export default function SubscriptionPage({ token, userId }: SubscriptionPageProp
       {
         id: 1,
         name: 'Abonnement Mensuel',
-        price: 10.00,
-        priceId: 'price_1SIrWERxfAGItUbxdErqrsBI', 
+        price: 100.00,
+        priceId: 'price_1SIrWERxfAGItUbxdErqrsBI',
         durationInDays: 30,
         features: [
           'Accès illimité à tous les bus',
@@ -40,7 +40,7 @@ export default function SubscriptionPage({ token, userId }: SubscriptionPageProp
       {
         id: 2,
         name: 'Abonnement Annuel',
-        price: 100.00,
+        price: 1000.00,
         priceId: 'price_1SIrWjRxfAGItUbxVFplja1P', 
         durationInDays: 365,
         features: [
@@ -114,14 +114,14 @@ export default function SubscriptionPage({ token, userId }: SubscriptionPageProp
             <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
             
             <div className="mb-6">
-              <span className="text-4xl font-bold text-gray-900">{plan.price}€</span>
+              <span className="text-4xl font-bold text-gray-900">{plan.price} MAD</span>
               <span className="text-gray-600 text-lg">{getDurationText(plan.durationInDays)}</span>
             </div>
 
             {plan.durationInDays === 365 && (
               <div className="mb-4 p-3 bg-green-50 rounded-lg">
                 <p className="text-green-700 font-semibold text-sm">
-                  🎉 Économisez 20€ sur l'année !
+                  🎉 Économisez 200 MAD sur l'année !
                 </p>
               </div>
             )}
