@@ -14,10 +14,10 @@ interface NavbarProps {
   userRole: string | null;
 }
 
-export default function Navbar({ 
-  currentPage, 
-  onNavigate, 
-  token, 
+export default function Navbar({
+  currentPage,
+  onNavigate,
+  token,
   onLogout,
   userId,
   userRole
