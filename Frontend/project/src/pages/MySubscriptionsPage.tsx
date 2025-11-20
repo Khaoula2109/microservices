@@ -37,7 +37,7 @@ export default function MySubscriptionsPage({ token, userId }: MySubscriptionsPa
         status: 'active',
         startDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
         endDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
-        price: 100,
+        price: 100.00,
         autoRenew: true,
       };
       setSubscription(mockSubscription);

@@ -530,7 +530,7 @@ async getSubscriptionPlans(token: string) {
       {
         id: 1,
         name: 'Abonnement Mensuel',
-        price: 10.00,
+        price: 100.00,
         priceId: 'price_1N5y6cKacGVci6pUfI6u3sR5',
         durationInDays: 30,
         features: [
@@ -541,8 +541,8 @@ async getSubscriptionPlans(token: string) {
       },
       {
         id: 2,
-        name: 'Abonnement Annuel', 
-        price: 100.00,
+        name: 'Abonnement Annuel',
+        price: 1000.00,
         priceId: 'price_1HGZ2oKacGVci6pU2pJ2J2J2',
         durationInDays: 365,
         features: [

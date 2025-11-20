@@ -85,7 +85,7 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
       id: 'HEBDO',
       name: t.tickets.weekly,
       description: t.tickets.weeklyDesc,
-      price: 100.0,
+      price: 1000.0,
       validity: '7d',
     },
     {

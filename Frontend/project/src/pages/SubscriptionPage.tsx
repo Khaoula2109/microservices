@@ -28,8 +28,8 @@ export default function SubscriptionPage({ token, userId }: SubscriptionPageProp
       {
         id: 1,
         name: 'Abonnement Mensuel',
-        price: 10.00,
-        priceId: 'price_1SIrWERxfAGItUbxdErqrsBI', 
+        price: 100.00,
+        priceId: 'price_1SIrWERxfAGItUbxdErqrsBI',
         durationInDays: 30,
         features: [
           'Accès illimité à tous les bus',
@@ -40,7 +40,7 @@ export default function SubscriptionPage({ token, userId }: SubscriptionPageProp
       {
         id: 2,
         name: 'Abonnement Annuel',
-        price: 100.00,
+        price: 1000.00,
         priceId: 'price_1SIrWjRxfAGItUbxVFplja1P', 
         durationInDays: 365,
         features: [
