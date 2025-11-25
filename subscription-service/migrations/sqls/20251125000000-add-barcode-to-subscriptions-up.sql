@@ -1,20 +1,28 @@
--- Add QR code columns to Subscriptions table (check if not exists first)
-IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'Subscriptions') AND name = 'QrCodeData')
-BEGIN
-    ALTER TABLE Subscriptions
-    ADD QrCodeData NVARCHAR(MAX) NULL;
-END
+-- Add QR code columns to Subscriptions table
+-- Using TRY/CATCH to handle if columns already exist
+BEGIN TRY
+    ALTER TABLE Subscriptions ADD QrCodeData NVARCHAR(MAX) NULL;
+END TRY
+BEGIN CATCH
+    -- Column already exists, ignore error
+    PRINT 'QrCodeData column already exists';
+END CATCH;
 
-IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'Subscriptions') AND name = 'QrCodeImage')
-BEGIN
-    ALTER TABLE Subscriptions
-    ADD QrCodeImage NVARCHAR(MAX) NULL;
-END
+BEGIN TRY
+    ALTER TABLE Subscriptions ADD QrCodeImage NVARCHAR(MAX) NULL;
+END TRY
+BEGIN CATCH
+    -- Column already exists, ignore error
+    PRINT 'QrCodeImage column already exists';
+END CATCH;
 
--- Create unique index on QrCodeData for faster lookups (check if not exists first)
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'Subscriptions') AND name = 'IX_Subscriptions_QrCodeData')
-BEGIN
+-- Create unique index on QrCodeData for faster lookups
+BEGIN TRY
     CREATE UNIQUE INDEX IX_Subscriptions_QrCodeData
     ON Subscriptions(QrCodeData)
     WHERE QrCodeData IS NOT NULL;
-END
+END TRY
+BEGIN CATCH
+    -- Index already exists, ignore error
+    PRINT 'IX_Subscriptions_QrCodeData index already exists';
+END CATCH;
