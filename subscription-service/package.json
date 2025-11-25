@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "migrate": "db-migrate up",
-    "start": "npm run migrate && node src/server.js"
+    "start": "npm run migrate || true && node src/server.js"
   },
   "keywords": [],
   "author": "",
