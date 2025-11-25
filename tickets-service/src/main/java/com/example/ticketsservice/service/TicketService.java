@@ -230,7 +230,6 @@ public class TicketService {
         User user = userRepository.findById(ticket.getUserId()).orElse(null);
         String ownerName = user != null ? user.getFirstName() + " " + user.getLastName() : "Utilisateur inconnu";
         String ownerEmail = user != null ? user.getEmail() : null;
-        String ownerPhone = user != null ? user.getPhoneNumber() : null;
 
         // Check if ticket is cancelled
         if ("ANNULE".equals(ticket.getStatus())) {
@@ -245,7 +244,6 @@ public class TicketService {
                     .validationDate(ticket.getValidationDate() != null ? ticket.getValidationDate().toString() : null)
                     .ownerName(ownerName)
                     .ownerEmail(ownerEmail)
-                    .ownerPhone(ownerPhone)
                     .qrCodeImage(ticket.getQrCodeImage())
                     .build();
         }
@@ -263,7 +261,6 @@ public class TicketService {
                     .validationDate(ticket.getValidationDate().toString())
                     .ownerName(ownerName)
                     .ownerEmail(ownerEmail)
-                    .ownerPhone(ownerPhone)
                     .qrCodeImage(ticket.getQrCodeImage())
                     .build();
         }
@@ -316,7 +313,6 @@ public class TicketService {
                     .expirationDate(expirationDate.toString())
                     .ownerName(ownerName)
                     .ownerEmail(ownerEmail)
-                    .ownerPhone(ownerPhone)
                     .qrCodeImage(ticket.getQrCodeImage())
                     .build();
         }
