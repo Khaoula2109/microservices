@@ -10,9 +10,4 @@ public class ControllerScannerController {
     public String scannerPage() {
         return "forward:/controller-scanner.html";
     }
-
-    @GetMapping("/")
-    public String homePage() {
-        return "forward:/controller-scanner.html";
-    }
 }
