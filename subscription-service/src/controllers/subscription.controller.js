@@ -1,6 +1,6 @@
 const asyncHandler = require('../middleware/asyncHandler');
 const BadRequestError = require('../errors/BadRequestError');
-const { createCheckoutSession, handleSubscriptionWebhook } = require('../services/subscription.service');
+const { createCheckoutSession, handleSubscriptionWebhook, validateSubscriptionByQrCode } = require('../services/subscription.service');
 const stripe = require('stripe')(process.env.STRIPE_API_KEY);
 
 const { publishEvent } = require('../config/rabbit');
@@ -37,4 +37,15 @@ const stripeWebhook = (req, res) => {
     res.json({ received: true });
 };
 
-module.exports = { createSubscription, stripeWebhook };
+const validateQrCode = asyncHandler(async (req, res, next) => {
+    const { qrCode } = req.params;
+
+    if (!qrCode) {
+        return next(new BadRequestError('Le QR code est requis.'));
+    }
+
+    const validationResult = await validateSubscriptionByQrCode(qrCode);
+    res.json(validationResult);
+});
+
+module.exports = { createSubscription, stripeWebhook, validateQrCode };
