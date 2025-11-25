@@ -76,6 +76,36 @@
             border-top: 1px solid rgba(102, 126, 234, 0.3);
             margin: 15px 0;
         }
+        .qr-code-image {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px auto;
+            text-align: center;
+            border: 3px solid #667eea;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            max-width: 350px;
+        }
+        .qr-code-image img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        .qr-code-title {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .scan-instruction {
+            color: #666;
+            font-size: 14px;
+            margin-top: 15px;
+            font-style: italic;
+        }
         .footer {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             color: #666;
@@ -111,7 +141,20 @@
                 <hr>
                 <strong>Valide jusqu'au :</strong>
                 <span class="value">{{endDate}}</span>
+                {{#if subscriptionId}}
+                <hr>
+                <strong>ID de l'abonnement :</strong>
+                <span class="value">{{subscriptionId}}</span>
+                {{/if}}
             </div>
+
+            {{#if qrCodeImage}}
+            <div class="qr-code-image">
+                <div class="qr-code-title">Votre Code-Barres d'Abonnement</div>
+                <img src="data:image/png;base64,{{qrCodeImage}}" alt="QR Code de l'Abonnement" />
+                <div class="scan-instruction">Présentez ce code-barres au contrôleur pour valider votre abonnement</div>
+            </div>
+            {{/if}}
 
             <p style="margin-top: 25px;">Cordialement,<br><strong>L'équipe Kowihan</strong></p>
         </div>

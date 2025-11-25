@@ -43,6 +43,7 @@ public class TicketService {
     private final RefundRepository refundRepository;
     private final RabbitTemplate rabbitTemplate;
     private final NotificationController notificationController;
+    private final BarcodeService barcodeService;
 
     private static final Logger log = LoggerFactory.getLogger(TicketService.class);
 
@@ -60,9 +61,34 @@ public class TicketService {
         newTicket.setTicketType(request.getTicketType());
         newTicket.setStatus("VALIDE");
         newTicket.setPurchaseDate(LocalDateTime.now());
-        newTicket.setQrCodeData(generateUniqueQrCode());
 
+        // Generate unique code first
+        String uniqueCode = UUID.randomUUID().toString();
+
+        // Save ticket to get the ID
         Ticket savedTicket = ticketRepository.save(newTicket);
+
+        // Generate QR code data with all ticket information
+        String qrCodeData = barcodeService.generateQrCodeData(
+            savedTicket.getId(),
+            savedTicket.getUserId(),
+            savedTicket.getTicketType(),
+            savedTicket.getPurchaseDate(),
+            uniqueCode
+        );
+
+        // Generate QR code image
+        String qrCodeImage = null;
+        try {
+            qrCodeImage = barcodeService.generateQrCodeImageBase64(qrCodeData);
+        } catch (Exception e) {
+            log.error("Error generating QR code image: {}", e.getMessage());
+        }
+
+        // Update ticket with QR code data and image
+        savedTicket.setQrCodeData(qrCodeData);
+        savedTicket.setQrCodeImage(qrCodeImage);
+        savedTicket = ticketRepository.save(savedTicket);
 
         try {
             TicketPurchasedEvent event = TicketPurchasedEvent.builder()
@@ -72,6 +98,7 @@ public class TicketService {
                     .ticketType(savedTicket.getTicketType())
                     .purchaseDate(savedTicket.getPurchaseDate().toString())
                     .qrCodeData(savedTicket.getQrCodeData())
+                    .qrCodeImage(savedTicket.getQrCodeImage())
                     .build();
 
             rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, "ticket.purchased", event);
@@ -180,20 +207,46 @@ public class TicketService {
                 .orElse(null);
 
         if (ticket == null) {
+            // Try to decode QR code data in case it's JSON formatted
+            try {
+                var qrData = barcodeService.decodeQrCodeData(qrCode);
+                String ticketId = (String) qrData.get("ticketId");
+                if (ticketId != null) {
+                    ticket = ticketRepository.findById(Long.parseLong(ticketId)).orElse(null);
+                }
+            } catch (Exception e) {
+                log.error("Error decoding QR code: {}", e.getMessage());
+            }
+        }
+
+        if (ticket == null) {
             return QrValidationResponse.builder()
                     .valid(false)
                     .message("QR Code invalide - Ticket non trouvé")
                     .build();
         }
 
+        // Get owner information
+        User user = userRepository.findById(ticket.getUserId()).orElse(null);
+        String ownerName = user != null ? user.getFirstName() + " " + user.getLastName() : "Utilisateur inconnu";
+        String ownerEmail = user != null ? user.getEmail() : null;
+        String ownerPhone = user != null ? user.getPhoneNumber() : null;
+
         // Check if ticket is cancelled
         if ("ANNULE".equals(ticket.getStatus())) {
             return QrValidationResponse.builder()
                     .valid(false)
                     .message("Ce ticket a été annulé")
+                    .ticketId(ticket.getId())
+                    .userId(ticket.getUserId())
                     .ticketType(ticket.getTicketType())
                     .status(ticket.getStatus())
                     .purchaseDate(ticket.getPurchaseDate().toString())
+                    .validationDate(ticket.getValidationDate() != null ? ticket.getValidationDate().toString() : null)
+                    .ownerName(ownerName)
+                    .ownerEmail(ownerEmail)
+                    .ownerPhone(ownerPhone)
+                    .qrCodeImage(ticket.getQrCodeImage())
                     .build();
         }
 
@@ -202,9 +255,16 @@ public class TicketService {
             return QrValidationResponse.builder()
                     .valid(false)
                     .message("Ce ticket a déjà été utilisé")
+                    .ticketId(ticket.getId())
+                    .userId(ticket.getUserId())
                     .ticketType(ticket.getTicketType())
                     .status("UTILISE")
                     .purchaseDate(ticket.getPurchaseDate().toString())
+                    .validationDate(ticket.getValidationDate().toString())
+                    .ownerName(ownerName)
+                    .ownerEmail(ownerEmail)
+                    .ownerPhone(ownerPhone)
+                    .qrCodeImage(ticket.getQrCodeImage())
                     .build();
         }
 
@@ -247,10 +307,17 @@ public class TicketService {
             return QrValidationResponse.builder()
                     .valid(false)
                     .message("Ce ticket a expiré")
+                    .ticketId(ticket.getId())
+                    .userId(ticket.getUserId())
                     .ticketType(ticket.getTicketType())
                     .status("EXPIRE")
                     .purchaseDate(purchaseDate.toString())
+                    .validationDate(ticket.getValidationDate() != null ? ticket.getValidationDate().toString() : null)
                     .expirationDate(expirationDate.toString())
+                    .ownerName(ownerName)
+                    .ownerEmail(ownerEmail)
+                    .ownerPhone(ownerPhone)
+                    .qrCodeImage(ticket.getQrCodeImage())
                     .build();
         }
 
@@ -260,18 +327,20 @@ public class TicketService {
             ticketRepository.save(ticket);
         }
 
-        // Get owner name
-        User user = userRepository.findById(ticket.getUserId()).orElse(null);
-        String ownerName = user != null ? user.getFirstName() + " " + user.getLastName() : "Utilisateur inconnu";
-
         return QrValidationResponse.builder()
                 .valid(true)
                 .message("Ticket valide - Bon voyage!")
+                .ticketId(ticket.getId())
+                .userId(ticket.getUserId())
                 .ticketType(ticket.getTicketType())
                 .status(ticket.getStatus())
                 .purchaseDate(purchaseDate.toString())
+                .validationDate(ticket.getValidationDate() != null ? ticket.getValidationDate().toString() : null)
                 .expirationDate(expirationDate.toString())
                 .ownerName(ownerName)
+                .ownerEmail(ownerEmail)
+                .ownerPhone(ownerPhone)
+                .qrCodeImage(ticket.getQrCodeImage())
                 .build();
     }
 

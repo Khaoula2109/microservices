@@ -38,4 +38,7 @@ public class Ticket {
 
     @Column(name = "qr_code_data", nullable = false, unique = true)
     private String qrCodeData;
+
+    @Column(name = "qr_code_image", columnDefinition = "LONGTEXT")
+    private String qrCodeImage; // Base64 encoded QR code image
 }

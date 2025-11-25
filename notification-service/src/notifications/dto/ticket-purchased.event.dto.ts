@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsNotEmpty, IsISO8601 } from 'class-validator';
+import { IsString, IsEmail, IsNotEmpty, IsISO8601, IsOptional } from 'class-validator';
 
 export class TicketPurchasedEventDto {
     @IsString()
@@ -23,4 +23,8 @@ export class TicketPurchasedEventDto {
     @IsString()
     @IsNotEmpty()
     qrCodeData: string;
+
+    @IsString()
+    @IsOptional()
+    qrCodeImage?: string; // Base64 encoded QR code image
 }

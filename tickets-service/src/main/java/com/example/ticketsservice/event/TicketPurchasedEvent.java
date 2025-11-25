@@ -17,4 +17,5 @@ public class TicketPurchasedEvent implements Serializable {
     private String ticketType;
     private String purchaseDate;
     private String qrCodeData;
+    private String qrCodeImage; // Base64 encoded QR code image
 }

@@ -4,7 +4,9 @@ metadata:
   name: transport-ingress
   namespace: transport-prod
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # Rediriger HTTP vers HTTPS
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
@@ -14,6 +16,12 @@ metadata:
     nginx.ingress.kubernetes.io/upstream-hash-by: "$request_uri"
 spec:
   ingressClassName: nginx
+  tls:
+  - hosts:
+    - kowihan.local
+    - prometheus.kowihan.local
+    - grafana.kowihan.local
+    secretName: kowihan-local-tls
   rules:
   - host: kowihan.local
     http:

@@ -24,6 +24,10 @@ public class SecurityConfig {
                         .requestMatchers("/health", "/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/api/tickets/validate-qr/**").permitAll()  // Public validation endpoint
+                        .requestMatchers("/api/subscriptions/validate-qr/**").permitAll()  // Subscription validation proxy
+                        .requestMatchers("/scanner", "/").permitAll()  // Scanner interface
+                        .requestMatchers("/*.html", "/css/**", "/js/**", "/images/**").permitAll()  // Static resources
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

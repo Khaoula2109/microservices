@@ -7,6 +7,11 @@ const {
     SUBSCRIPTION_PAYMENT_FAILED,
     SUBSCRIPTION_CANCELED,
 } = require('../constants/rabbitmqConstants');
+const {
+    generateSubscriptionQrCodeData,
+    generateQrCodeImageBase64
+} = require('./barcode.service');
+const crypto = require('crypto');
 require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_API_KEY);
 
@@ -77,21 +82,47 @@ const handleSubscriptionWebhook = async (stripeEvent, publishEventCallback) => {
             }
             const { PlanID: planId, Name: planName } = planResult.recordset[0];
 
-            await db.query(`
+            // Insert subscription first to get the ID
+            const insertResult = await db.query(`
           INSERT INTO Subscriptions (UserID, PlanID, StripeSubscriptionID, Status, CurrentPeriodEnd)
+          OUTPUT INSERTED.SubscriptionID
           VALUES ('${userId}', ${planId}, '${subscription.id}', '${subscription.status}', '${new Date(subscription.current_period_end * 1000).toISOString()}')
       `);
+            const subscriptionId = insertResult.recordset[0].SubscriptionID;
+
+            // Generate QR code
+            const uniqueCode = crypto.randomUUID();
+            const endDate = new Date(subscription.current_period_end * 1000).toISOString();
+            const qrCodeData = generateSubscriptionQrCodeData(subscriptionId, userId, planName, endDate, uniqueCode);
+
+            let qrCodeImage = null;
+            try {
+                qrCodeImage = await generateQrCodeImageBase64(qrCodeData);
+            } catch (error) {
+                console.error('Error generating QR code image:', error);
+            }
+
+            // Update subscription with QR code data
+            await db.query(`
+          UPDATE Subscriptions
+          SET QrCodeData = '${qrCodeData.replace(/'/g, "''")}', QrCodeImage = ${qrCodeImage ? `'${qrCodeImage.replace(/'/g, "''")}'` : 'NULL'}
+          WHERE SubscriptionID = ${subscriptionId}
+      `);
+
             console.log(`✅ Abonnement ${subscription.id} activé pour l'utilisateur ${userId}.`);
 
             if (publishEventCallback) {
                 publishEventCallback(SUBSCRIPTION_CREATED, {
                     userId: userId.toString(),
                     userEmail: userEmail,
+                    subscriptionId: subscriptionId.toString(),
                     planName: planName,
                     amount: subscription.items.data[0].price.unit_amount / 100,
                     currency: subscription.items.data[0].price.currency,
-                    endDate: new Date(subscription.current_period_end * 1000).toISOString(),
+                    endDate: endDate,
                     status: subscription.status,
+                    qrCodeData: qrCodeData,
+                    qrCodeImage: qrCodeImage,
                 });
             }
             break;
@@ -172,8 +203,106 @@ const handleSubscriptionWebhook = async (stripeEvent, publishEventCallback) => {
     }
 };
 
+const validateSubscriptionByQrCode = async (qrCode) => {
+    const db = await connectDB();
+
+    try {
+        // First try to find subscription by QR code data directly
+        let result = await db.query(`
+            SELECT S.SubscriptionID, S.UserID, S.Status, S.CurrentPeriodEnd, S.QrCodeImage,
+                   P.Name AS PlanName, U.Email, U.FirstName, U.LastName
+            FROM Subscriptions S
+            JOIN Plans P ON S.PlanID = P.PlanID
+            JOIN Users U ON S.UserID = U.UserID
+            WHERE S.QrCodeData = '${qrCode.replace(/'/g, "''")}'
+        `);
+
+        // If not found, try to decode JSON and find by subscription ID
+        if (result.recordset.length === 0) {
+            try {
+                const { decodeQrCodeData } = require('./barcode.service');
+                const qrData = decodeQrCodeData(qrCode);
+                if (qrData.subscriptionId) {
+                    result = await db.query(`
+                        SELECT S.SubscriptionID, S.UserID, S.Status, S.CurrentPeriodEnd, S.QrCodeImage,
+                               P.Name AS PlanName, U.Email, U.FirstName, U.LastName
+                        FROM Subscriptions S
+                        JOIN Plans P ON S.PlanID = P.PlanID
+                        JOIN Users U ON S.UserID = U.UserID
+                        WHERE S.SubscriptionID = ${qrData.subscriptionId}
+                    `);
+                }
+            } catch (error) {
+                console.error('Error decoding QR code:', error);
+            }
+        }
+
+        if (result.recordset.length === 0) {
+            return {
+                valid: false,
+                message: 'QR Code invalide - Abonnement non trouvé'
+            };
+        }
+
+        const subscription = result.recordset[0];
+        const now = new Date();
+        const endDate = new Date(subscription.CurrentPeriodEnd);
+        const isExpired = now > endDate;
+
+        // Check if subscription is active
+        if (subscription.Status !== 'active' && subscription.Status !== 'trialing') {
+            return {
+                valid: false,
+                message: 'Abonnement non actif',
+                subscriptionId: subscription.SubscriptionID,
+                userId: subscription.UserID,
+                planName: subscription.PlanName,
+                status: subscription.Status,
+                endDate: subscription.CurrentPeriodEnd,
+                ownerName: `${subscription.FirstName} ${subscription.LastName}`,
+                ownerEmail: subscription.Email,
+                qrCodeImage: subscription.QrCodeImage
+            };
+        }
+
+        // Check if subscription is expired
+        if (isExpired) {
+            return {
+                valid: false,
+                message: 'Abonnement expiré',
+                subscriptionId: subscription.SubscriptionID,
+                userId: subscription.UserID,
+                planName: subscription.PlanName,
+                status: subscription.Status,
+                endDate: subscription.CurrentPeriodEnd,
+                ownerName: `${subscription.FirstName} ${subscription.LastName}`,
+                ownerEmail: subscription.Email,
+                qrCodeImage: subscription.QrCodeImage
+            };
+        }
+
+        // Subscription is valid
+        return {
+            valid: true,
+            message: 'Abonnement valide - Bon voyage!',
+            subscriptionId: subscription.SubscriptionID,
+            userId: subscription.UserID,
+            planName: subscription.PlanName,
+            status: subscription.Status,
+            endDate: subscription.CurrentPeriodEnd,
+            ownerName: `${subscription.FirstName} ${subscription.LastName}`,
+            ownerEmail: subscription.Email,
+            qrCodeImage: subscription.QrCodeImage
+        };
+    } catch (error) {
+        console.error('Error validating subscription by QR code:', error);
+        throw new ApiError('Erreur lors de la validation de l\'abonnement');
+    }
+};
+
 module.exports = {
     getOrCreateStripeCustomer,
     createCheckoutSession,
     handleSubscriptionWebhook,
+    validateSubscriptionByQrCode,
 };

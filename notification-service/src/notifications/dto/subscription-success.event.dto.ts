@@ -10,4 +10,6 @@ export class SubscriptionSuccessEventDto {
     planName?: string;
     amount?: number;
     currency?: string;
+    qrCodeData?: string;
+    qrCodeImage?: string; // Base64 encoded QR code image
 }
