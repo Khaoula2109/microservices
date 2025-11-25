@@ -299,7 +299,7 @@ export default function AdminUserCreation({ token, onNavigate }: AdminUserCreati
           <div className="mt-6 pt-4 border-t border-gray-200">
             <div className="text-center">
               <button
-                onClick={() => onNavigate('home')}
+                onClick={() => onNavigate('user-management')}
                 className="text-blue-500 hover:text-blue-700 font-semibold transition-colors text-sm"
                 disabled={loading}
               >

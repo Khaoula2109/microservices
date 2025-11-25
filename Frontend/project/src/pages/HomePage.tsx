@@ -1,4 +1,4 @@
-import { Clock, Ticket, MapPin, User, TrendingUp, Shield, Scan, UserPlus } from 'lucide-react';
+import { Clock, Ticket, MapPin, User, TrendingUp, Shield, Scan, UserPlus, Users } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface HomePageProps {
@@ -58,6 +58,14 @@ export default function HomePage({ onNavigate, token, userRole }: HomePageProps)
       icon: UserPlus,
       page: 'admin-creation',
       color: 'bg-blue-600',
+      roles: ['ADMIN'],
+    },
+    {
+      title: 'Gestion des Utilisateurs',
+      description: 'Consultez et gérez tous les utilisateurs du système',
+      icon: Users,
+      page: 'user-management',
+      color: 'bg-purple-600',
       roles: ['ADMIN'],
     },
   ];
