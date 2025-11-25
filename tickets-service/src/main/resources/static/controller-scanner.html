@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validation des Titres de Transport - Kowihan</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .logo {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+            letter-spacing: 3px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 18px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            background: #f5f7fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            background: #e8ebf0;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        #reader {
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .manual-input {
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: monospace;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .result.valid {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            border: 3px solid #00b894;
+        }
+
+        .result.invalid {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            border: 3px solid #d63031;
+        }
+
+        .result-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-icon {
+            font-size: 32px;
+        }
+
+        .result-details {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .detail-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+            width: 180px;
+            flex-shrink: 0;
+        }
+
+        .detail-value {
+            color: #333;
+            flex: 1;
+        }
+
+        .qr-image {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .qr-image img {
+            max-width: 250px;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #ffe0e0;
+            border: 2px solid #ff4444;
+            color: #cc0000;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .info-box h4 {
+            margin-bottom: 8px;
+            color: #1976D2;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            color: #555;
+        }
+
+        .camera-note {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">KOWIHAN</div>
+            <div class="subtitle">Validation des Titres de Transport</div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('scanner')">
+                📷 Scanner QR Code
+            </div>
+            <div class="tab" onclick="switchTab('manual')">
+                ⌨️ Saisie Manuelle
+            </div>
+        </div>
+
+        <!-- Scanner Tab -->
+        <div class="tab-content active" id="scanner-tab">
+            <div class="camera-note">
+                <strong>⚠️ Note :</strong> L'accès à la caméra nécessite HTTPS en production. En développement local (localhost/127.0.0.1), HTTP est accepté. Si la caméra ne fonctionne pas, utilisez l'onglet "Saisie Manuelle".
+            </div>
+
+            <div class="input-group">
+                <label for="ticketType">Type de Titre à Valider</label>
+                <select id="ticketType">
+                    <option value="ticket">Ticket</option>
+                    <option value="subscription">Abonnement</option>
+                </select>
+            </div>
+
+            <div id="reader"></div>
+
+            <button class="btn" id="startScanBtn" onclick="startScanner()">
+                Démarrer le Scanner
+            </button>
+            <button class="btn" id="stopScanBtn" onclick="stopScanner()" style="display: none; background: #e74c3c;">
+                Arrêter le Scanner
+            </button>
+        </div>
+
+        <!-- Manual Input Tab -->
+        <div class="tab-content" id="manual-tab">
+            <div class="info-box">
+                <h4>Comment obtenir le code QR ?</h4>
+                <ul>
+                    <li>Scannez le QR code avec une application de scan standard</li>
+                    <li>Copiez le texte/données affichées</li>
+                    <li>Collez les données dans le champ ci-dessous</li>
+                </ul>
+            </div>
+
+            <div class="manual-input">
+                <div class="input-group">
+                    <label for="manualTicketType">Type de Titre</label>
+                    <select id="manualTicketType">
+                        <option value="ticket">Ticket</option>
+                        <option value="subscription">Abonnement</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="qrCodeInput">Données du QR Code</label>
+                    <textarea id="qrCodeInput" placeholder="Collez ici les données du QR code scanné..."></textarea>
+                </div>
+
+                <button class="btn" onclick="validateManual()">
+                    Valider
+                </button>
+            </div>
+        </div>
+
+        <div class="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px;">Validation en cours...</p>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        let html5QrCode = null;
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + '-tab').classList.add('active');
+
+            // Stop scanner if switching away
+            if (tabName !== 'scanner' && html5QrCode) {
+                stopScanner();
+            }
+
+            // Hide results
+            hideResult();
+        }
+
+        async function startScanner() {
+            const ticketType = document.getElementById('ticketType').value;
+
+            try {
+                document.getElementById('startScanBtn').style.display = 'none';
+                document.getElementById('stopScanBtn').style.display = 'block';
+
+                html5QrCode = new Html5Qrcode("reader");
+
+                const config = {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 },
+                    aspectRatio: 1.0
+                };
+
+                await html5QrCode.start(
+                    { facingMode: "environment" },
+                    config,
+                    async (decodedText, decodedResult) => {
+                        console.log(`Code détecté: ${decodedText}`);
+                        await stopScanner();
+                        await validateQrCode(decodedText, ticketType);
+                    },
+                    (errorMessage) => {
+                        // Ignore scan errors
+                    }
+                );
+            } catch (err) {
+                console.error('Erreur de démarrage du scanner:', err);
+                showError('Impossible d\'accéder à la caméra. Utilisez l\'onglet "Saisie Manuelle" ou vérifiez que vous êtes sur localhost/HTTPS.');
+                document.getElementById('startScanBtn').style.display = 'block';
+                document.getElementById('stopScanBtn').style.display = 'none';
+            }
+        }
+
+        async function stopScanner() {
+            if (html5QrCode) {
+                try {
+                    await html5QrCode.stop();
+                    await html5QrCode.clear();
+                } catch (err) {
+                    console.error('Erreur arrêt scanner:', err);
+                }
+                html5QrCode = null;
+            }
+            document.getElementById('startScanBtn').style.display = 'block';
+            document.getElementById('stopScanBtn').style.display = 'none';
+        }
+
+        async function validateManual() {
+            const qrCode = document.getElementById('qrCodeInput').value.trim();
+            const ticketType = document.getElementById('manualTicketType').value;
+
+            if (!qrCode) {
+                showError('Veuillez saisir les données du QR code');
+                return;
+            }
+
+            await validateQrCode(qrCode, ticketType);
+        }
+
+        async function validateQrCode(qrCodeData, ticketType) {
+            hideResult();
+            hideError();
+            showLoading();
+
+            try {
+                // Determine which API to call based on ticket type or QR code content
+                let apiUrl;
+                let parsedData;
+
+                // Try to parse JSON to determine type
+                try {
+                    parsedData = JSON.parse(qrCodeData);
+                    if (parsedData.type === 'SUBSCRIPTION') {
+                        apiUrl = '/api/subscriptions/validate-qr/';
+                    } else {
+                        apiUrl = '/api/tickets/validate-qr/';
+                    }
+                } catch (e) {
+                    // Not JSON, use selected type
+                    if (ticketType === 'subscription') {
+                        apiUrl = '/api/subscriptions/validate-qr/';
+                    } else {
+                        apiUrl = '/api/tickets/validate-qr/';
+                    }
+                }
+
+                const response = await fetch(apiUrl + encodeURIComponent(qrCodeData));
+                const result = await response.json();
+
+                hideLoading();
+                displayResult(result);
+            } catch (error) {
+                hideLoading();
+                console.error('Erreur de validation:', error);
+                showError('Erreur lors de la validation. Vérifiez votre connexion et réessayez.');
+            }
+        }
+
+        function displayResult(result) {
+            const resultDiv = document.getElementById('result');
+            const isValid = result.valid;
+
+            resultDiv.className = 'result ' + (isValid ? 'valid' : 'invalid');
+
+            let html = `
+                <div class="result-title">
+                    <span class="result-icon">${isValid ? '✅' : '❌'}</span>
+                    <span>${result.message}</span>
+                </div>
+            `;
+
+            if (result.ticketId || result.subscriptionId || result.ownerName) {
+                html += '<div class="result-details">';
+
+                if (result.ticketId) {
+                    html += detailRow('ID Ticket', result.ticketId);
+                }
+                if (result.subscriptionId) {
+                    html += detailRow('ID Abonnement', result.subscriptionId);
+                }
+                if (result.userId) {
+                    html += detailRow('ID Utilisateur', result.userId);
+                }
+                if (result.ownerName) {
+                    html += detailRow('👤 Nom du Passager', result.ownerName);
+                }
+                if (result.ownerEmail) {
+                    html += detailRow('📧 Email', result.ownerEmail);
+                }
+                if (result.ownerPhone) {
+                    html += detailRow('📱 Téléphone', result.ownerPhone);
+                }
+                if (result.ticketType) {
+                    html += detailRow('🎫 Type de Ticket', result.ticketType);
+                }
+                if (result.planName) {
+                    html += detailRow('📋 Plan', result.planName);
+                }
+                if (result.status) {
+                    html += detailRow('📊 Statut', result.status);
+                }
+                if (result.purchaseDate) {
+                    html += detailRow('📅 Date d\'achat', formatDate(result.purchaseDate));
+                }
+                if (result.validationDate) {
+                    html += detailRow('✓ Date de validation', formatDate(result.validationDate));
+                }
+                if (result.expirationDate) {
+                    html += detailRow('⏰ Date d\'expiration', formatDate(result.expirationDate));
+                }
+                if (result.endDate) {
+                    html += detailRow('⏰ Valide jusqu\'au', formatDate(result.endDate));
+                }
+
+                html += '</div>';
+
+                if (result.qrCodeImage) {
+                    html += `
+                        <div class="qr-image">
+                            <img src="data:image/png;base64,${result.qrCodeImage}" alt="QR Code" />
+                        </div>
+                    `;
+                }
+            }
+
+            resultDiv.innerHTML = html;
+            resultDiv.style.display = 'block';
+        }
+
+        function detailRow(label, value) {
+            return `
+                <div class="detail-row">
+                    <div class="detail-label">${label}:</div>
+                    <div class="detail-value">${value}</div>
+                </div>
+            `;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleString('fr-FR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function showLoading() {
+            document.querySelector('.loading').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.querySelector('.loading').classList.remove('active');
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        function hideResult() {
+            document.getElementById('result').style.display = 'none';
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (html5QrCode) {
+                stopScanner();
+            }
+        });
+    </script>
+</body>
+</html>
