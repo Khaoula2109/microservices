@@ -335,7 +335,6 @@ public class TicketService {
                 .expirationDate(expirationDate.toString())
                 .ownerName(ownerName)
                 .ownerEmail(ownerEmail)
-                .ownerPhone(ownerPhone)
                 .qrCodeImage(ticket.getQrCodeImage())
                 .build();
     }
