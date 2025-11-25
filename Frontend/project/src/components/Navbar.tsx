@@ -124,18 +124,32 @@ export default function Navbar({
                 )}
 
                 {isUserAdmin && (
-                  <button
-                    onClick={() => onNavigate('admin-creation')}
-                    className={`px-3 lg:px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-1 lg:space-x-2 whitespace-nowrap ${
-                      currentPage === 'admin-creation'
-                        ? 'bg-mustard-500 text-navy-900 font-semibold'
-                        : 'hover:bg-navy-800 text-white'
-                    }`}
-                    title={t.nav.createUser}
-                  >
-                    <UserPlus className="h-4 w-4 lg:h-5 lg:w-5" />
-                    <span>{t.nav.createUser}</span>
-                  </button>
+                  <>
+                    <button
+                      onClick={() => onNavigate('user-management')}
+                      className={`px-3 lg:px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-1 lg:space-x-2 whitespace-nowrap ${
+                        currentPage === 'user-management'
+                          ? 'bg-mustard-500 text-navy-900 font-semibold'
+                          : 'hover:bg-navy-800 text-white'
+                      }`}
+                      title="Gestion des utilisateurs"
+                    >
+                      <Users className="h-4 w-4 lg:h-5 lg:w-5" />
+                      <span>Utilisateurs</span>
+                    </button>
+                    <button
+                      onClick={() => onNavigate('admin-creation')}
+                      className={`px-3 lg:px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-1 lg:space-x-2 whitespace-nowrap ${
+                        currentPage === 'admin-creation'
+                          ? 'bg-mustard-500 text-navy-900 font-semibold'
+                          : 'hover:bg-navy-800 text-white'
+                      }`}
+                      title={t.nav.createUser}
+                    >
+                      <UserPlus className="h-4 w-4 lg:h-5 lg:w-5" />
+                      <span>{t.nav.createUser}</span>
+                    </button>
+                  </>
                 )}
               </>
             )}
