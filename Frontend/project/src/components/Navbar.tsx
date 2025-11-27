@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, Bus, LogIn, User, LogOut, UserPlus, Scan, BarChart3, Sun, Moon, Globe } from 'lucide-react';
+import { Menu, X, Bus, LogIn, User, LogOut, UserPlus, Users, Scan, BarChart3, Sun, Moon, Globe } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Language } from '../i18n/translations';
