@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, Clock, MapPin, Bus, AlertCircle, Plus, Settings, Map, Link, Trash2, Navigation } from 'lucide-react';
+import { Search, Clock, MapPin, Bus, AlertCircle, Plus, Settings, Map, Link, Trash2, Navigation, Users } from 'lucide-react';
 import { apiService } from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -21,6 +21,20 @@ interface Route {
   stops?: BusStop[];
 }
 
+interface CapacityInfo {
+  total: number;
+  occupied: number;
+  available: number;
+  occupancyRate: number;
+}
+
+interface BusLiveData {
+  busId: string;
+  capacity?: CapacityInfo;
+  delay_minutes?: number;
+  status?: string;
+}
+
 interface Schedule {
   id: number;
   line: string;
@@ -29,6 +43,7 @@ interface Schedule {
   times: string[];
   duration: string;
   stops?: BusStop[];
+  liveBusData?: BusLiveData | null;
 }
 
 interface ApiResponse {
@@ -248,18 +263,43 @@ export default function SchedulesPage({ token, userRole }: SchedulesPageProps) {
 
         const routesWithStops = await loadStopsForAllRoutes(routesData);
 
+        // Fetch live bus data for each route
+        const schedulesWithLiveData: Schedule[] = await Promise.all(
+          routesWithStops.map(async (route) => {
+            let liveBusData: BusLiveData | null = null;
 
-        const schedulesData: Schedule[] = routesWithStops.map(route => ({
-          id: route.id,
-          line: route.name,
-          departure: route.startPoint || 'Départ',
-          arrival: route.endPoint || 'Arrivée',
-          times: ['06:00', '07:15', '08:30', '09:45', '11:00', '12:15', '13:30', '14:45', '16:00', '17:15', '18:30', '19:45'],
-          duration: '35 min',
-          stops: route.stops || [] 
-        }));
+            try {
+              // Try to get live bus data (bus ID usually matches route name)
+              const busId = route.name; // e.g., "BUS-12"
+              const busResponse = await apiService.getBusLocation(busId, token);
 
-        setSchedules(schedulesData);
+              if (busResponse.data) {
+                liveBusData = {
+                  busId: busResponse.data.busId,
+                  capacity: busResponse.data.capacity,
+                  delay_minutes: busResponse.data.delay_minutes,
+                  status: busResponse.data.status
+                };
+              }
+            } catch (err) {
+              // Bus may not be active right now, that's OK
+              console.log(`Bus ${route.name} not currently active`);
+            }
+
+            return {
+              id: route.id,
+              line: route.name,
+              departure: route.startPoint || 'Départ',
+              arrival: route.endPoint || 'Arrivée',
+              times: ['06:00', '07:15', '08:30', '09:45', '11:00', '12:15', '13:30', '14:45', '16:00', '17:15', '18:30', '19:45'],
+              duration: '35 min',
+              stops: route.stops || [],
+              liveBusData: liveBusData
+            };
+          })
+        );
+
+        setSchedules(schedulesWithLiveData);
         
         
       } catch (err: any) {
@@ -1096,7 +1136,7 @@ export default function SchedulesPage({ token, userRole }: SchedulesPageProps) {
                         {schedule.duration}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center space-x-4 text-gray-600 mb-4">
                       <span className="font-medium">{schedule.departure}</span>
                       <div className="flex items-center space-x-1">
@@ -1105,6 +1145,55 @@ export default function SchedulesPage({ token, userRole }: SchedulesPageProps) {
                       </div>
                       <span className="font-medium">{schedule.arrival}</span>
                     </div>
+
+                    {/* Live Bus Capacity */}
+                    {schedule.liveBusData && schedule.liveBusData.capacity && (
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <Bus className="h-5 w-5 text-blue-600" />
+                            <span className="text-sm font-semibold text-navy-900">Bus en Service - Temps Réel</span>
+                          </div>
+                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            schedule.liveBusData.status === 'ON_TIME' ? 'bg-green-100 text-green-800' :
+                            schedule.liveBusData.status === 'DELAYED' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {schedule.liveBusData.delay_minutes && schedule.liveBusData.delay_minutes > 0
+                              ? `${schedule.liveBusData.delay_minutes}min retard`
+                              : 'À l\'heure'}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center space-x-4">
+                          <div className="flex items-center space-x-2 text-sm">
+                            <Users className="h-4 w-4 text-gray-600" />
+                            <span className="font-medium text-navy-900">
+                              {schedule.liveBusData.capacity.occupied}/{schedule.liveBusData.capacity.total}
+                            </span>
+                            <span className="text-gray-600">passagers</span>
+                          </div>
+
+                          <div className="flex-1">
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className={`h-2 rounded-full transition-all ${
+                                  schedule.liveBusData.capacity.occupancyRate > 80 ? 'bg-red-500' :
+                                  schedule.liveBusData.capacity.occupancyRate > 60 ? 'bg-yellow-500' : 'bg-green-500'
+                                }`}
+                                style={{ width: `${schedule.liveBusData.capacity.occupancyRate}%` }}
+                              ></div>
+                            </div>
+                          </div>
+
+                          <span className={`text-sm font-semibold ${
+                            schedule.liveBusData.capacity.available < 10 ? 'text-red-600' : 'text-green-600'
+                          }`}>
+                            {schedule.liveBusData.capacity.available} places libres
+                          </span>
+                        </div>
+                      </div>
+                    )}
 
 
                     {schedule.stops && schedule.stops.length > 0 ? (
