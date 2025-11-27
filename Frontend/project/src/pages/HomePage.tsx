@@ -1,4 +1,4 @@
-import { Clock, Ticket, MapPin, User, TrendingUp, Shield, Scan, UserPlus, Users } from 'lucide-react';
+import { Clock, Ticket, MapPin, User, TrendingUp, Shield, Scan, UserPlus, Users, Receipt, Star, Navigation } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface HomePageProps {
@@ -43,6 +43,30 @@ export default function HomePage({ onNavigate, token, userRole }: HomePageProps)
       page: 'account',
       color: 'bg-navy-800',
       roles: ['PASSENGER'],
+    },
+    {
+      title: 'Historique Paiements',
+      description: 'Consultez tous vos achats de tickets et abonnements',
+      icon: Receipt,
+      page: 'payment-history',
+      color: 'bg-blue-600',
+      roles: ['PASSENGER'],
+    },
+    {
+      title: 'Programme Fidélité',
+      description: 'Gagnez des points et obtenez des réductions',
+      icon: Star,
+      page: 'loyalty',
+      color: 'bg-purple-600',
+      roles: ['PASSENGER'],
+    },
+    {
+      title: 'Suggestions d\'Itinéraires',
+      description: 'Trouvez le meilleur itinéraire pour votre trajet',
+      icon: Navigation,
+      page: 'route-suggestions',
+      color: 'bg-indigo-600',
+      roles: ['PASSENGER', 'ADMIN', 'CONTROLLER'],
     },
     {
       title: t.home.validateTicket || 'Valider Ticket',

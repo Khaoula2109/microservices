@@ -56,6 +56,10 @@ public class User implements UserDetails {
     @Builder.Default
     private UserRole role = UserRole.PASSENGER;
 
+    @Column(name = "loyalty_points", nullable = false)
+    @Builder.Default
+    private Integer loyaltyPoints = 0;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));

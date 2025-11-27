@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Mail, Phone, LogOut, AlertCircle, CheckCircle } from 'lucide-react';
+import { User, Mail, Phone, LogOut, AlertCircle, CheckCircle, Receipt, Star } from 'lucide-react';
 import { apiService } from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -213,6 +213,20 @@ export default function AccountPage({ onNavigate, token, onLogout, userId }: Acc
                   >
                     {t.account.viewMyTickets}
                   </button>
+                  <button
+                    onClick={() => onNavigate('payment-history')}
+                    className="flex-1 bg-blue-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-600 transition-all duration-200 text-center flex items-center justify-center space-x-2"
+                  >
+                    <Receipt className="h-5 w-5" />
+                    <span>Historique Paiements</span>
+                  </button>
+                  <button
+                    onClick={() => onNavigate('loyalty')}
+                    className="flex-1 bg-purple-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-purple-600 transition-all duration-200 text-center flex items-center justify-center space-x-2"
+                  >
+                    <Star className="h-5 w-5" />
+                    <span>Programme Fidélité</span>
+                  </button>
                 </div>
               </div>
 
@@ -222,7 +236,7 @@ export default function AccountPage({ onNavigate, token, onLogout, userId }: Acc
                   {t.account.statistics}
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="bg-blue-50 rounded-lg p-4 text-center">
                     <p className="text-2xl font-bold text-blue-600">{ticketStats.totalPurchased}</p>
                     <p className="text-sm text-blue-600">{t.account.totalPurchased}</p>
@@ -236,6 +250,14 @@ export default function AccountPage({ onNavigate, token, onLogout, userId }: Acc
                   <div className="bg-purple-50 rounded-lg p-4 text-center">
                     <p className="text-2xl font-bold text-purple-600">{ticketStats.usedTickets}</p>
                     <p className="text-sm text-purple-600">{t.account.usedTickets}</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 text-center border-2 border-purple-200">
+                    <div className="flex items-center justify-center mb-1">
+                      <Star className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <p className="text-2xl font-bold text-purple-600">{userProfile?.loyaltyPoints || 0}</p>
+                    <p className="text-sm text-purple-600">Points Fidélité</p>
                   </div>
                 </div>
               </div>

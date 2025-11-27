@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MapPin, Bus, Navigation, Clock, AlertCircle, Target, Filter, RefreshCw, Info } from 'lucide-react';
+import { MapPin, Bus, Navigation, Clock, AlertCircle, Target, Filter, RefreshCw, Info, Users } from 'lucide-react';
 import { apiService } from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
@@ -39,6 +39,13 @@ const createBusIcon = (color: string) => {
   });
 };
 
+interface CapacityInfo {
+  total: number;
+  occupied: number;
+  available: number;
+  occupancyRate: number;
+}
+
 interface BusLocationResponse {
   busId: string;
   latitude: number;
@@ -47,6 +54,7 @@ interface BusLocationResponse {
   stopIndex: number;
   delay_minutes: number;
   status: 'ON_TIME' | 'DELAYED' | 'EARLY' | 'UNKNOWN_SCHEDULE' | 'NO_SCHEDULE_DATA';
+  capacity?: CapacityInfo;
 }
 interface DriverInfo {
   driverId: number;
@@ -66,6 +74,7 @@ interface ActiveBus {
   latitude: number | null;
   longitude: number | null;
   driver?: DriverInfo | null;
+  capacity?: CapacityInfo | null;
 }
 
 interface MapPageProps {
@@ -74,11 +83,11 @@ interface MapPageProps {
 }
 
 const INITIAL_BUS_STATE: ActiveBus[] = [
-  { id: 'BUS-12', line: 'Ligne 12', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null, driver: null },
-  { id: 'BUS-07', line: 'Ligne 7', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null, driver: null },
-  { id: 'BUS-19', line: 'Ligne 19', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null, driver: null },
-  { id: 'BUS-30', line: 'Ligne 30', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null, driver: null },
-  { id: 'BUS-04', line: 'Ligne 4', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null, driver: null },
+  { id: 'BUS-12', line: 'Ligne 12', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null, driver: null, capacity: null },
+  { id: 'BUS-07', line: 'Ligne 7', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null, driver: null, capacity: null },
+  { id: 'BUS-19', line: 'Ligne 19', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null, driver: null, capacity: null },
+  { id: 'BUS-30', line: 'Ligne 30', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null, driver: null, capacity: null },
+  { id: 'BUS-04', line: 'Ligne 4', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null, driver: null, capacity: null },
 ];
 
 // Available lines for filtering
@@ -169,9 +178,10 @@ export default function MapPage({ token, userRole }: MapPageProps) {
                 status: newData.status,
                 delay: newData.delay_minutes,
                 driver: (newData as any).driver || null,
+                capacity: newData.capacity || null,
               };
             } else {
-              return { ...bus, status: 'NO_SIGNAL', position: 'Signal perdu', latitude: null, longitude: null, driver: null };
+              return { ...bus, status: 'NO_SIGNAL', position: 'Signal perdu', latitude: null, longitude: null, driver: null, capacity: null };
             }
           });
         });
@@ -423,6 +433,37 @@ export default function MapPage({ token, userRole }: MapPageProps) {
                           <p className="text-xs text-gray-500">({bus.id})</p>
                           <p className="mt-2">Statut : <b>{bus.eta}</b></p>
                           <p className="text-xs text-gray-600 mt-1">{bus.position}</p>
+
+                          {/* Capacité du bus */}
+                          {bus.capacity && (
+                            <div className="mt-3 pt-3 border-t border-gray-200">
+                              <div className="flex items-center justify-center space-x-2 mb-2">
+                                <Users className="h-4 w-4 text-navy-900" />
+                                <p className="text-sm font-semibold text-navy-900">Capacité</p>
+                              </div>
+                              <div className="flex items-center justify-between text-xs mb-1">
+                                <span className="text-gray-600">Occupés:</span>
+                                <span className="font-semibold text-navy-900">{bus.capacity.occupied}/{bus.capacity.total}</span>
+                              </div>
+                              <div className="flex items-center justify-between text-xs mb-2">
+                                <span className="text-gray-600">Disponibles:</span>
+                                <span className={`font-semibold ${bus.capacity.available < 10 ? 'text-red-600' : 'text-green-600'}`}>
+                                  {bus.capacity.available} places
+                                </span>
+                              </div>
+                              {/* Barre de progression */}
+                              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                <div
+                                  className={`h-2.5 rounded-full ${
+                                    bus.capacity.occupancyRate > 80 ? 'bg-red-500' :
+                                    bus.capacity.occupancyRate > 60 ? 'bg-yellow-500' : 'bg-green-500'
+                                  }`}
+                                  style={{ width: `${bus.capacity.occupancyRate}%` }}
+                                ></div>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">{bus.capacity.occupancyRate}% occupé</p>
+                            </div>
+                          )}
 
                           {/* Informations du chauffeur (ADMIN et CONTROLLER uniquement) */}
                           {(userRole === 'ADMIN' || userRole === 'CONTROLLER') && bus.driver && (
