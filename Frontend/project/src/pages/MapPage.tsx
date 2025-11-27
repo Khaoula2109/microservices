@@ -48,6 +48,14 @@ interface BusLocationResponse {
   delay_minutes: number;
   status: 'ON_TIME' | 'DELAYED' | 'EARLY' | 'UNKNOWN_SCHEDULE' | 'NO_SCHEDULE_DATA';
 }
+interface DriverInfo {
+  driverId: number;
+  driverName: string;
+  driverPhone: string;
+  driverLicense: string;
+  shift: string;
+}
+
 interface ActiveBus {
   id: string;
   line: string;
@@ -57,18 +65,20 @@ interface ActiveBus {
   delay: number;
   latitude: number | null;
   longitude: number | null;
+  driver?: DriverInfo | null;
 }
 
 interface MapPageProps {
   token: string | null;
+  userRole?: string | null;
 }
 
 const INITIAL_BUS_STATE: ActiveBus[] = [
-  { id: 'BUS-12', line: 'Ligne 12', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null },
-  { id: 'BUS-07', line: 'Ligne 7', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null },
-  { id: 'BUS-19', line: 'Ligne 19', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null },
-  { id: 'BUS-30', line: 'Ligne 30', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null },
-  { id: 'BUS-04', line: 'Ligne 4', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null },
+  { id: 'BUS-12', line: 'Ligne 12', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null, driver: null },
+  { id: 'BUS-07', line: 'Ligne 7', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null, driver: null },
+  { id: 'BUS-19', line: 'Ligne 19', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null, driver: null },
+  { id: 'BUS-30', line: 'Ligne 30', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null, driver: null },
+  { id: 'BUS-04', line: 'Ligne 4', position: 'En attente...', eta: '...', status: 'LOADING', delay: 0, latitude: null, longitude: null, driver: null },
 ];
 
 // Available lines for filtering
@@ -76,7 +86,7 @@ const AVAILABLE_LINES = ['Toutes', 'Ligne 4', 'Ligne 7', 'Ligne 12', 'Ligne 19',
 
 function MapController({ center, zoom }: { center: [number, number] | null; zoom?: number }) {
   const map = useMap();
-  
+
   useEffect(() => {
     if (center) {
       map.flyTo(center, zoom || 15, {
@@ -84,11 +94,11 @@ function MapController({ center, zoom }: { center: [number, number] | null; zoom
       });
     }
   }, [center, map, zoom]);
-  
+
   return null;
 }
 
-export default function MapPage({ token }: MapPageProps) {
+export default function MapPage({ token, userRole }: MapPageProps) {
   const { t } = useLanguage();
   const [activeBuses, setActiveBuses] = useState<ActiveBus[]>(INITIAL_BUS_STATE);
   const [error, setError] = useState<string | null>(null);
@@ -158,9 +168,10 @@ export default function MapPage({ token }: MapPageProps) {
                 eta: etaText,
                 status: newData.status,
                 delay: newData.delay_minutes,
+                driver: (newData as any).driver || null,
               };
             } else {
-              return { ...bus, status: 'NO_SIGNAL', position: 'Signal perdu', latitude: null, longitude: null };
+              return { ...bus, status: 'NO_SIGNAL', position: 'Signal perdu', latitude: null, longitude: null, driver: null };
             }
           });
         });
@@ -407,14 +418,26 @@ export default function MapPage({ token }: MapPageProps) {
                       }}
                     >
                       <Popup>
-                        <div className="text-center">
+                        <div className="text-center min-w-[250px]">
                           <b className="text-lg">{bus.line}</b>
                           <p className="text-xs text-gray-500">({bus.id})</p>
                           <p className="mt-2">Statut : <b>{bus.eta}</b></p>
                           <p className="text-xs text-gray-600 mt-1">{bus.position}</p>
+
+                          {/* Informations du chauffeur (ADMIN et CONTROLLER uniquement) */}
+                          {(userRole === 'ADMIN' || userRole === 'CONTROLLER') && bus.driver && (
+                            <div className="mt-3 pt-3 border-t border-gray-200 text-left">
+                              <p className="text-sm font-semibold text-navy-900 mb-2">👤 Chauffeur</p>
+                              <p className="text-xs"><span className="font-medium">Nom:</span> {bus.driver.driverName}</p>
+                              <p className="text-xs"><span className="font-medium">Tél:</span> {bus.driver.driverPhone}</p>
+                              <p className="text-xs"><span className="font-medium">Permis:</span> {bus.driver.driverLicense}</p>
+                              <p className="text-xs"><span className="font-medium">Shift:</span> {bus.driver.shift}</p>
+                            </div>
+                          )}
+
                           <button
                             onClick={() => handleBusClick(bus.id)}
-                            className="mt-2 bg-mustard-500 text-white px-3 py-1 rounded text-sm hover:bg-mustard-600"
+                            className="mt-3 bg-mustard-500 text-white px-3 py-1 rounded text-sm hover:bg-mustard-600 w-full"
                           >
                             {selectedBusId === bus.id ? 'Arrêter le suivi' : 'Suivre ce bus'}
                           </button>

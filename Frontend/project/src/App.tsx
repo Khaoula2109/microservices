@@ -219,7 +219,7 @@ const handleAuthSuccess = async (newToken: string, newUserId: number, newUserRol
         );
         
       case 'map':
-        return <MapPage token={token} />;
+        return <MapPage token={token} userRole={userRole} />;
         
       case 'account':
         return (

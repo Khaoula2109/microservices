@@ -6,8 +6,46 @@ from routes_data import ROUTES
 from datetime import datetime, time as dt_time, timedelta
 
 REDIS_KEY = "bus_positions"
-ROUTE_START_TIME = dt_time(8, 0, 0) 
+ROUTE_START_TIME = dt_time(8, 0, 0)
 
+# Mapping des bus vers les chauffeurs
+BUS_DRIVER_ASSIGNMENTS = {
+    "BUS-12": {
+        "driverId": 1,
+        "driverName": "Ahmed Benali",
+        "driverPhone": "+212 6 12 34 56 78",
+        "driverLicense": "DRV-2019-1234",
+        "shift": "Matin (6h-14h)"
+    },
+    "BUS-07": {
+        "driverId": 2,
+        "driverName": "Fatima Zahra",
+        "driverPhone": "+212 6 23 45 67 89",
+        "driverLicense": "DRV-2020-5678",
+        "shift": "Après-midi (14h-22h)"
+    },
+    "BUS-19": {
+        "driverId": 3,
+        "driverName": "Mohammed El Mansouri",
+        "driverPhone": "+212 6 34 56 78 90",
+        "driverLicense": "DRV-2018-9012",
+        "shift": "Matin (6h-14h)"
+    },
+    "BUS-30": {
+        "driverId": 4,
+        "driverName": "Amina Tahiri",
+        "driverPhone": "+212 6 45 67 89 01",
+        "driverLicense": "DRV-2021-3456",
+        "shift": "Journée (10h-18h)"
+    },
+    "BUS-04": {
+        "driverId": 5,
+        "driverName": "Youssef Alami",
+        "driverPhone": "+212 6 56 78 90 12",
+        "driverLicense": "DRV-2019-7890",
+        "shift": "Nuit (22h-6h)"
+    },
+}
 
 class GeolocationService:
   
@@ -85,5 +123,11 @@ class GeolocationService:
         else:
             position_data['status'] = 'NO_SCHEDULE_DATA'
             position_data['delay_minutes'] = 0
-            
+
+        # Ajouter les informations du chauffeur si disponibles
+        if bus_id in BUS_DRIVER_ASSIGNMENTS:
+            position_data['driver'] = BUS_DRIVER_ASSIGNMENTS[bus_id]
+        else:
+            position_data['driver'] = None
+
         return position_data
