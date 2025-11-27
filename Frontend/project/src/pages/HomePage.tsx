@@ -1,4 +1,4 @@
-import { Clock, Ticket, MapPin, User, TrendingUp, Shield, Scan, UserPlus, Users, Receipt } from 'lucide-react';
+import { Clock, Ticket, MapPin, User, TrendingUp, Shield, Scan, UserPlus, Users, Receipt, Star } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface HomePageProps {
@@ -50,6 +50,14 @@ export default function HomePage({ onNavigate, token, userRole }: HomePageProps)
       icon: Receipt,
       page: 'payment-history',
       color: 'bg-blue-600',
+      roles: ['PASSENGER'],
+    },
+    {
+      title: 'Programme Fidélité',
+      description: 'Gagnez des points et obtenez des réductions',
+      icon: Star,
+      page: 'loyalty',
+      color: 'bg-purple-600',
       roles: ['PASSENGER'],
     },
     {

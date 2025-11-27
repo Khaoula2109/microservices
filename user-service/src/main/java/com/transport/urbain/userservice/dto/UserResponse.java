@@ -18,6 +18,7 @@ public class UserResponse {
     private String lastName;
     private String phoneNumber;
     private UserRole role;
+    private Integer loyaltyPoints;
 
     public static UserResponse fromUser(User user) {
         return UserResponse.builder()
@@ -27,6 +28,7 @@ public class UserResponse {
                 .lastName(user.getLastName())
                 .phoneNumber(user.getPhoneNumber())
                 .role(user.getRole())
+                .loyaltyPoints(user.getLoyaltyPoints())
                 .build();
     }
 }
