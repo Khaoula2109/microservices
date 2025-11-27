@@ -16,6 +16,7 @@ import ValidateTicketPage from './pages/ValidateTicketPage';
 import UserManagementPage from './pages/UserManagementPage';
 import ControllerDashboardPage from './pages/ControllerDashboardPage';
 import MySubscriptionsPage from './pages/MySubscriptionsPage';
+import PaymentHistoryPage from './pages/PaymentHistoryPage';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { Shield, Scan, Users, BarChart3, CreditCard } from 'lucide-react';
 
@@ -325,6 +326,17 @@ const handleAuthSuccess = async (newToken: string, newUserId: number, newUserRol
           );
         }
         return <MySubscriptionsPage token={token} userId={userId!} />;
+
+      case 'payment-history':
+        if (!token) {
+          return (
+            <LoginPage
+              onNavigate={handleNavigate}
+              onAuthSuccess={handleAuthSuccess}
+            />
+          );
+        }
+        return <PaymentHistoryPage token={token} userId={userId!} />;
 
       default:
 

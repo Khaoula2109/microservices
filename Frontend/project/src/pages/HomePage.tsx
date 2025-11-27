@@ -1,4 +1,4 @@
-import { Clock, Ticket, MapPin, User, TrendingUp, Shield, Scan, UserPlus, Users } from 'lucide-react';
+import { Clock, Ticket, MapPin, User, TrendingUp, Shield, Scan, UserPlus, Users, Receipt } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface HomePageProps {
@@ -42,6 +42,14 @@ export default function HomePage({ onNavigate, token, userRole }: HomePageProps)
       icon: User,
       page: 'account',
       color: 'bg-navy-800',
+      roles: ['PASSENGER'],
+    },
+    {
+      title: 'Historique Paiements',
+      description: 'Consultez tous vos achats de tickets et abonnements',
+      icon: Receipt,
+      page: 'payment-history',
+      color: 'bg-blue-600',
       roles: ['PASSENGER'],
     },
     {

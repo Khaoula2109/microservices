@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Mail, Phone, LogOut, AlertCircle, CheckCircle } from 'lucide-react';
+import { User, Mail, Phone, LogOut, AlertCircle, CheckCircle, Receipt } from 'lucide-react';
 import { apiService } from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -212,6 +212,13 @@ export default function AccountPage({ onNavigate, token, onLogout, userId }: Acc
                     className="flex-1 bg-mustard-500 text-navy-900 font-bold py-3 px-6 rounded-lg hover:bg-mustard-600 transition-all duration-200 text-center"
                   >
                     {t.account.viewMyTickets}
+                  </button>
+                  <button
+                    onClick={() => onNavigate('payment-history')}
+                    className="flex-1 bg-blue-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-600 transition-all duration-200 text-center flex items-center justify-center space-x-2"
+                  >
+                    <Receipt className="h-5 w-5" />
+                    <span>Historique Paiements</span>
                   </button>
                 </div>
               </div>
