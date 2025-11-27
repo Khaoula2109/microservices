@@ -1,4 +1,4 @@
-import { Clock, Ticket, MapPin, User, TrendingUp, Shield, Scan, UserPlus, Users, Receipt, Star } from 'lucide-react';
+import { Clock, Ticket, MapPin, User, TrendingUp, Shield, Scan, UserPlus, Users, Receipt, Star, Navigation } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface HomePageProps {
@@ -59,6 +59,14 @@ export default function HomePage({ onNavigate, token, userRole }: HomePageProps)
       page: 'loyalty',
       color: 'bg-purple-600',
       roles: ['PASSENGER'],
+    },
+    {
+      title: 'Suggestions d\'Itinéraires',
+      description: 'Trouvez le meilleur itinéraire pour votre trajet',
+      icon: Navigation,
+      page: 'route-suggestions',
+      color: 'bg-indigo-600',
+      roles: ['PASSENGER', 'ADMIN', 'CONTROLLER'],
     },
     {
       title: t.home.validateTicket || 'Valider Ticket',
