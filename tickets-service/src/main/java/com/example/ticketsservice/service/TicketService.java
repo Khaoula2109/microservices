@@ -357,14 +357,70 @@ public class TicketService {
     private void checkForDuplicateValidTicket(Long userId, String ticketType) {
         List<Ticket> userTickets = ticketRepository.findByUserIdAndTicketType(userId, ticketType);
 
-        boolean hasValidTicket = userTickets.stream()
-                .anyMatch(ticket -> "VALIDE".equals(ticket.getStatus()) && ticket.getValidationDate() == null);
+        // Mettre à jour les tickets expirés et vérifier s'il existe un ticket vraiment valide
+        boolean hasValidTicket = false;
+
+        for (Ticket ticket : userTickets) {
+            if ("VALIDE".equals(ticket.getStatus()) && ticket.getValidationDate() == null) {
+                if (isTicketExpired(ticket)) {
+                    // Mettre à jour le statut du ticket expiré
+                    ticket.setStatus("EXPIRE");
+                    ticketRepository.save(ticket);
+                    log.info("Statut du ticket {} mis à jour vers EXPIRE (type: {}, achat: {})",
+                            ticket.getId(), ticket.getTicketType(), ticket.getPurchaseDate());
+                } else {
+                    // Ticket vraiment valide trouvé
+                    hasValidTicket = true;
+                    break;
+                }
+            }
+        }
 
         if (hasValidTicket) {
             throw new DuplicateTicketException(
                     "L'utilisateur possède déjà un ticket valide de type: " + ticketType
             );
         }
+    }
+
+    /**
+     * Vérifie si un ticket est expiré selon son type et sa date d'achat
+     */
+    private boolean isTicketExpired(Ticket ticket) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime purchaseDate = ticket.getPurchaseDate();
+        LocalDateTime expirationDate;
+
+        switch (ticket.getTicketType().toUpperCase()) {
+            case "SIMPLE":
+                // Valide pour 2 heures après l'achat
+                expirationDate = purchaseDate.plusHours(2);
+                break;
+            case "JOURNEE":
+                // Valide jusqu'à la fin du jour d'achat
+                expirationDate = purchaseDate.toLocalDate().atTime(23, 59, 59);
+                break;
+            case "HEBDO":
+                // Valide pour 7 jours
+                expirationDate = purchaseDate.plusDays(7);
+                break;
+            case "MENSUEL":
+                // Valide pour 30 jours
+                expirationDate = purchaseDate.plusDays(30);
+                break;
+            default:
+                // Par défaut, valide pour 1 jour
+                expirationDate = purchaseDate.plusDays(1);
+        }
+
+        boolean expired = now.isAfter(expirationDate);
+
+        if (expired) {
+            log.debug("Ticket {} de type {} expiré. Achat: {}, Expiration: {}, Maintenant: {}",
+                    ticket.getId(), ticket.getTicketType(), purchaseDate, expirationDate, now);
+        }
+
+        return expired;
     }
 
     private void validatePayment(TicketPurchaseRequest request) {

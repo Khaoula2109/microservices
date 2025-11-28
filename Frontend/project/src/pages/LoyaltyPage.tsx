@@ -33,7 +33,7 @@ export default function LoyaltyPage({ token, userId }: LoyaltyPageProps) {
     setError('');
 
     try {
-      const response = await fetch('http://kowihan.local/api/users/me/loyalty', {
+      const response = await fetch('/api/users/me/loyalty', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -58,7 +58,7 @@ export default function LoyaltyPage({ token, userId }: LoyaltyPageProps) {
     setRedeemSuccess('');
 
     try {
-      const response = await fetch('http://kowihan.local/api/users/me/loyalty/redeem', {
+      const response = await fetch('/api/users/me/loyalty/redeem', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
