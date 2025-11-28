@@ -54,6 +54,8 @@ spec:
           value: "user"
         - name: SPRING_RABBITMQ_PASSWORD
           value: "password123456"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://jaeger.transport-monitoring.svc.cluster.local:4318"
         resources:
           requests:
             memory: "256Mi"

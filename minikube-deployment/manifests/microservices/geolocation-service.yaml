@@ -54,6 +54,8 @@ spec:
           value: "password123456"
         - name: RABBITMQ_EXCHANGE
           value: "transport_events"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://jaeger.transport-monitoring.svc.cluster.local:4318/v1/traces"
         resources:
           requests:
             memory: "128Mi"
