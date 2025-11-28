@@ -7,7 +7,32 @@ import traceback
 import time
 import os
 
+# OpenTelemetry imports
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
+from opentelemetry.sdk.resources import Resource
+
+# Configure OpenTelemetry
+resource = Resource.create({"service.name": "geolocation-service"})
+trace.set_tracer_provider(TracerProvider(resource=resource))
+
+# Configure OTLP exporter
+otlp_exporter = OTLPSpanExporter(
+    endpoint=os.getenv(
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "http://jaeger.transport-monitoring.svc.cluster.local:4318/v1/traces"
+    )
+)
+
+trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(otlp_exporter))
+
 app = Flask(__name__)
+
+# Instrument Flask app
+FlaskInstrumentor().instrument_app(app)
 
 
 geolocation_service = None
