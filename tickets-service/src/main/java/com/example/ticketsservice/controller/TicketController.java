@@ -37,21 +37,32 @@ public class TicketController {
 
     @PostMapping("/purchase")
     public ResponseEntity<Ticket> purchaseTicket(@RequestBody TicketPurchaseRequest request, HttpServletRequest httpRequest) {
-        
+
         String userIdHeader = httpRequest.getHeader("X-User-Id");
         String userEmail = httpRequest.getHeader("X-User-Email");
-        
-        System.out.println("🎫 Achat de ticket - User ID: " + userIdHeader + ", Email: " + userEmail);
-        
-        
-        if (userIdHeader != null && !userIdHeader.equals("me")) {
-            try {
-                request.setUserId(Long.parseLong(userIdHeader));
-            } catch (NumberFormatException e) {
-                System.out.println("⚠️ ID utilisateur invalide: " + userIdHeader);
+        String userIdParam = httpRequest.getParameter("userId");
+
+        System.out.println("🎫 Achat de ticket - User ID Header: " + userIdHeader + ", Param: " + userIdParam + ", Email: " + userEmail);
+
+        // Priority: 1) Request body userId, 2) Query parameter userId, 3) Header X-User-Id
+        if (request.getUserId() == null) {
+            if (userIdParam != null) {
+                try {
+                    request.setUserId(Long.parseLong(userIdParam));
+                    System.out.println("✓ userId défini depuis le paramètre de requête: " + userIdParam);
+                } catch (NumberFormatException e) {
+                    System.out.println("⚠️ ID utilisateur invalide dans le paramètre: " + userIdParam);
+                }
+            } else if (userIdHeader != null && !userIdHeader.equals("me")) {
+                try {
+                    request.setUserId(Long.parseLong(userIdHeader));
+                    System.out.println("✓ userId défini depuis le header: " + userIdHeader);
+                } catch (NumberFormatException e) {
+                    System.out.println("⚠️ ID utilisateur invalide dans le header: " + userIdHeader);
+                }
             }
         }
-        
+
         Ticket purchasedTicket = ticketService.purchaseTicket(request);
         return ResponseEntity.ok(purchasedTicket);
     }
