@@ -36,7 +36,7 @@ public class Ticket {
     @Column(name = "validation_date")
     private LocalDateTime validationDate;
 
-    @Column(name = "qr_code_data", nullable = false, unique = true)
+    @Column(name = "qr_code_data", unique = true)
     private String qrCodeData;
 
     @Column(name = "qr_code_image", columnDefinition = "LONGTEXT")
