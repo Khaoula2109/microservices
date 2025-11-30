@@ -26,6 +26,7 @@ interface HistoryTicket {
   purchaseDate: string;
   validationDate: string | null;
   qrCodeData: string;
+  qrCodeImage?: string; // Base64 encoded QR code image
   price?: number;
 }
 
@@ -388,7 +389,10 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
             <div class="content">
               <div class="qr-section">
                 <p style="font-weight: bold; margin-bottom: 10px;">QR Code</p>
-                <div class="qr-code">${ticket.qrCodeData}</div>
+                ${ticket.qrCodeImage
+                  ? `<img src="data:image/png;base64,${ticket.qrCodeImage}" alt="QR Code" style="max-width: 200px; margin: 0 auto;" />`
+                  : `<div class="qr-code">${ticket.qrCodeData}</div>`
+                }
               </div>
               <div class="info">
                 <div class="info-row">
@@ -728,9 +732,15 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                             Prix: {ticket.price.toFixed(2)} MAD
                           </p>
                         )}
-                        <p className="text-xs text-gray-400 mt-1">
-                         QR: {ticket.qrCodeData.substring(0, 20)}...
-                        </p>
+                        {ticket.qrCodeImage && (
+                          <div className="mt-2">
+                            <img
+                              src={`data:image/png;base64,${ticket.qrCodeImage}`}
+                              alt="QR Code"
+                              className="w-24 h-24 border border-gray-200 rounded"
+                            />
+                          </div>
+                        )}
                       </div>
                       <div className="flex flex-col items-end space-y-2">
                         <span
