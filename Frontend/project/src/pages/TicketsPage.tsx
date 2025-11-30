@@ -35,7 +35,10 @@ interface HistoryTicket {
 export default function TicketsPage({ token, userId }: TicketsPageProps) {
   const { t } = useLanguage();
   const [cart, setCart] = useState<{ [key: string]: number }>({});
-  
+
+  // Loyalty discount state
+  const [loyaltyDiscount, setLoyaltyDiscount] = useState<number>(0);
+  const [loyaltyPoints, setLoyaltyPoints] = useState<number>(0);
 
   const [showSuccess, setShowSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -59,12 +62,42 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
 
 
   useEffect(() => {
-   
+
     if (userId !== null && userId !== localUserId) {
-      
+
       setLocalUserId(userId);
     }
   }, [token, userId]);
+
+  // Fetch loyalty discount when user is logged in
+  const fetchLoyaltyDiscount = async () => {
+    if (!token) return;
+
+    try {
+      const response = await fetch('/api/users/me/loyalty', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        console.warn('Failed to fetch loyalty info');
+        return;
+      }
+
+      const data = await response.json();
+      setLoyaltyDiscount(data.availableDiscount || 0);
+      setLoyaltyPoints(data.points || 0);
+    } catch (err) {
+      console.warn('Error fetching loyalty discount:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchLoyaltyDiscount();
+    }
+  }, [token]);
 
 
   const tickets: TicketType[] = [
@@ -124,9 +157,24 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
   };
 
   const getTotal = () => {
+    const subtotal = tickets.reduce((total, ticket) => {
+      return total + (cart[ticket.id] || 0) * ticket.price;
+    }, 0);
+
+    // Apply loyalty discount
+    const discountAmount = subtotal * (loyaltyDiscount / 100);
+    return subtotal - discountAmount;
+  };
+
+  const getSubtotal = () => {
     return tickets.reduce((total, ticket) => {
       return total + (cart[ticket.id] || 0) * ticket.price;
     }, 0);
+  };
+
+  const getDiscountAmount = () => {
+    const subtotal = getSubtotal();
+    return subtotal * (loyaltyDiscount / 100);
   };
 
   // Check if a ticket is still valid based on purchase date and type
@@ -294,14 +342,15 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
           throw new Error(`Type de ticket non valide. Types autorisés: [SIMPLE, JOURNEE, HEBDO, MENSUEL]`);
         }
         
-        
+
         for (let i = 0; i < quantity; i++) {
           const ticketData = {
             ticketType: ticketId,
-            userId: userIdToUse 
+            userId: userIdToUse,
+            loyaltyDiscount: loyaltyDiscount // Include loyalty discount
           };
-          
-          
+
+
           purchasePromises.push(apiService.purchaseTicket(ticketData, token));
         }
       }
@@ -322,13 +371,15 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
         throw new Error(failedPurchase.error || "Erreur lors de l'achat d'un ticket");
       }
 
-      
+
+
       setShowSuccess(true);
       setCart({});
-      
-      
+
+      // Refresh loyalty info and history
       setTimeout(() => {
         fetchHistory();
+        fetchLoyaltyDiscount();
       }, 500);
 
     } catch (err: any) {
@@ -663,12 +714,31 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                   </div>
 
                   <div className="border-t-2 border-gray-200 pt-4 mb-6">
+                    {loyaltyDiscount > 0 && (
+                      <div className="mb-3 space-y-2">
+                        <div className="flex justify-between items-center text-gray-600">
+                          <span>Sous-total</span>
+                          <span>{getSubtotal().toFixed(2)} MAD</span>
+                        </div>
+                        <div className="flex justify-between items-center text-green-600 font-semibold">
+                          <span>Réduction fidélité ({loyaltyDiscount}%)</span>
+                          <span>-{getDiscountAmount().toFixed(2)} MAD</span>
+                        </div>
+                        <div className="border-t border-gray-200 pt-2"></div>
+                      </div>
+                    )}
                     <div className="flex justify-between items-center">
                       <span className="text-xl font-bold text-navy-900">{t.tickets.total}</span>
                       <span className="text-3xl font-bold text-mustard-500">
                         {getTotal().toFixed(2)} MAD
                       </span>
                     </div>
+                    {loyaltyDiscount > 0 && (
+                      <div className="mt-2 text-sm text-green-600 flex items-center space-x-1">
+                        <span>✨</span>
+                        <span>Vous économisez {getDiscountAmount().toFixed(2)} MAD avec vos points fidélité!</span>
+                      </div>
+                    )}
                   </div>
 
                   <button

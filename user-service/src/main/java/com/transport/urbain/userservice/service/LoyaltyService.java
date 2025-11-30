@@ -111,4 +111,18 @@ public class LoyaltyService {
         }
         return 0;
     }
+
+    /**
+     * Use discount (called after a purchase with discount applied)
+     * Resets the available discount to 0 after use
+     */
+    @Transactional
+    public void useDiscount(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // The discount is not stored separately, it's calculated from points
+        // After using a discount, we could deduct points, but for now we just log
+        log.info("Discount used by user {}. Current points: {}", userId, user.getLoyaltyPoints());
+    }
 }

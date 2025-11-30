@@ -62,6 +62,22 @@ public class TicketService {
         newTicket.setStatus("VALIDE");
         newTicket.setPurchaseDate(LocalDateTime.now());
 
+        // Calculate price based on ticket type
+        double originalPrice = getTicketPrice(request.getTicketType());
+        newTicket.setOriginalPrice(originalPrice);
+
+        // Apply loyalty discount if provided
+        Integer discountPercent = request.getLoyaltyDiscount() != null ? request.getLoyaltyDiscount() : 0;
+        newTicket.setDiscountApplied(discountPercent);
+
+        // Calculate final price with discount
+        double discountAmount = originalPrice * (discountPercent / 100.0);
+        double finalPrice = originalPrice - discountAmount;
+        newTicket.setFinalPrice(finalPrice);
+
+        log.info("💰 Prix calculé - Type: {}, Original: {}MAD, Réduction: {}%, Final: {}MAD",
+                request.getTicketType(), originalPrice, discountPercent, finalPrice);
+
         // Generate unique code first
         String uniqueCode = UUID.randomUUID().toString();
 
@@ -434,14 +450,22 @@ public class TicketService {
         }
     }
 
-    private double calculateTicketPrice(String ticketType) {
+    /**
+     * Get ticket price based on type (matching frontend prices)
+     */
+    private double getTicketPrice(String ticketType) {
         return switch (ticketType.toUpperCase()) {
-            case "SIMPLE" -> 2.0;
-            case "JOURNEE" -> 5.0;
-            case "HEBDO" -> 15.0;
-            case "MENSUEL" -> 50.0;
+            case "SIMPLE" -> 8.0;
+            case "JOURNEE" -> 30.0;
+            case "HEBDO" -> 100.0;
+            case "MENSUEL" -> 350.0;
             default -> throw new InvalidTicketException("Type de ticket non supporté: " + ticketType);
         };
+    }
+
+    // Deprecated - use getTicketPrice instead
+    private double calculateTicketPrice(String ticketType) {
+        return getTicketPrice(ticketType);
     }
 
     private double getUserBalance(Long userId) {

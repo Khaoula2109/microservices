@@ -41,4 +41,13 @@ public class Ticket {
 
     @Column(name = "qr_code_image", columnDefinition = "LONGTEXT")
     private String qrCodeImage; // Base64 encoded QR code image
+
+    @Column(name = "original_price")
+    private Double originalPrice; // Prix original du ticket
+
+    @Column(name = "discount_applied")
+    private Integer discountApplied; // Pourcentage de réduction appliqué (0-15)
+
+    @Column(name = "final_price")
+    private Double finalPrice; // Prix final après réduction
 }
