@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { NotificationsService } from './services/notifications.service';
 import { EmailService } from './services/email.service';
 import { SmsService } from './services/sms.service';
+import { PdfService } from './services/pdf.service';
 import { RabbitMQConsumerService } from './services/rabbitmq.consumer.service';
 import { NotificationsGateway } from './gateways/notifications.gateway';
 import {
@@ -21,6 +22,7 @@ import {
         NotificationsService,
         EmailService,
         SmsService,
+        PdfService,
         RabbitMQConsumerService,
         NotificationsGateway,
     ],

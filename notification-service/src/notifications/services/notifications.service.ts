@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { EmailService } from './email.service';
+import { EmailService, EmailAttachment } from './email.service';
 import { SmsService } from './sms.service';
+import { PdfService } from './pdf.service';
 import {
     Notification,
     NotificationChannel,
@@ -26,6 +27,7 @@ export class NotificationsService {
         private notificationModel: Model<Notification>,
         private readonly emailService: EmailService,
         private readonly smsService: SmsService,
+        private readonly pdfService: PdfService,
     ) {}
 
     async createAndSendNotification(
@@ -106,11 +108,43 @@ export class NotificationsService {
 
         try {
             if (data.channel === NotificationChannel.EMAIL) {
+                let attachments: EmailAttachment[] | undefined;
+
+                // Generate PDF attachment for ticket purchases
+                if (data.triggerEvent === 'ticket.purchased' && context.qrCodeImage) {
+                    try {
+                        this.logger.log(`Generating PDF ticket for ticket ${context.ticketId}`);
+                        const pdfBuffer = await this.pdfService.generateTicketPdf({
+                            ticketId: context.ticketId,
+                            userId: context.userId,
+                            userEmail: data.recipient,
+                            ticketType: context.ticketType,
+                            purchaseDate: context.purchaseDate,
+                            qrCodeImage: context.qrCodeImage,
+                        });
+
+                        attachments = [
+                            {
+                                filename: `ticket-${context.ticketId}.pdf`,
+                                content: pdfBuffer,
+                                contentType: 'application/pdf',
+                            },
+                        ];
+                        this.logger.log(`PDF ticket generated successfully (${pdfBuffer.length} bytes)`);
+                    } catch (pdfError) {
+                        this.logger.error(
+                            `Failed to generate PDF for ticket ${context.ticketId}: ${pdfError instanceof Error ? pdfError.message : 'Unknown error'}`,
+                        );
+                        // Continue sending email without PDF if generation fails
+                    }
+                }
+
                 await this.emailService.sendEmail(
                     data.recipient,
                     subject,
                     templateName,
                     context,
+                    attachments,
                 );
             } else if (data.channel === NotificationChannel.SMS) {
                 await this.smsService.sendSms(data.recipient, messageForSms);

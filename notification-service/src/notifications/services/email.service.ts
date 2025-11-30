@@ -1,6 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 
+export interface EmailAttachment {
+    filename: string;
+    content: Buffer;
+    contentType?: string;
+}
+
 @Injectable()
 export class EmailService {
     private readonly logger = new Logger(EmailService.name);
@@ -12,14 +18,27 @@ export class EmailService {
         subject: string,
         templateName: string,
         context: Record<string, any>,
+        attachments?: EmailAttachment[],
     ): Promise<void> {
         try {
-            await this.mailerService.sendMail({
+            const mailOptions: any = {
                 to: recipientEmail,
                 subject: subject,
                 template: `./${templateName}`,
                 context: context,
-            });
+            };
+
+            // Add attachments if provided
+            if (attachments && attachments.length > 0) {
+                mailOptions.attachments = attachments.map(att => ({
+                    filename: att.filename,
+                    content: att.content,
+                    contentType: att.contentType || 'application/pdf',
+                }));
+                this.logger.log(`Adding ${attachments.length} attachment(s) to email`);
+            }
+
+            await this.mailerService.sendMail(mailOptions);
             this.logger.log(
                 `Email (template: ${templateName}) envoyé avec succès à ${recipientEmail}`,
             );
