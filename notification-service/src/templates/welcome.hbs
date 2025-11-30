@@ -8,7 +8,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #102a43 0%, #243b53 100%);
         }
         .container {
             width: 90%;
@@ -20,7 +20,7 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
         .header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(135deg, #102a43 0%, #243b53 100%);
             color: #ffffff;
             padding: 40px 30px;
             text-align: center;
@@ -37,11 +37,13 @@
             border-radius: 50% 50% 0 0;
         }
         .logo {
-            font-size: 32px;
-            font-weight: bold;
+            font-size: 28px;
             margin-bottom: 10px;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .logo-accent {
+            color: #D4A017;
         }
         .header h1 {
             margin: 10px 0 0 0;
@@ -55,7 +57,6 @@
         }
         .content p { margin: 0 0 16px 0; }
         .content ul {
-            color: #667eea;
             line-height: 2;
             padding-left: 25px;
         }
@@ -65,21 +66,20 @@
             padding: 25px 30px;
             font-size: 0.85em;
             text-align: center;
-            border-top: 3px solid #667eea;
+            border-top: 3px solid #D4A017;
         }
         .footer-logo {
-            font-weight: bold;
-            color: #667eea;
-            font-size: 1.1em;
-            margin-bottom: 8px;
+        }
+        .footer-accent {
+            color: #D4A017;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">KOWIHAN</div>
-            <h1>Bienvenue chez Kowihan !</h1>
+            <div class="logo">Kowihan<span class="logo-accent">Transit</span></div>
+            <h1>Bienvenue chez KowihanTransit !</h1>
         </div>
         <div class="content">
             <p>Bonjour <strong>{{firstName}} {{lastName}}</strong>,</p>
@@ -90,11 +90,11 @@
                 <li>Suivre vos bus en temps réel</li>
                 <li>Gérer vos abonnements facilement</li>
             </ul>
-            <p style="margin-top: 30px;">Bienvenue dans la famille Kowihan !</p>
-            <p style="margin-top: 25px;">Cordialement,<br><strong>L'équipe Kowihan</strong></p>
+            <p style="margin-top: 30px;">Bienvenue dans la famille KowihanTransit !</p>
+            <p style="margin-top: 25px;">Cordialement,<br><strong>L'équipe KowihanTransit</strong></p>
         </div>
         <div class="footer">
-            <div class="footer-logo">KOWIHAN</div>
+            <div class="footer-logo">Kowihan<span class="footer-accent">Transit</span></div>
             Ceci est un message automatique. Merci de ne pas y répondre.
         </div>
     </div>

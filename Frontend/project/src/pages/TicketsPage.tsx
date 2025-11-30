@@ -26,6 +26,7 @@ interface HistoryTicket {
   purchaseDate: string;
   validationDate: string | null;
   qrCodeData: string;
+  qrCodeImage?: string; // Base64 encoded QR code image
   price?: number;
 }
 
@@ -34,7 +35,10 @@ interface HistoryTicket {
 export default function TicketsPage({ token, userId }: TicketsPageProps) {
   const { t } = useLanguage();
   const [cart, setCart] = useState<{ [key: string]: number }>({});
-  
+
+  // Loyalty discount state
+  const [loyaltyDiscount, setLoyaltyDiscount] = useState<number>(0);
+  const [loyaltyPoints, setLoyaltyPoints] = useState<number>(0);
 
   const [showSuccess, setShowSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -58,12 +62,42 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
 
 
   useEffect(() => {
-   
+
     if (userId !== null && userId !== localUserId) {
-      
+
       setLocalUserId(userId);
     }
   }, [token, userId]);
+
+  // Fetch loyalty discount when user is logged in
+  const fetchLoyaltyDiscount = async () => {
+    if (!token) return;
+
+    try {
+      const response = await fetch('/api/users/me/loyalty', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        console.warn('Failed to fetch loyalty info');
+        return;
+      }
+
+      const data = await response.json();
+      setLoyaltyDiscount(data.availableDiscount || 0);
+      setLoyaltyPoints(data.points || 0);
+    } catch (err) {
+      console.warn('Error fetching loyalty discount:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchLoyaltyDiscount();
+    }
+  }, [token]);
 
 
   const tickets: TicketType[] = [
@@ -123,28 +157,56 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
   };
 
   const getTotal = () => {
+    const subtotal = tickets.reduce((total, ticket) => {
+      return total + (cart[ticket.id] || 0) * ticket.price;
+    }, 0);
+
+    // Apply loyalty discount
+    const discountAmount = subtotal * (loyaltyDiscount / 100);
+    return subtotal - discountAmount;
+  };
+
+  const getSubtotal = () => {
     return tickets.reduce((total, ticket) => {
       return total + (cart[ticket.id] || 0) * ticket.price;
     }, 0);
   };
 
+  const getDiscountAmount = () => {
+    const subtotal = getSubtotal();
+    return subtotal * (loyaltyDiscount / 100);
+  };
+
   // Check if a ticket is still valid based on purchase date and type
   const isTicketValid = (ticket: HistoryTicket): boolean => {
-    if (ticket.status !== 'ACTIVE') return false;
+    // Accept both 'ACTIVE' and 'VALIDE' status from backend
+    if (ticket.status !== 'ACTIVE' && ticket.status !== 'VALIDE') return false;
 
     const purchaseDate = new Date(ticket.purchaseDate);
     const now = new Date();
-    const hoursElapsed = (now.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60);
 
     switch (ticket.ticketType.toUpperCase()) {
       case 'SIMPLE':
-        return hoursElapsed < 1;
+        // Valid for 2 hours after purchase
+        const twoHoursAfterPurchase = new Date(purchaseDate.getTime() + 2 * 60 * 60 * 1000);
+        return now < twoHoursAfterPurchase;
+
       case 'JOURNEE':
-        return hoursElapsed < 24;
+        // Valid until end of purchase day (23:59:59)
+        const endOfPurchaseDay = new Date(purchaseDate);
+        endOfPurchaseDay.setHours(23, 59, 59, 999);
+        return now <= endOfPurchaseDay;
+
       case 'HEBDO':
-        return hoursElapsed < (24 * 7);
+        // Valid for 7 days after purchase
+        const sevenDaysAfterPurchase = new Date(purchaseDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+        return now < sevenDaysAfterPurchase;
+
       case 'MENSUEL':
-        return hoursElapsed < (24 * 30);
+        // Valid for 30 days after purchase
+        const thirtyDaysAfterPurchase = new Date(purchaseDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+        return now < thirtyDaysAfterPurchase;
+
       default:
         return false;
     }
@@ -155,12 +217,16 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
     if (ticket.status === 'USED') {
       return { status: 'USED', label: 'Utilisé', color: 'bg-blue-100 text-blue-800' };
     }
-    if (ticket.status === 'CANCELLED') {
+    if (ticket.status === 'CANCELLED' || ticket.status === 'ANNULE') {
       return { status: 'CANCELLED', label: 'Annulé', color: 'bg-gray-100 text-gray-800' };
     }
-    if (ticket.status === 'ACTIVE') {
+    if (ticket.status === 'EXPIRE') {
+      return { status: 'EXPIRED', label: 'Expiré', color: 'bg-red-100 text-red-800' };
+    }
+    // Handle both 'ACTIVE' and 'VALIDE' from backend
+    if (ticket.status === 'ACTIVE' || ticket.status === 'VALIDE') {
       if (isTicketValid(ticket)) {
-        return { status: 'VALID', label: 'Valide', color: 'bg-green-100 text-green-800' };
+        return { status: 'VALID', label: 'Actif', color: 'bg-green-100 text-green-800' };
       } else {
         return { status: 'EXPIRED', label: 'Expiré', color: 'bg-red-100 text-red-800' };
       }
@@ -276,14 +342,15 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
           throw new Error(`Type de ticket non valide. Types autorisés: [SIMPLE, JOURNEE, HEBDO, MENSUEL]`);
         }
         
-        
+
         for (let i = 0; i < quantity; i++) {
           const ticketData = {
             ticketType: ticketId,
-            userId: userIdToUse 
+            userId: userIdToUse,
+            loyaltyDiscount: loyaltyDiscount // Include loyalty discount
           };
-          
-          
+
+
           purchasePromises.push(apiService.purchaseTicket(ticketData, token));
         }
       }
@@ -304,13 +371,15 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
         throw new Error(failedPurchase.error || "Erreur lors de l'achat d'un ticket");
       }
 
-      
+
+
       setShowSuccess(true);
       setCart({});
-      
-      
+
+      // Refresh loyalty info and history
       setTimeout(() => {
         fetchHistory();
+        fetchLoyaltyDiscount();
       }, 500);
 
     } catch (err: any) {
@@ -388,7 +457,10 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
             <div class="content">
               <div class="qr-section">
                 <p style="font-weight: bold; margin-bottom: 10px;">QR Code</p>
-                <div class="qr-code">${ticket.qrCodeData}</div>
+                ${ticket.qrCodeImage
+                  ? `<img src="data:image/png;base64,${ticket.qrCodeImage}" alt="QR Code" style="max-width: 200px; margin: 0 auto;" />`
+                  : `<div class="qr-code">${ticket.qrCodeData}</div>`
+                }
               </div>
               <div class="info">
                 <div class="info-row">
@@ -642,12 +714,31 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                   </div>
 
                   <div className="border-t-2 border-gray-200 pt-4 mb-6">
+                    {loyaltyDiscount > 0 && (
+                      <div className="mb-3 space-y-2">
+                        <div className="flex justify-between items-center text-gray-600">
+                          <span>Sous-total</span>
+                          <span>{getSubtotal().toFixed(2)} MAD</span>
+                        </div>
+                        <div className="flex justify-between items-center text-green-600 font-semibold">
+                          <span>Réduction fidélité ({loyaltyDiscount}%)</span>
+                          <span>-{getDiscountAmount().toFixed(2)} MAD</span>
+                        </div>
+                        <div className="border-t border-gray-200 pt-2"></div>
+                      </div>
+                    )}
                     <div className="flex justify-between items-center">
                       <span className="text-xl font-bold text-navy-900">{t.tickets.total}</span>
                       <span className="text-3xl font-bold text-mustard-500">
                         {getTotal().toFixed(2)} MAD
                       </span>
                     </div>
+                    {loyaltyDiscount > 0 && (
+                      <div className="mt-2 text-sm text-green-600 flex items-center space-x-1">
+                        <span>✨</span>
+                        <span>Vous économisez {getDiscountAmount().toFixed(2)} MAD avec vos points fidélité!</span>
+                      </div>
+                    )}
                   </div>
 
                   <button
@@ -728,9 +819,15 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                             Prix: {ticket.price.toFixed(2)} MAD
                           </p>
                         )}
-                        <p className="text-xs text-gray-400 mt-1">
-                         QR: {ticket.qrCodeData.substring(0, 20)}...
-                        </p>
+                        {ticket.qrCodeImage && (
+                          <div className="mt-2">
+                            <img
+                              src={`data:image/png;base64,${ticket.qrCodeImage}`}
+                              alt="QR Code"
+                              className="w-24 h-24 border border-gray-200 rounded"
+                            />
+                          </div>
+                        )}
                       </div>
                       <div className="flex flex-col items-end space-y-2">
                         <span
@@ -738,7 +835,7 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                         >
                           {ticketStatusInfo.label}
                         </span>
-                        {ticket.status === 'ACTIVE' && (
+                        {(ticket.status === 'ACTIVE' || ticket.status === 'VALIDE') && isTicketValid(ticket) && (
                           <button
                             onClick={() => handleValidateTicket(ticket.id)}
                             className="text-xs bg-mustard-500 text-navy-900 px-2 py-1 rounded hover:bg-mustard-600 transition-colors"
@@ -746,7 +843,7 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                             Valider
                           </button>
                         )}
-                        {(ticket.status === 'ACTIVE' || ticket.status === 'VALIDE') && !ticket.validationDate && (
+                        {(ticket.status === 'ACTIVE' || ticket.status === 'VALIDE') && !ticket.validationDate && isTicketValid(ticket) && (
                           <button
                             onClick={() => openTransferModal(ticket.id)}
                             className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors flex items-center space-x-1"
