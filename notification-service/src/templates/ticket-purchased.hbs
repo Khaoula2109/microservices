@@ -8,7 +8,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #102a43 0%, #243b53 100%);
         }
         .container {
             width: 90%;
@@ -20,7 +20,7 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
         .header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(135deg, #102a43 0%, #243b53 100%);
             color: #ffffff;
             padding: 40px 30px;
             text-align: center;
@@ -37,11 +37,14 @@
             border-radius: 50% 50% 0 0;
         }
         .logo {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: bold;
             margin-bottom: 10px;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .logo-accent {
+            color: #D4A017;
         }
         .header h1 {
             margin: 10px 0 0 0;
@@ -56,13 +59,13 @@
         .content p { margin: 0 0 16px 0; }
         .details-box {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #D4A017;
             padding: 25px;
             border-radius: 8px;
             margin: 25px 0;
         }
         .details-box strong {
-            color: #667eea;
+            color: #102a43;
             font-weight: 600;
             display: inline-block;
             min-width: 150px;
@@ -73,7 +76,7 @@
         }
         .details-box hr {
             border: none;
-            border-top: 1px solid rgba(102, 126, 234, 0.3);
+            border-top: 1px solid rgba(212, 160, 23, 0.3);
             margin: 15px 0;
         }
         .qr-code {
@@ -83,8 +86,8 @@
             margin-top: 10px;
             text-align: center;
             font-family: monospace;
-            color: #667eea;
-            border: 2px dashed #667eea;
+            color: #102a43;
+            border: 2px dashed #D4A017;
         }
         .qr-code-image {
             background: #ffffff;
@@ -92,8 +95,8 @@
             border-radius: 12px;
             margin: 20px auto;
             text-align: center;
-            border: 3px solid #667eea;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            border: 3px solid #D4A017;
+            box-shadow: 0 4px 15px rgba(212, 160, 23, 0.3);
             max-width: 350px;
         }
         .qr-code-image img {
@@ -103,7 +106,7 @@
             margin: 0 auto;
         }
         .qr-code-title {
-            color: #667eea;
+            color: #102a43;
             font-weight: 600;
             font-size: 16px;
             margin-bottom: 15px;
@@ -122,20 +125,23 @@
             padding: 25px 30px;
             font-size: 0.85em;
             text-align: center;
-            border-top: 3px solid #667eea;
+            border-top: 3px solid #D4A017;
         }
         .footer-logo {
             font-weight: bold;
-            color: #667eea;
+            color: #102a43;
             font-size: 1.1em;
             margin-bottom: 8px;
+        }
+        .footer-accent {
+            color: #D4A017;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">KOWIHAN</div>
+            <div class="logo">Kowihan<span class="logo-accent">Transit</span></div>
             <h1>{{subject}}</h1>
         </div>
         <div class="content">
@@ -155,9 +161,9 @@
 
             {{#if qrCodeImage}}
             <div class="qr-code-image">
-                <div class="qr-code-title">Votre Code-Barres</div>
+                <div class="qr-code-title">📱 Votre QR Code</div>
                 <img src="data:image/png;base64,{{qrCodeImage}}" alt="QR Code du Ticket" />
-                <div class="scan-instruction">Présentez ce code-barres au contrôleur lors de votre voyage</div>
+                <div class="scan-instruction">Présentez ce code au contrôleur lors de votre voyage</div>
             </div>
             {{else}}
             <div class="details-box" style="margin-top: 20px;">
@@ -166,12 +172,12 @@
             </div>
             {{/if}}
 
-            <p style="margin-top: 25px;">Bon voyage avec Kowihan !</p>
-            <p>Cordialement,<br><strong>L'équipe Kowihan</strong></p>
+            <p style="margin-top: 25px;">Bon voyage avec KowihanTransit ! 🚌</p>
+            <p>Cordialement,<br><strong>L'équipe KowihanTransit</strong></p>
         </div>
         <div class="footer">
-            <div class="footer-logo">KOWIHAN</div>
-            Présentez ce ticket lors de votre voyage.
+            <div class="footer-logo">Kowihan<span class="footer-accent">Transit</span></div>
+            Conservez ce ticket jusqu'à la fin de votre trajet.
         </div>
     </div>
 </body>
