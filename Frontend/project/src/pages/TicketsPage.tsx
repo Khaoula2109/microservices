@@ -131,21 +131,34 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
 
   // Check if a ticket is still valid based on purchase date and type
   const isTicketValid = (ticket: HistoryTicket): boolean => {
-    if (ticket.status !== 'ACTIVE') return false;
+    // Accept both 'ACTIVE' and 'VALIDE' status from backend
+    if (ticket.status !== 'ACTIVE' && ticket.status !== 'VALIDE') return false;
 
     const purchaseDate = new Date(ticket.purchaseDate);
     const now = new Date();
-    const hoursElapsed = (now.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60);
 
     switch (ticket.ticketType.toUpperCase()) {
       case 'SIMPLE':
-        return hoursElapsed < 1;
+        // Valid for 2 hours after purchase
+        const twoHoursAfterPurchase = new Date(purchaseDate.getTime() + 2 * 60 * 60 * 1000);
+        return now < twoHoursAfterPurchase;
+
       case 'JOURNEE':
-        return hoursElapsed < 24;
+        // Valid until end of purchase day (23:59:59)
+        const endOfPurchaseDay = new Date(purchaseDate);
+        endOfPurchaseDay.setHours(23, 59, 59, 999);
+        return now <= endOfPurchaseDay;
+
       case 'HEBDO':
-        return hoursElapsed < (24 * 7);
+        // Valid for 7 days after purchase
+        const sevenDaysAfterPurchase = new Date(purchaseDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+        return now < sevenDaysAfterPurchase;
+
       case 'MENSUEL':
-        return hoursElapsed < (24 * 30);
+        // Valid for 30 days after purchase
+        const thirtyDaysAfterPurchase = new Date(purchaseDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+        return now < thirtyDaysAfterPurchase;
+
       default:
         return false;
     }
@@ -156,12 +169,16 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
     if (ticket.status === 'USED') {
       return { status: 'USED', label: 'Utilisé', color: 'bg-blue-100 text-blue-800' };
     }
-    if (ticket.status === 'CANCELLED') {
+    if (ticket.status === 'CANCELLED' || ticket.status === 'ANNULE') {
       return { status: 'CANCELLED', label: 'Annulé', color: 'bg-gray-100 text-gray-800' };
     }
-    if (ticket.status === 'ACTIVE') {
+    if (ticket.status === 'EXPIRE') {
+      return { status: 'EXPIRED', label: 'Expiré', color: 'bg-red-100 text-red-800' };
+    }
+    // Handle both 'ACTIVE' and 'VALIDE' from backend
+    if (ticket.status === 'ACTIVE' || ticket.status === 'VALIDE') {
       if (isTicketValid(ticket)) {
-        return { status: 'VALID', label: 'Valide', color: 'bg-green-100 text-green-800' };
+        return { status: 'VALID', label: 'Actif', color: 'bg-green-100 text-green-800' };
       } else {
         return { status: 'EXPIRED', label: 'Expiré', color: 'bg-red-100 text-red-800' };
       }
@@ -748,7 +765,7 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                         >
                           {ticketStatusInfo.label}
                         </span>
-                        {ticket.status === 'ACTIVE' && (
+                        {(ticket.status === 'ACTIVE' || ticket.status === 'VALIDE') && isTicketValid(ticket) && (
                           <button
                             onClick={() => handleValidateTicket(ticket.id)}
                             className="text-xs bg-mustard-500 text-navy-900 px-2 py-1 rounded hover:bg-mustard-600 transition-colors"
@@ -756,7 +773,7 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                             Valider
                           </button>
                         )}
-                        {(ticket.status === 'ACTIVE' || ticket.status === 'VALIDE') && !ticket.validationDate && (
+                        {(ticket.status === 'ACTIVE' || ticket.status === 'VALIDE') && !ticket.validationDate && isTicketValid(ticket) && (
                           <button
                             onClick={() => openTransferModal(ticket.id)}
                             className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors flex items-center space-x-1"
