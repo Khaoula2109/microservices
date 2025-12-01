@@ -91,13 +91,16 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
 
   const startCamera = async () => {
     try {
+      console.log('🎥 Starting camera...');
+
       // Check if mediaDevices API is available
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         setError(t.validate.cameraError + ' (API non disponible - HTTPS requis)');
-        console.error('Camera error: mediaDevices API not available. HTTPS is required.');
+        console.error('❌ Camera error: mediaDevices API not available. HTTPS is required.');
         return;
       }
 
+      console.log('📱 Requesting camera access...');
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: 'environment',
@@ -105,23 +108,54 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
           height: { ideal: 720 }
         }
       });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
 
-        // Start scanning once video is ready
-        videoRef.current.addEventListener('loadedmetadata', () => {
-          console.log('📹 Video ready, starting QR scan...');
+      console.log('✅ Camera stream obtained:', stream.getTracks().map(t => t.label));
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        const video = videoRef.current;
+        video.srcObject = stream;
+
+        console.log('📹 Video element setup, waiting for play...');
+
+        // Force play and wait for it
+        try {
+          await video.play();
+          console.log('▶️ Video playing');
+        } catch (playError) {
+          console.error('❌ Play error:', playError);
+          // Try playing again after user interaction
+          video.muted = true;
+          await video.play();
+        }
+
+        // Wait for video to be fully loaded
+        video.addEventListener('loadedmetadata', () => {
+          console.log('📹 Video metadata loaded:', {
+            width: video.videoWidth,
+            height: video.videoHeight,
+            readyState: video.readyState
+          });
           startScanning();
         }, { once: true });
+
+        // Also try starting scan when video can play
+        video.addEventListener('canplay', () => {
+          console.log('▶️ Video can play, dimensions:', video.videoWidth, 'x', video.videoHeight);
+          if (video.videoWidth > 0 && video.videoHeight > 0) {
+            startScanning();
+          }
+        }, { once: true });
       }
+
       setIsScanning(true);
       setError('');
       console.log('✅ Camera started successfully');
-    } catch (err) {
-      setError(t.validate.cameraError);
+    } catch (err: any) {
+      setError(t.validate.cameraError + ': ' + err.message);
       console.error('❌ Camera error:', err);
+      console.error('Error name:', err.name);
+      console.error('Error message:', err.message);
     }
   };
 
@@ -241,7 +275,6 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
                     className="w-full h-full object-cover"
                     playsInline
                     muted
-                    autoPlay
                   />
                   <div className="absolute inset-0 border-4 border-mustard-500/50 rounded-xl pointer-events-none">
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-2 border-mustard-500 rounded-lg">
