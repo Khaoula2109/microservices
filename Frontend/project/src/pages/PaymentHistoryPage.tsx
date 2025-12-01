@@ -36,12 +36,12 @@ export default function PaymentHistoryPage({ token, userId }: PaymentHistoryProp
 
     try {
       // Récupérer historique tickets
-      const ticketsResponse = await apiService.getTicketHistory(userId, token);
+      const ticketsResponse = await apiService.getTicketHistory(token);
       const tickets: Payment[] = (ticketsResponse.data || []).map((ticket: any) => ({
         id: `TICKET-${ticket.id}`,
         type: 'TICKET' as const,
-        description: `Ticket ${ticket.ticketType}`,
-        amount: ticket.price || 50,
+        description: `Ticket ${ticket.ticketType}${ticket.discountApplied > 0 ? ` (-${ticket.discountApplied}% fidélité)` : ''}`,
+        amount: ticket.finalPrice || ticket.price || ticket.originalPrice || 0,
         currency: 'MAD',
         date: ticket.purchaseDate,
         status: 'COMPLETED' as const,
