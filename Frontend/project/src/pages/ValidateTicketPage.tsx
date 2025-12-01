@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Camera, CheckCircle, XCircle, Scan, User, Calendar, Clock, Ticket, AlertTriangle } from 'lucide-react';
 import { apiService } from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
+import jsQR from 'jsqr';
 
 interface ValidateTicketPageProps {
   token: string;
@@ -25,15 +26,68 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [scanHistory, setScanHistory] = useState<ValidationResult[]>([]);
+  const [lastScannedCode, setLastScannedCode] = useState<string>('');
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const scanIntervalRef = useRef<number | null>(null);
 
   useEffect(() => {
     return () => {
       stopCamera();
     };
   }, []);
+
+  const scanFrame = () => {
+    if (!videoRef.current || !canvasRef.current || loading) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d');
+
+    if (!context || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+
+    // Set canvas size to video size
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Draw current video frame to canvas
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Get image data
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+    // Scan for QR code
+    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+      inversionAttempts: 'dontInvert',
+    });
+
+    if (code && code.data && code.data !== lastScannedCode) {
+      console.log('🎯 QR Code detected:', code.data);
+      setLastScannedCode(code.data);
+      validateCode(code.data);
+      // Stop scanning temporarily to avoid duplicates
+      stopScanning();
+      // Reset after 3 seconds to allow new scans
+      setTimeout(() => {
+        setLastScannedCode('');
+        if (isScanning) startScanning();
+      }, 3000);
+    }
+  };
+
+  const startScanning = () => {
+    if (scanIntervalRef.current) return;
+    // Scan every 300ms
+    scanIntervalRef.current = window.setInterval(scanFrame, 300);
+  };
+
+  const stopScanning = () => {
+    if (scanIntervalRef.current) {
+      clearInterval(scanIntervalRef.current);
+      scanIntervalRef.current = null;
+    }
+  };
 
   const startCamera = async () => {
     try {
@@ -45,27 +99,41 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
       });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play();
+        await videoRef.current.play();
+
+        // Start scanning once video is ready
+        videoRef.current.addEventListener('loadedmetadata', () => {
+          console.log('📹 Video ready, starting QR scan...');
+          startScanning();
+        }, { once: true });
       }
       setIsScanning(true);
       setError('');
+      console.log('✅ Camera started successfully');
     } catch (err) {
       setError(t.validate.cameraError);
-      console.error('Camera error:', err);
+      console.error('❌ Camera error:', err);
     }
   };
 
   const stopCamera = () => {
+    stopScanning();
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
     setIsScanning(false);
+    setLastScannedCode('');
+    console.log('🛑 Camera stopped');
   };
 
   const validateCode = async (code: string) => {
@@ -173,11 +241,22 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
                     className="w-full h-full object-cover"
                     playsInline
                     muted
+                    autoPlay
                   />
                   <div className="absolute inset-0 border-4 border-mustard-500/50 rounded-xl pointer-events-none">
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-2 border-mustard-500 rounded-lg"></div>
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-2 border-mustard-500 rounded-lg">
+                      {!loading && (
+                        <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-mustard-500 text-navy-900 px-3 py-1 rounded-full text-xs font-semibold animate-pulse">
+                          📷 Scan actif
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <canvas ref={canvasRef} className="hidden" />
+                </div>
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 text-sm text-blue-400">
+                  <p className="font-semibold mb-1">💡 Astuce</p>
+                  <p>Placez le code QR du ticket face à la caméra. Le scan est automatique !</p>
                 </div>
                 <button
                   onClick={stopCamera}
