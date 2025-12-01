@@ -85,6 +85,197 @@ export default function PaymentHistoryPage({ token, userId }: PaymentHistoryProp
     }
   };
 
+  const handleDownloadReceipt = (payment: Payment) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Veuillez autoriser les popups pour télécharger le reçu');
+      return;
+    }
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Reçu de paiement - ${payment.id}</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: Arial, sans-serif; padding: 40px; background: #f5f5f5; }
+            .receipt { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; }
+            .header { background: linear-gradient(135deg, #102a43, #243b53); color: white; padding: 30px; text-align: center; }
+            .logo { font-size: 28px; font-weight: bold; margin-bottom: 10px; }
+            .content { padding: 30px; }
+            .info-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #eee; }
+            .info-label { color: #666; font-weight: 500; }
+            .info-value { font-weight: bold; color: #102a43; }
+            .amount { text-align: center; padding: 30px; background: #f8f9fa; margin: 20px 0; border-radius: 8px; }
+            .amount-label { color: #666; font-size: 14px; margin-bottom: 10px; }
+            .amount-value { font-size: 36px; font-weight: bold; color: #D4A017; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; border-top: 1px solid #eee; }
+            .status { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+            .status-completed { background: #d1fae5; color: #065f46; }
+            @media print {
+              body { padding: 0; background: white; }
+              .receipt { box-shadow: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="receipt">
+            <div class="header">
+              <div class="logo">KowihanTransit</div>
+              <div style="font-size: 18px;">Reçu de Paiement</div>
+            </div>
+            <div class="content">
+              <div class="info-row">
+                <span class="info-label">Numéro de transaction</span>
+                <span class="info-value">${payment.id}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Date</span>
+                <span class="info-value">${new Date(payment.date).toLocaleDateString('fr-FR', {
+                  day: '2-digit',
+                  month: 'long',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Type</span>
+                <span class="info-value">${payment.type === 'TICKET' ? 'Ticket' : 'Abonnement'}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Description</span>
+                <span class="info-value">${payment.description}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Statut</span>
+                <span class="info-value">
+                  <span class="status status-completed">Payé</span>
+                </span>
+              </div>
+              <div class="amount">
+                <div class="amount-label">Montant payé</div>
+                <div class="amount-value">${payment.amount.toFixed(2)} ${payment.currency}</div>
+              </div>
+            </div>
+            <div class="footer">
+              <p>Merci d'avoir choisi KowihanTransit</p>
+              <p style="margin-top: 10px;">Ce reçu fait office de preuve de paiement</p>
+              <p style="margin-top: 5px;">Pour toute question, contactez notre support</p>
+            </div>
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+  };
+
+  const handleExportAll = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Veuillez autoriser les popups pour exporter l\'historique');
+      return;
+    }
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Historique des Paiements - KowihanTransit</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: Arial, sans-serif; padding: 40px; }
+            .header { text-align: center; margin-bottom: 40px; }
+            .logo { font-size: 32px; font-weight: bold; color: #102a43; margin-bottom: 10px; }
+            .title { font-size: 24px; color: #666; }
+            .summary { display: flex; justify-content: space-around; margin-bottom: 40px; padding: 20px; background: #f8f9fa; border-radius: 8px; }
+            .summary-item { text-align: center; }
+            .summary-label { color: #666; font-size: 14px; }
+            .summary-value { font-size: 24px; font-weight: bold; color: #102a43; margin-top: 5px; }
+            table { width: 100%; border-collapse: collapse; }
+            th { background: #102a43; color: white; padding: 12px; text-align: left; font-size: 12px; }
+            td { padding: 12px; border-bottom: 1px solid #eee; font-size: 12px; }
+            tr:hover { background: #f8f9fa; }
+            .amount { font-weight: bold; color: #D4A017; }
+            .footer { margin-top: 40px; text-align: center; color: #666; font-size: 12px; }
+            @media print {
+              body { padding: 20px; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo">KowihanTransit</div>
+            <div class="title">Historique des Paiements</div>
+            <div style="color: #999; margin-top: 10px; font-size: 12px;">
+              Généré le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+            </div>
+          </div>
+
+          <div class="summary">
+            <div class="summary-item">
+              <div class="summary-label">Total Dépensé</div>
+              <div class="summary-value">${totalSpent.toFixed(2)} MAD</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-label">Transactions</div>
+              <div class="summary-value">${payments.length}</div>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th style="text-align: right;">Montant</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredPayments.map(payment => `
+                <tr>
+                  <td>${new Date(payment.date).toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                  })}</td>
+                  <td>${payment.type === 'TICKET' ? 'Ticket' : 'Abonnement'}</td>
+                  <td>${payment.description}</td>
+                  <td style="text-align: right;" class="amount">${payment.amount.toFixed(2)} ${payment.currency}</td>
+                  <td>Payé</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <div class="footer">
+            <p>KowihanTransit - Votre partenaire transport</p>
+            <p style="margin-top: 5px;">Ce document est généré automatiquement</p>
+          </div>
+
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -229,6 +420,7 @@ export default function PaymentHistoryPage({ token, userId }: PaymentHistoryProp
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-center space-x-2">
                           <button
+                            onClick={() => handleDownloadReceipt(payment)}
                             className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
                             title="Télécharger le reçu"
                           >
@@ -246,7 +438,10 @@ export default function PaymentHistoryPage({ token, userId }: PaymentHistoryProp
 
         {/* Export Options */}
         <div className="mt-6 flex justify-end">
-          <button className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2">
+          <button
+            onClick={handleExportAll}
+            className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2"
+          >
             <Download className="h-5 w-5" />
             <span>Exporter en PDF</span>
           </button>

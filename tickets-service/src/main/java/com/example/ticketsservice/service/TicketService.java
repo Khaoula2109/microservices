@@ -50,8 +50,11 @@ public class TicketService {
     @Transactional
     public Ticket purchaseTicket(TicketPurchaseRequest request) {
         validatePurchaseRequest(request);
-        checkForDuplicateValidTicket(request.getUserId(), request.getTicketType());
-        validatePayment(request);
+        // Désactivé : permet l'achat de plusieurs tickets même si l'utilisateur en possède déjà un valide
+        // checkForDuplicateValidTicket(request.getUserId(), request.getTicketType());
+
+        // Désactivé : pas de vérification de solde (système de paiement externe ou à implémenter)
+        // validatePayment(request);
 
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new TicketNotFoundException("Utilisateur non trouvé avec l'ID : " + request.getUserId()));
