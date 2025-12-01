@@ -386,23 +386,25 @@ async getAllStops(token: string): Promise<ApiResponse<any>> {
   // --- Tickets ---
 
   async purchaseTicket(
-    ticketData: { 
+    ticketData: {
       ticketType: string;
       userId: number;
-    }, 
+      loyaltyDiscount?: number;
+    },
     token: string
   ) {
-   
-    
- 
+
+
+
     const url = `${API_BASE_URL}/api/tickets/purchase?userId=${ticketData.userId}`;
 
-    
+
     return this.fetchWithFallback<any>(url, {
       method: 'POST',
       body: JSON.stringify({
-        ticketType: ticketData.ticketType
-        // On retire userId du body car il est dans l'URL
+        ticketType: ticketData.ticketType,
+        userId: ticketData.userId,
+        loyaltyDiscount: ticketData.loyaltyDiscount || 0
       }),
       headers: {
         Authorization: `Bearer ${token}`,

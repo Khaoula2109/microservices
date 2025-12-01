@@ -23,7 +23,7 @@ public class LoyaltyEventListener {
     /**
      * Listen to ticket purchase events and award points
      */
-    @RabbitListener(queues = "#{ticketPurchasedQueue.name}")
+    @RabbitListener(queues = "loyalty.ticket.purchased")
     public void handleTicketPurchased(String message) {
         try {
             log.info("📨 Received ticket.purchased event for loyalty points");
@@ -45,7 +45,7 @@ public class LoyaltyEventListener {
     /**
      * Listen to subscription events and award points
      */
-    @RabbitListener(queues = "#{subscriptionCreatedQueue.name}")
+    @RabbitListener(queues = "loyalty.subscription.created")
     public void handleSubscriptionCreated(String message) {
         try {
             log.info("📨 Received subscription.created event for loyalty points");
