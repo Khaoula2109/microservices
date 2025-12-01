@@ -27,6 +27,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
   const [error, setError] = useState('');
   const [scanHistory, setScanHistory] = useState<ValidationResult[]>([]);
   const [lastScannedCode, setLastScannedCode] = useState<string>('');
+  const [scanCount, setScanCount] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -45,11 +46,26 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
 
-    if (!context || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+    if (!context) {
+      console.error('❌ Canvas context not available');
+      return;
+    }
+
+    if (video.readyState !== video.HAVE_ENOUGH_DATA) {
+      return;
+    }
 
     // Set canvas size to video size
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
+
+    if (canvas.width === 0 || canvas.height === 0) {
+      console.warn('⚠️ Video dimensions not ready:', canvas.width, 'x', canvas.height);
+      return;
+    }
+
+    // Update scan count to show activity
+    setScanCount(prev => prev + 1);
 
     // Draw current video frame to canvas
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -57,13 +73,14 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
     // Get image data
     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
-    // Scan for QR code
+    // Scan for QR code with more permissive options
     const code = jsQR(imageData.data, imageData.width, imageData.height, {
-      inversionAttempts: 'dontInvert',
+      inversionAttempts: 'attemptBoth', // Try both normal and inverted
     });
 
     if (code && code.data && code.data !== lastScannedCode) {
       console.log('🎯 QR Code detected:', code.data);
+      console.log('📍 QR Code location:', code.location);
       setLastScannedCode(code.data);
       validateCode(code.data);
       // Stop scanning temporarily to avoid duplicates
@@ -78,8 +95,9 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
 
   const startScanning = () => {
     if (scanIntervalRef.current) return;
-    // Scan every 300ms
-    scanIntervalRef.current = window.setInterval(scanFrame, 300);
+    console.log('▶️ Starting QR scan loop...');
+    // Scan every 200ms for better responsiveness
+    scanIntervalRef.current = window.setInterval(scanFrame, 200);
   };
 
   const stopScanning = () => {
@@ -167,6 +185,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
     }
     setIsScanning(false);
     setLastScannedCode('');
+    setScanCount(0);
     console.log('🛑 Camera stopped');
   };
 
@@ -279,11 +298,16 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
                   <div className="absolute inset-0 border-4 border-mustard-500/50 rounded-xl pointer-events-none">
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-2 border-mustard-500 rounded-lg">
                       {!loading && (
-                        <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-mustard-500 text-navy-900 px-3 py-1 rounded-full text-xs font-semibold animate-pulse">
-                          📷 Scan actif
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-mustard-500 text-navy-900 px-3 py-1 rounded-full text-xs font-semibold animate-pulse">
+                          📷 Scan actif ({scanCount})
                         </div>
                       )}
                     </div>
+                    {!loading && scanCount > 0 && (
+                      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-xs">
+                        {scanCount} frames analysés
+                      </div>
+                    )}
                   </div>
                   <canvas ref={canvasRef} className="hidden" />
                 </div>
