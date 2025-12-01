@@ -28,6 +28,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
   const [scanHistory, setScanHistory] = useState<ValidationResult[]>([]);
   const [lastScannedCode, setLastScannedCode] = useState<string>('');
   const [scanCount, setScanCount] = useState(0);
+  const [cameraStatus, setCameraStatus] = useState<string>('');
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -110,11 +111,13 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
   const startCamera = async () => {
     try {
       console.log('🎥 Starting camera...');
+      setCameraStatus('Demande d\'accès à la caméra...');
 
       // Check if mediaDevices API is available
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         setError(t.validate.cameraError + ' (API non disponible - HTTPS requis)');
         console.error('❌ Camera error: mediaDevices API not available. HTTPS is required.');
+        setCameraStatus('Erreur : API caméra non disponible');
         return;
       }
 
@@ -128,20 +131,32 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
       });
 
       console.log('✅ Camera stream obtained:', stream.getTracks().map(t => t.label));
+      console.log('Stream active?', stream.active);
+      console.log('Video tracks:', stream.getVideoTracks().map(t => ({
+        label: t.label,
+        enabled: t.enabled,
+        readyState: t.readyState,
+        muted: t.muted
+      })));
+
       streamRef.current = stream;
+      setCameraStatus('Flux caméra obtenu, configuration vidéo...');
 
       if (videoRef.current) {
         const video = videoRef.current;
         video.srcObject = stream;
 
         console.log('📹 Video element setup, waiting for play...');
+        setCameraStatus('Configuration de l\'élément vidéo...');
 
         // Force play and wait for it
         try {
           await video.play();
           console.log('▶️ Video playing');
+          setCameraStatus('Vidéo en lecture');
         } catch (playError) {
           console.error('❌ Play error:', playError);
+          setCameraStatus('Erreur de lecture, nouvelle tentative...');
           // Try playing again after user interaction
           video.muted = true;
           await video.play();
@@ -154,12 +169,14 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
             height: video.videoHeight,
             readyState: video.readyState
           });
+          setCameraStatus(`Vidéo chargée: ${video.videoWidth}x${video.videoHeight}`);
           startScanning();
         }, { once: true });
 
         // Also try starting scan when video can play
         video.addEventListener('canplay', () => {
           console.log('▶️ Video can play, dimensions:', video.videoWidth, 'x', video.videoHeight);
+          setCameraStatus('Vidéo prête à scanner');
           if (video.videoWidth > 0 && video.videoHeight > 0) {
             startScanning();
           }
@@ -174,6 +191,7 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
       console.error('❌ Camera error:', err);
       console.error('Error name:', err.name);
       console.error('Error message:', err.message);
+      setCameraStatus(`Erreur: ${err.name}`);
     }
   };
 
@@ -288,13 +306,19 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
+                <div className="relative rounded-xl overflow-hidden bg-gray-900 aspect-video">
                   <video
                     ref={videoRef}
                     className="w-full h-full object-cover"
                     playsInline
                     muted
+                    style={{ transform: 'scaleX(1)' }}
                   />
+                  {cameraStatus && (
+                    <div className="absolute top-2 left-2 right-2 bg-black/80 text-white p-2 rounded text-xs">
+                      🔧 {cameraStatus}
+                    </div>
+                  )}
                   <div className="absolute inset-0 border-4 border-mustard-500/50 rounded-xl pointer-events-none">
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-2 border-mustard-500 rounded-lg">
                       {!loading && (
