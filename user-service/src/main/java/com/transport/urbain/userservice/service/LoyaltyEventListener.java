@@ -1,12 +1,12 @@
 package com.transport.urbain.userservice.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 /**
  * Listens to events and awards loyalty points automatically
@@ -18,18 +18,23 @@ import org.springframework.stereotype.Service;
 public class LoyaltyEventListener {
 
     private final LoyaltyService loyaltyService;
-    private final ObjectMapper objectMapper;
 
     /**
      * Listen to ticket purchase events and award points
      */
     @RabbitListener(queues = "loyalty.ticket.purchased")
-    public void handleTicketPurchased(String message) {
+    public void handleTicketPurchased(Map<String, Object> event) {
         try {
-            log.info("📨 Received ticket.purchased event for loyalty points");
+            log.info("📨 Received ticket.purchased event for loyalty points: {}", event);
 
-            JsonNode event = objectMapper.readTree(message);
-            Long userId = event.get("userId").asLong();
+            // Extract userId from the event
+            String userIdStr = (String) event.get("userId");
+            if (userIdStr == null) {
+                log.error("❌ userId is null in ticket.purchased event");
+                return;
+            }
+
+            Long userId = Long.parseLong(userIdStr);
 
             // Award points for ticket purchase
             loyaltyService.awardPointsForTicket(userId);
@@ -46,12 +51,18 @@ public class LoyaltyEventListener {
      * Listen to subscription events and award points
      */
     @RabbitListener(queues = "loyalty.subscription.created")
-    public void handleSubscriptionCreated(String message) {
+    public void handleSubscriptionCreated(Map<String, Object> event) {
         try {
-            log.info("📨 Received subscription.created event for loyalty points");
+            log.info("📨 Received subscription.created event for loyalty points: {}", event);
 
-            JsonNode event = objectMapper.readTree(message);
-            Long userId = event.get("userId").asLong();
+            // Extract userId from the event
+            String userIdStr = (String) event.get("userId");
+            if (userIdStr == null) {
+                log.error("❌ userId is null in subscription.created event");
+                return;
+            }
+
+            Long userId = Long.parseLong(userIdStr);
 
             // Award points for subscription
             loyaltyService.awardPointsForSubscription(userId);
