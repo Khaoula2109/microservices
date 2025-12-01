@@ -144,43 +144,60 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
 
       if (videoRef.current) {
         const video = videoRef.current;
-        video.srcObject = stream;
 
         console.log('📹 Video element setup, waiting for play...');
         setCameraStatus('Configuration de l\'élément vidéo...');
 
+        // Set video properties before assigning stream
+        video.muted = true;
+        video.playsInline = true;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
+
+        // Assign stream to video element
+        video.srcObject = stream;
+
+        // Wait for metadata to load before playing
+        const metadataPromise = new Promise<void>((resolve) => {
+          video.addEventListener('loadedmetadata', () => {
+            console.log('📹 Video metadata loaded:', {
+              width: video.videoWidth,
+              height: video.videoHeight,
+              readyState: video.readyState
+            });
+            setCameraStatus(`Vidéo chargée: ${video.videoWidth}x${video.videoHeight}`);
+            resolve();
+          }, { once: true });
+        });
+
+        await metadataPromise;
+
         // Force play and wait for it
         try {
           await video.play();
-          console.log('▶️ Video playing');
-          setCameraStatus('Vidéo en lecture');
-        } catch (playError) {
-          console.error('❌ Play error:', playError);
-          setCameraStatus('Erreur de lecture, nouvelle tentative...');
-          // Try playing again after user interaction
-          video.muted = true;
-          await video.play();
-        }
+          console.log('▶️ Video playing successfully');
+          setCameraStatus('Vidéo en lecture - Scanner actif');
 
-        // Wait for video to be fully loaded
-        video.addEventListener('loadedmetadata', () => {
-          console.log('📹 Video metadata loaded:', {
-            width: video.videoWidth,
-            height: video.videoHeight,
-            readyState: video.readyState
-          });
-          setCameraStatus(`Vidéo chargée: ${video.videoWidth}x${video.videoHeight}`);
-          startScanning();
-        }, { once: true });
-
-        // Also try starting scan when video can play
-        video.addEventListener('canplay', () => {
-          console.log('▶️ Video can play, dimensions:', video.videoWidth, 'x', video.videoHeight);
-          setCameraStatus('Vidéo prête à scanner');
+          // Start scanning once video is confirmed playing
           if (video.videoWidth > 0 && video.videoHeight > 0) {
             startScanning();
           }
-        }, { once: true });
+        } catch (playError) {
+          console.error('❌ Play error:', playError);
+          setCameraStatus('Erreur de lecture, nouvelle tentative...');
+          // Try playing again
+          try {
+            await video.play();
+            console.log('▶️ Video playing after retry');
+            setCameraStatus('Vidéo en lecture (après retry)');
+            if (video.videoWidth > 0 && video.videoHeight > 0) {
+              startScanning();
+            }
+          } catch (retryError) {
+            console.error('❌ Retry play error:', retryError);
+            setError('Impossible de démarrer la vidéo. Veuillez réessayer.');
+          }
+        }
       }
 
       setIsScanning(true);
@@ -310,9 +327,16 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
                   <video
                     ref={videoRef}
                     className="w-full h-full object-cover"
+                    autoPlay
                     playsInline
                     muted
-                    style={{ transform: 'scaleX(1)' }}
+                    style={{
+                      transform: 'scaleX(1)',
+                      display: 'block',
+                      minWidth: '100%',
+                      minHeight: '100%',
+                      backgroundColor: '#000'
+                    }}
                   />
                   {cameraStatus && (
                     <div className="absolute top-2 left-2 right-2 bg-black/80 text-white p-2 rounded text-xs">
