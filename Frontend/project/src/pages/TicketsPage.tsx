@@ -74,6 +74,7 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
     if (!token) return;
 
     try {
+      console.log('🔍 Fetching loyalty discount...');
       const response = await fetch('/api/users/me/loyalty', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -81,15 +82,17 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
       });
 
       if (!response.ok) {
-        console.warn('Failed to fetch loyalty info');
+        console.error('❌ Failed to fetch loyalty info:', response.status, response.statusText);
         return;
       }
 
       const data = await response.json();
+      console.log('✅ Loyalty data received:', data);
       setLoyaltyDiscount(data.availableDiscount || 0);
       setLoyaltyPoints(data.points || 0);
+      console.log(`💎 Loyalty applied: ${data.points} points = ${data.availableDiscount}% discount`);
     } catch (err) {
-      console.warn('Error fetching loyalty discount:', err);
+      console.error('❌ Error fetching loyalty discount:', err);
     }
   };
 
@@ -350,7 +353,7 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
             loyaltyDiscount: loyaltyDiscount // Include loyalty discount
           };
 
-
+          console.log(`🎫 Purchasing ticket #${i+1}: Type=${ticketId}, Discount=${loyaltyDiscount}%`);
           purchasePromises.push(apiService.purchaseTicket(ticketData, token));
         }
       }
@@ -714,29 +717,39 @@ export default function TicketsPage({ token, userId }: TicketsPageProps) {
                   </div>
 
                   <div className="border-t-2 border-gray-200 pt-4 mb-6">
-                    {loyaltyDiscount > 0 && (
-                      <div className="mb-3 space-y-2">
-                        <div className="flex justify-between items-center text-gray-600">
-                          <span>Sous-total</span>
-                          <span>{getSubtotal().toFixed(2)} MAD</span>
-                        </div>
+                    <div className="mb-3 space-y-2">
+                      <div className="flex justify-between items-center text-gray-600">
+                        <span>Sous-total</span>
+                        <span>{getSubtotal().toFixed(2)} MAD</span>
+                      </div>
+                      {loyaltyDiscount > 0 ? (
                         <div className="flex justify-between items-center text-green-600 font-semibold">
-                          <span>Réduction fidélité ({loyaltyDiscount}%)</span>
+                          <span>✨ Réduction fidélité ({loyaltyDiscount}%)</span>
                           <span>-{getDiscountAmount().toFixed(2)} MAD</span>
                         </div>
-                        <div className="border-t border-gray-200 pt-2"></div>
-                      </div>
-                    )}
+                      ) : (
+                        <div className="flex justify-between items-center text-gray-400 text-sm">
+                          <span>💎 Réduction fidélité (0%)</span>
+                          <span>0.00 MAD</span>
+                        </div>
+                      )}
+                      <div className="border-t border-gray-200 pt-2"></div>
+                    </div>
                     <div className="flex justify-between items-center">
                       <span className="text-xl font-bold text-navy-900">{t.tickets.total}</span>
                       <span className="text-3xl font-bold text-mustard-500">
                         {getTotal().toFixed(2)} MAD
                       </span>
                     </div>
-                    {loyaltyDiscount > 0 && (
+                    {loyaltyDiscount > 0 ? (
                       <div className="mt-2 text-sm text-green-600 flex items-center space-x-1">
-                        <span>✨</span>
+                        <span>🎉</span>
                         <span>Vous économisez {getDiscountAmount().toFixed(2)} MAD avec vos points fidélité!</span>
+                      </div>
+                    ) : (
+                      <div className="mt-2 text-sm text-gray-500 flex items-center space-x-1">
+                        <span>ℹ️</span>
+                        <span>Accumulez des points pour obtenir des réductions (100pts = 5%)</span>
                       </div>
                     )}
                   </div>
