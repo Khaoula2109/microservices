@@ -247,7 +247,13 @@ public class TicketService {
 
         // Get owner information
         User user = userRepository.findById(ticket.getUserId()).orElse(null);
-        String ownerName = user != null ? user.getFirstName() + " " + user.getLastName() : "Utilisateur inconnu";
+        String ownerName = "Utilisateur inconnu";
+        if (user != null) {
+            String firstName = user.getFirstName() != null ? user.getFirstName() : "";
+            String lastName = user.getLastName() != null ? user.getLastName() : "";
+            String fullName = (firstName + " " + lastName).trim();
+            ownerName = !fullName.isEmpty() ? fullName : "Utilisateur inconnu";
+        }
         String ownerEmail = user != null ? user.getEmail() : null;
 
         // Check if ticket is cancelled

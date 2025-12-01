@@ -448,13 +448,15 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
                         <span className="font-semibold text-navy-900">{getTicketTypeLabel(result.ticketType)}</span>
                       </div>
 
-                      {result.ownerName && (
+                      {result.ownerName && result.ownerName !== 'null null' && (
                         <div className="flex items-center justify-between text-gray-600">
                           <span className="flex items-center">
                             <User className="h-4 w-4 mr-2 text-gray-400" />
                             {t.validate.passenger}
                           </span>
-                          <span className="font-semibold text-navy-900">{result.ownerName}</span>
+                          <span className="font-semibold text-navy-900">
+                            {result.ownerName === 'null null' ? 'Utilisateur inconnu' : result.ownerName}
+                          </span>
                         </div>
                       )}
 
@@ -506,7 +508,9 @@ export default function ValidateTicketPage({ token }: ValidateTicketPageProps) {
                         ) : (
                           <XCircle className="h-4 w-4 text-red-600" />
                         )}
-                        <span className="text-sm text-gray-700">{item.ownerName || t.validate.unknown}</span>
+                        <span className="text-sm text-gray-700">
+                          {item.ownerName && item.ownerName !== 'null null' ? item.ownerName : t.validate.unknown}
+                        </span>
                       </div>
                       <span className="text-xs text-gray-500">{getTicketTypeLabel(item.ticketType)}</span>
                     </div>
