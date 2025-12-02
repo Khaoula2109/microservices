@@ -59,3 +59,11 @@ override.tf.json
 *_override.tf.json
 .terraformrc
 terraform.rc
+
+# BFG Repo-Cleaner (tool for cleaning Git history)
+bfg*.jar
+.git.bfg-report/
+
+# Temporary deployment scripts
+*-fixes.sh
+deploy-all-fixes.sh
