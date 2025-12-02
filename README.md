@@ -20,8 +20,6 @@ A comprehensive microservices-based urban transportation management system built
 - [Monitoring & Observability](#monitoring--observability)
 - [Getting Started](#getting-started)
 - [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [License](#license)
 
 ---
 
@@ -523,10 +521,15 @@ While AWS allows requesting a vCPU limit increase, this:
 Given the AWS constraints, **local Kubernetes deployment with Minikube** became the most practical solution:
 
 ✅ **Full Control**: All 8 services + 6 databases + monitoring stack
+
 ✅ **Zero Cost**: Runs entirely on local hardware
+
 ✅ **Production-Like**: Real Kubernetes environment, not Docker Compose
+
 ✅ **Fast Iteration**: No cloud upload/download times
+
 ✅ **Learning Value**: Hands-on Kubernetes experience
+
 ✅ **Offline Development**: No internet dependency after initial setup
 
 #### AWS Infrastructure (For Reference)
@@ -1035,14 +1038,23 @@ kubectl top pods -n transport-prod
 ### Best Practices Implemented
 
 ✅ **JWT Authentication** - Secure token-based auth
+
 ✅ **HTTPS/TLS** - Encrypted communication (production)
+
 ✅ **Input Validation** - Prevent injection attacks
+
 ✅ **CORS Configuration** - Controlled cross-origin requests
+
 ✅ **Rate Limiting** - API Gateway rate limits
+
 ✅ **Secret Management** - Kubernetes Secrets, environment variables
+
 ✅ **Database Encryption** - Encrypted at rest and in transit
+
 ✅ **Role-Based Access Control** - Granular permissions
+
 ✅ **Security Headers** - HSTS, CSP, X-Frame-Options
+
 ✅ **Dependency Scanning** - Automated vulnerability checks in CI
 
 ### Environment Variables
@@ -1072,160 +1084,7 @@ SMTP_USER=...
 SMTP_PASSWORD=...
 ```
 
----
-
-## Contributing
-
-We welcome contributions! Please follow these guidelines:
-
-### Development Workflow
-
-1. **Fork the repository**
-2. **Create a feature branch:**
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. **Make your changes**
-4. **Run tests:**
-   ```bash
-   # Run service-specific tests
-   cd <service-directory>
-   mvn test  # or npm test, pytest
-   ```
-5. **Commit with conventional commits:**
-   ```bash
-   git commit -m "feat(tickets): add refund functionality"
-   ```
-6. **Push to your fork:**
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-7. **Open a Pull Request**
-
-### Code Style
-
-- **Java**: Google Java Style Guide
-- **JavaScript/TypeScript**: Airbnb Style Guide
-- **Python**: PEP 8
-
-### Commit Message Format
-
-```
-<type>(<scope>): <subject>
-
-<body>
-
-<footer>
-```
-
-**Types:** feat, fix, docs, style, refactor, test, chore
-
-**Example:**
-```
-feat(notification): add SMS retry logic
-
-- Implement exponential backoff for SMS failures
-- Add Twilio error code handling
-- Update tests for retry scenarios
-
-Closes #123
-```
 
 ---
 
-## License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
----
-
-## Acknowledgments
-
-- **Spring Boot** - Framework for Java microservices
-- **NestJS** - Progressive Node.js framework
-- **Flask** - Python web framework
-- **React** - Frontend UI library
-- **Kubernetes** - Container orchestration
-- **Prometheus & Grafana** - Monitoring and observability
-- **Docker** - Containerization platform
-
----
-
-## Contact & Support
-
-- **Project Repository**: https://github.com/Khaoula2109/microservices
-- **Issues**: https://github.com/Khaoula2109/microservices/issues
-- **Discussions**: https://github.com/Khaoula2109/microservices/discussions
-
----
-
-## Roadmap
-
-### Q1 2025
-- [ ] Implement GraphQL API
-- [ ] Add mobile app (React Native)
-- [ ] Implement real-time chat support
-- [ ] Add multi-language support (French, Arabic)
-
-### Q2 2025
-- [ ] Machine learning for delay prediction
-- [ ] Dynamic pricing based on demand
-- [ ] Integration with Google Maps API
-- [ ] Add payment gateway alternatives (PayPal, Apple Pay)
-
-### Q3 2025
-- [ ] Implement service mesh (Istio)
-- [ ] Add chaos engineering tests
-- [ ] Implement advanced analytics dashboard
-- [ ] Carbon footprint tracking
-
-### Q4 2025
-- [ ] Launch production on AWS/GCP
-- [ ] Implement multi-tenant architecture
-- [ ] Add API marketplace
-- [ ] Open-source community plugins
-
----
-
-## Version History
-
-- **v1.0.0** (2024-12-02)
-  - Initial release
-  - 8 microservices operational
-  - Docker Compose and Minikube deployment
-  - Complete CI/CD pipeline
-  - Monitoring and observability stack
-
----
-
-## FAQ
-
-**Q: Why use multiple databases instead of one?**
-A: Polyglot persistence allows each service to use the database best suited for its data model and access patterns. For example, MongoDB for flexible notification logs, PostGIS for geospatial queries, and MSSQL for subscription billing.
-
-**Q: Can I run this on AWS with the free tier?**
-A: Partially. You can run the EKS control plane for free, but worker nodes, databases, and data transfer will incur costs. We recommend Minikube for local development first.
-
-**Q: How do I scale individual services?**
-A: Use `kubectl scale deployment <service-name> --replicas=X` for Kubernetes, or adjust the `replicas` field in your deployment YAML.
-
-**Q: Is this production-ready?**
-A: The architecture is production-grade, but you should:
-- Add TLS/SSL certificates
-- Implement backup and disaster recovery
-- Configure monitoring alerts
-- Perform security audits
-- Load test for your expected traffic
-
-**Q: How do I add a new microservice?**
-A:
-1. Create the service directory with Dockerfile
-2. Add database configuration if needed
-3. Update `docker-compose.yml`
-4. Create Kubernetes manifests in `minikube-deployment/manifests/microservices/`
-5. Add CI/CD workflow in `.github/workflows/ci-build.yml`
-6. Update this README
-
----
-
-**Built with ❤️ by the KowihanTransit Team**
+**Built with ❤️ by the Kowihan Team**
