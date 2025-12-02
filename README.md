@@ -29,47 +29,6 @@ KowihanTransit is designed as a **polyglot microservices architecture** leveragi
 
 ### Architecture Diagram
 
-```
-                                    ┌─────────────────┐
-                                    │   Ingress       │
-                                    │   Controller    │
-                                    └────────┬────────┘
-                                             │
-                                    ┌────────▼────────┐
-                                    │  API Gateway    │
-                                    │  (Port: 8081)   │
-                                    │  Spring Cloud   │
-                                    └────────┬────────┘
-                                             │
-                 ┌───────────────────────────┼──────────────────────────┐
-                 │                           │                          │
-        ┌────────▼────────┐       ┌─────────▼─────────┐     ┌─────────▼─────────┐
-        │  User Service   │       │ Tickets Service   │     │ Subscription      │
-        │  (Port: 8080)   │       │  (Port: 8082)     │     │ Service           │
-        │  Spring Boot    │       │  Spring Boot      │     │ (Port: 3000)      │
-        │  PostgreSQL     │       │  MySQL            │     │ Express/MSSQL     │
-        └─────────────────┘       └───────────────────┘     └───────────────────┘
-                 │
-        ┌────────▼────────┐       ┌───────────────────┐     ┌───────────────────┐
-        │ Notification    │       │  Routes Service   │     │  Geolocation      │
-        │ Service         │       │  (Port: 8083)     │     │  Service          │
-        │ (Port: 3001)    │       │  Express          │     │  (Port: 5000)     │
-        │ NestJS/MongoDB  │       │  PostgreSQL+GIS   │     │  Flask/Redis      │
-        └─────────────────┘       └───────────────────┘     └───────────────────┘
-                 │
-        ┌────────▼────────┐
-        │   RabbitMQ      │
-        │ Message Broker  │
-        │ (5672, 15672)   │
-        └─────────────────┘
-
-                        ┌──────────────────────────────┐
-                        │  Monitoring Stack            │
-                        │  - Prometheus (Metrics)      │
-                        │  - Grafana (Dashboards)      │
-                        │  - Jaeger (Tracing)          │
-                        └──────────────────────────────┘
-```
 
 ---
 
