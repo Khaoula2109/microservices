@@ -39,11 +39,15 @@ print_error() {
 echo ""
 print_info "Étape 1/5: Déploiement de Jaeger sur Kubernetes..."
 
-if [ -f "k8s/jaeger-deployment.yaml" ]; then
-    kubectl apply -f k8s/jaeger-deployment.yaml
+# Determine the script directory and project root
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+if [ -f "$SCRIPT_DIR/jaeger-deployment.yaml" ]; then
+    kubectl apply -f "$SCRIPT_DIR/jaeger-deployment.yaml"
     print_success "Jaeger déployé avec succès"
 else
-    print_error "Fichier k8s/jaeger-deployment.yaml introuvable!"
+    print_error "Fichier jaeger-deployment.yaml introuvable!"
     exit 1
 fi
 
@@ -66,22 +70,23 @@ print_info "Étape 3/5: Rebuild des images Docker avec support tracing..."
 services=("user-service" "tickets-service" "geolocation-service" "apigateway")
 
 for service in "${services[@]}"; do
-    if [ -d "$service" ]; then
+    if [ -d "$PROJECT_ROOT/$service" ]; then
         print_info "Building $service..."
-        cd "$service"
+        cd "$PROJECT_ROOT/$service"
         docker build -t "$service:latest" . > /dev/null 2>&1
         if [ $? -eq 0 ]; then
             print_success "$service image rebuilt"
         else
             print_error "Échec du build de $service"
-            cd ..
             exit 1
         fi
-        cd ..
     else
         print_warning "Service $service non trouvé, skip..."
     fi
 done
+
+# Return to script directory
+cd "$SCRIPT_DIR"
 
 # 4. Redéployer les services
 echo ""
